@@ -70,6 +70,10 @@ public class CollaborationModelBuilder {
 			new QualifiedName(CollaborationModelBuilder.class.getName() +"#ShowUnselectedFeatures", 
 						      CollaborationModelBuilder.class.getName() +"#ShowUnselectedFeatures");
 	
+	private static final QualifiedName SHOW_EMPTY_ROLES = 
+			new QualifiedName(CollaborationModelBuilder.class.getName() +"#ShowEmptyRoles", 
+						      CollaborationModelBuilder.class.getName() +"#ShowEmptyRoles");
+	
 	private static final String TRUE = "true";
 	private static final String FALSE = "false";
 	
@@ -324,5 +328,30 @@ public class CollaborationModelBuilder {
 			scanner.close();
 			return Collections.emptySet();
 		}
+	}
+	
+	/**
+	 * Sets the persistent property of <i>showEmptyRoles 
+	 * @param value The value to set
+	 */
+	public static void showEmptyRoles(boolean value) {
+		try {
+			ResourcesPlugin.getWorkspace().getRoot().setPersistentProperty(SHOW_EMPTY_ROLES, value ? TRUE : FALSE);
+		} catch (CoreException e) {
+			FMCorePlugin.getDefault().logError(e);
+		}
+	}
+	
+	/**
+	 * Gets the the persistent property of <i>showEmptyRoles</i>
+	 * @return The persistent property
+	 */
+	public static final boolean showEmptyRoles() {
+		try {
+			return TRUE.equals(ResourcesPlugin.getWorkspace().getRoot().getPersistentProperty(SHOW_EMPTY_ROLES));
+		} catch (CoreException e) {
+			FMCorePlugin.getDefault().logError(e);
+		}
+		return false;
 	}
 }

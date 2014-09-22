@@ -95,6 +95,7 @@ import de.ovgu.featureide.ui.views.collaboration.action.FilterAction;
 import de.ovgu.featureide.ui.views.collaboration.action.RenameColorSchemeAction;
 import de.ovgu.featureide.ui.views.collaboration.action.SetColorAction;
 import de.ovgu.featureide.ui.views.collaboration.action.SetColorSchemeAction;
+import de.ovgu.featureide.ui.views.collaboration.action.ShowEmptyRolesAction;
 import de.ovgu.featureide.ui.views.collaboration.action.ShowFieldsMethodsAction;
 import de.ovgu.featureide.ui.views.collaboration.action.ShowUnselectedAction;
 import de.ovgu.featureide.ui.views.collaboration.editparts.CollaborationEditPart;
@@ -110,6 +111,7 @@ import de.ovgu.featureide.ui.views.collaboration.model.CollaborationModelBuilder
  * @author Sebastian Krieter
  * @author Christian Lausberger
  * @author Steffen Schulze
+ * @author Andy Kenner
  */
 public class CollaborationView extends ViewPart implements GUIDefaults, ICurrentBuildListener, ISaveablePart {
 
@@ -124,6 +126,7 @@ public class CollaborationView extends ViewPart implements GUIDefaults, ICurrent
 	private static final String FILTER_LABEL = "Filter";
 	private static final String UNSELECTED_LABEL = "Show unselected features";
 	private static final String EXPORT_AS_LABEL = "Export As";
+	private static final String EMPTY_ROLE_LABEL = "Show empty role";
 	
 	private static final String TOOL_TIP_LABEL = "Build collaborationmodel";
 	
@@ -144,6 +147,7 @@ public class CollaborationView extends ViewPart implements GUIDefaults, ICurrent
 	private PrintAction printAction;
 	private ExportAsAction exportAsAction;
 	private ShowUnselectedAction showUnselectedAction;
+	private ShowEmptyRolesAction showEmptyRolesAction; 
 	private Point cursorPosition;
 	
 	private MenuManager colorSubMenu;
@@ -409,6 +413,8 @@ public class CollaborationView extends ViewPart implements GUIDefaults, ICurrent
 		filterAction.setEnabled(isNotEmpty);
 		delAction.setEnabled(isNotEmpty);
 		showUnselectedAction.setEnabled(isNotEmpty);
+		// XYZ - Andy
+		showEmptyRolesAction.setEnabled(isNotEmpty);
 		
 		saveCursorPosition();
 		
@@ -416,6 +422,8 @@ public class CollaborationView extends ViewPart implements GUIDefaults, ICurrent
 		menuMgr.add(filterAction);
 		menuMgr.add(showUnselectedAction);
 		menuMgr.add(delAction);
+		// XYZ - Andy
+		menuMgr.add(showEmptyRolesAction);
 		
 		if (featureProject.getComposer().showContextFieldsAndMethods()) {
 			MenuManager methodsFieldsSubMenu = new MenuManager("Show Fields and Methods");
@@ -491,6 +499,7 @@ public class CollaborationView extends ViewPart implements GUIDefaults, ICurrent
 		filterAction = new FilterAction(FILTER_LABEL, viewer, this);
 		exportAsAction = new ExportAsAction(EXPORT_AS_LABEL,viewer);
 		showUnselectedAction = new ShowUnselectedAction(UNSELECTED_LABEL, this);
+		showEmptyRolesAction = new ShowEmptyRolesAction(EMPTY_ROLE_LABEL, this);
 		
 		for (int i = 0; i < FIELD_METHOD_LABEL_NAMES.length; i++) {
 			setFieldsMethodsActions[i] = new ShowFieldsMethodsAction(FIELD_METHOD_LABEL_NAMES[i], FIELD_METHOD_IMAGES[i], this, i);

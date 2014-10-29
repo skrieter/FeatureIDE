@@ -211,7 +211,8 @@ public class RoleFigure extends Figure implements GUIDefaults{
 		if (!(role instanceof FSTArbitraryRole) && role.getDirectives().isEmpty()) {
 			int fieldCount = getCountForField();
 			createFieldContent(tooltipContent);
-			int methodCount = getCountForMethodContentCreate(tooltipContent);
+			int methodCount = getMethodCount();
+			createMethodContent(tooltipContent);
 			Object[] invariant = createInvariantContent(tooltipContent);
 			addLabel(new Label("Fields: " + fieldCount + " Methods: "	+ methodCount + " Invariants: " + ((Integer)invariant[0]) + " "));
 		} else if (role.getClassFragment().getName().startsWith("*.")) {
@@ -238,11 +239,12 @@ public class RoleFigure extends Figure implements GUIDefaults{
 			}
 			if (showOnlyFields()) {
 				fieldCount = getCountForField();
-				 createFieldContent(tooltipContent);
+				createFieldContent(tooltipContent);
 			}
 			
 			if (showOnlyMethods()) {
-				methodCount = getCountForMethodContentCreate(tooltipContent);
+				methodCount = getMethodCount();
+				createMethodContent(tooltipContent);
 			}else if (showContracts())
 			{
 				methodCount = getCountForMethodContentContractCreate(tooltipContent);
@@ -273,7 +275,7 @@ public class RoleFigure extends Figure implements GUIDefaults{
 	}
 
 
-	private int getCountForMethodContentCreate(Figure tooltipContent) {
+	private void createMethodContent(Figure tooltipContent) {
 		
 		CompartmentFigure methodFigure = new CompartmentFigure();
 		Label label = new Label(role.getFeature() + " ", IMAGE_FEATURE);
@@ -307,8 +309,22 @@ public class RoleFigure extends Figure implements GUIDefaults{
 		if (!isFieldMethodFilterActive()) {
 			addToToolTip(methodCount, methodFigure, tooltipContent);
 		}
+		
+	}
+	
+	private int getMethodCount(){
+		int methodCount = 0;
+		for (FSTMethod m : role.getClassFragment().getMethods()) {
+			Label methodLabel = createMethodLabel(m);
+
+			if (matchFilter(m)) {
+				methodCount++;
+				
+			}
+		}
 		return methodCount;
 	}
+	
 	
 	private int getCountForMethodContentContractCreate(Figure tooltipContent) {
 		

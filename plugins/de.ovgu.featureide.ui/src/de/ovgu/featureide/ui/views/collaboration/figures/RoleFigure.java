@@ -209,7 +209,8 @@ public class RoleFigure extends Figure implements GUIDefaults{
 		tooltipContent.setLayoutManager(contentsLayout);
 		
 		if (!(role instanceof FSTArbitraryRole) && role.getDirectives().isEmpty()) {
-			int fieldCount = getCountForFieldContentCreate(tooltipContent);
+			int fieldCount = getCountForField();
+			createFieldContent(tooltipContent);
 			int methodCount = getCountForMethodContentCreate(tooltipContent);
 			Object[] invariant = createInvariantContent(tooltipContent);
 			addLabel(new Label("Fields: " + fieldCount + " Methods: "	+ methodCount + " Invariants: " + ((Integer)invariant[0]) + " "));
@@ -236,7 +237,8 @@ public class RoleFigure extends Figure implements GUIDefaults{
 				invariant = createInvariantContent(tooltipContent);
 			}
 			if (showOnlyFields()) {
-				fieldCount = getCountForFieldContentCreate(tooltipContent);
+				fieldCount = getCountForField();
+				 createFieldContent(tooltipContent);
 			}
 			
 			if (showOnlyMethods()) {
@@ -379,7 +381,7 @@ public class RoleFigure extends Figure implements GUIDefaults{
 		return role.getClassFragment().getName().split("[.]")[0];
 	}
 
-	private int getCountForFieldContentCreate(Figure tooltipContent) {
+	private void createFieldContent(Figure tooltipContent) {
 		CompartmentFigure fieldFigure = new CompartmentFigure();
 		Label label = new Label(getClassName() + " ", IMAGE_CLASS);
 		
@@ -410,9 +412,22 @@ public class RoleFigure extends Figure implements GUIDefaults{
 		if (!isFieldMethodFilterActive()) {
 			addToToolTip(fieldCount, fieldFigure, tooltipContent);
 		}
-		return fieldCount;
+		
 	}
 	
+	/***
+	 * Calculates the field count by matching the filter for the role.
+	 * @return The count for the fields.
+	 */
+	private int getCountForField(){
+		int fieldCount = 0;
+		for (FSTField f : role.getClassFragment().getFields()) {
+			if (matchFilter(f)) {
+				fieldCount++;				
+			}
+		}
+		return fieldCount;
+	}
 	
 	private void addToToolTip(int elementCount, CompartmentFigure comFigure, Figure tooltipContent) {
 		if (elementCount == 0) {

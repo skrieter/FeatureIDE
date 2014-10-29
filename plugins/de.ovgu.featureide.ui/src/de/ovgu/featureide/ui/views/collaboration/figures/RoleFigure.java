@@ -54,6 +54,7 @@ import de.ovgu.featureide.core.fstmodel.preprocessor.FSTDirective;
 import de.ovgu.featureide.fm.core.FMCorePlugin;
 import de.ovgu.featureide.ui.views.collaboration.GUIDefaults;
 import de.ovgu.featureide.ui.views.collaboration.action.ShowFieldsMethodsAction;
+import de.ovgu.featureide.ui.views.collaboration.model.CollaborationModelBuilder;
 
 /**
  * <code>RoleFigure</code> represents the graphical representation of a 
@@ -176,31 +177,55 @@ public class RoleFigure extends Figure implements GUIDefaults{
 		super();
 		
 		this.role = role;
-		selected = role.getFeature().isSelected();
-		GridLayout gridLayout = new GridLayout(1, true);
-		gridLayout.verticalSpacing = GRIDLAYOUT_VERTICAL_SPACING;
-		gridLayout.marginHeight = GRIDLAYOUT_MARGIN_HEIGHT;
-		panel.setLayoutManager(gridLayout);
-		setLayoutManager(new FreeformLayout());
-		setBackgroundColor(ROLE_BACKGROUND);
-	
-		if (selected) {
-			setBorder(COLL_BORDER_SELECTED);
-		} else { 
-			setBorder(COLL_BORDER_UNSELECTED);
-		}
-		setOpaque(true);
+		
 
-		if (isFieldMethodFilterActive()) {
-			createContentForFieldMethodFilter();
-		} else {
-			createContentForDefault();
-		}
+		if (needToShowRole()) {
+			selected = role.getFeature().isSelected();
+			GridLayout gridLayout = new GridLayout(1, true);
+			gridLayout.verticalSpacing = GRIDLAYOUT_VERTICAL_SPACING;
+			gridLayout.marginHeight = GRIDLAYOUT_MARGIN_HEIGHT;
+			panel.setLayoutManager(gridLayout);
+			setLayoutManager(new FreeformLayout());
+			setBackgroundColor(ROLE_BACKGROUND);
 
-		Dimension size = getSize();
-		size.expand(0, gridLayout.marginHeight*2);
-		setSize(size);
-		add(panel);
+			if (selected) {
+				setBorder(COLL_BORDER_SELECTED);
+			} else {
+				setBorder(COLL_BORDER_UNSELECTED);
+			}
+			setOpaque(true);
+
+			if (isFieldMethodFilterActive()) {
+				createContentForFieldMethodFilter();
+			} else {
+				createContentForDefault();
+			}
+
+			Dimension size = getSize();
+			size.expand(0, gridLayout.marginHeight * 2);
+			setSize(size);
+			add(panel);
+			if (isFieldMethodFilterActive()) {
+				createContentForFieldMethodFilter();
+			} else {
+				createContentForDefault();
+			}
+		}
+	}
+
+	/**
+	 * @param showEmptyRoles
+	 * @param fieldCount
+	 * @param methodCount
+	 * @return
+	 */
+	private boolean needToShowRole() {
+		boolean showEmptyRoles = CollaborationModelBuilder.showEmptyRoles();
+		int fieldCount = getCountForField();
+		int methodCount = getCountForMethod();
+		return (fieldCount > 0 || methodCount > 0)
+				|| (fieldCount == 0 && methodCount == 0 && showEmptyRoles);
+		
 	}
 
 	private void createContentForDefault() {
@@ -211,7 +236,7 @@ public class RoleFigure extends Figure implements GUIDefaults{
 		if (!(role instanceof FSTArbitraryRole) && role.getDirectives().isEmpty()) {
 			int fieldCount = getCountForField();
 			createFieldContent(tooltipContent);
-			int methodCount = getMethodCount();
+			int methodCount = getCountForMethod();
 			createMethodContent(tooltipContent);
 			Object[] invariant = createInvariantContent(tooltipContent);
 			addLabel(new Label("Fields: " + fieldCount + " Methods: "	+ methodCount + " Invariants: " + ((Integer)invariant[0]) + " "));
@@ -243,7 +268,7 @@ public class RoleFigure extends Figure implements GUIDefaults{
 			}
 			
 			if (showOnlyMethods()) {
-				methodCount = getMethodCount();
+				methodCount = getCountForMethod();
 				createMethodContent(tooltipContent);
 			}else if (showContracts())
 			{
@@ -312,7 +337,7 @@ public class RoleFigure extends Figure implements GUIDefaults{
 		
 	}
 	
-	private int getMethodCount(){
+	private int getCountForMethod(){
 		int methodCount = 0;
 		for (FSTMethod m : role.getClassFragment().getMethods()) {
 			Label methodLabel = createMethodLabel(m);

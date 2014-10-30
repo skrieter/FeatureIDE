@@ -205,11 +205,14 @@ public class RoleFigure extends Figure implements GUIDefaults{
 			size.expand(0, gridLayout.marginHeight * 2);
 			setSize(size);
 			add(panel);
+			
+			/* Duplicate to line 198-202, dont know why --> causing a duplicate line "fields: 0.." when deselecting all filter options
 			if (isFieldMethodFilterActive()) {
 				createContentForFieldMethodFilter();
 			} else {
 				createContentForDefault();
 			}
+			*/
 		}
 	}
 
@@ -222,7 +225,10 @@ public class RoleFigure extends Figure implements GUIDefaults{
 	private boolean needToShowRole() {
 		boolean showEmptyRoles = CollaborationModelBuilder.showEmptyRoles();
 		int fieldCount = getCountForField();
+		System.out.println("---needtoShow-fieldCount-- " + fieldCount);
 		int methodCount = getCountForMethod();
+		System.out.println("---needtoShow-methodCount-- " + methodCount);
+		
 		return (fieldCount > 0 || methodCount > 0)
 				|| (fieldCount == 0 && methodCount == 0 && showEmptyRoles);
 		
@@ -235,8 +241,10 @@ public class RoleFigure extends Figure implements GUIDefaults{
 		
 		if (!(role instanceof FSTArbitraryRole) && role.getDirectives().isEmpty()) {
 			int fieldCount = getCountForField();
+			System.out.println("--ForDefault-fieldCount " + fieldCount);
 			createFieldContent(tooltipContent);
 			int methodCount = getCountForMethod();
+			System.out.println("--ForDefault-methodCount " + methodCount);
 			createMethodContent(tooltipContent);
 			Object[] invariant = createInvariantContent(tooltipContent);
 			addLabel(new Label("Fields: " + fieldCount + " Methods: "	+ methodCount + " Invariants: " + ((Integer)invariant[0]) + " "));
@@ -251,52 +259,59 @@ public class RoleFigure extends Figure implements GUIDefaults{
 	}
 
 	private void createContentForFieldMethodFilter() {
-		Figure tooltipContent = new Figure();
-		GridLayout contentsLayout = new GridLayout(1,true);
-		tooltipContent.setLayoutManager(contentsLayout);
 		
-		if (role.getDirectives().isEmpty() && role.getFile() != null) {
-			int fieldCount = 0;
-			int methodCount = 0;
-			Object[] invariant = null;
-			if (showInvariants()) {
-				invariant = createInvariantContent(tooltipContent);
-			}
-			if (showOnlyFields()) {
-				fieldCount = getCountForField();
-				createFieldContent(tooltipContent);
-			}
+		//if (needToShowRole()) {
+			Figure tooltipContent = new Figure();
+			GridLayout contentsLayout = new GridLayout(1,true);
+			tooltipContent.setLayoutManager(contentsLayout);
 			
-			if (showOnlyMethods()) {
-				methodCount = getCountForMethod();
-				createMethodContent(tooltipContent);
-			}else if (showContracts())
-			{
-				methodCount = getCountForMethodContentContractCreate(tooltipContent);
-			}	
-			
-			tooltipContent.add(new Label("Fields: " + fieldCount + " Methods: "	+ methodCount +" Invariants: " + ((invariant != null) ?((Integer)invariant[0]) : 0) + " "));
-
-			if (showInvariants() && invariant != null && ((Integer)invariant[0]) > 0) {
-				addToToolTip(((Integer)invariant[0]), ((CompartmentFigure) invariant[1]), tooltipContent);
+			if (role.getDirectives().isEmpty() && role.getFile() != null) {
+				int fieldCount = -100;
+				int methodCount = -100;
+				Object[] invariant = null;
+				if (showInvariants()) {
+					invariant = createInvariantContent(tooltipContent);
+				
+				}
+				if (showOnlyFields()) {
+					fieldCount = getCountForField();
+					createFieldContent(tooltipContent);
+					System.out.println("--ONLY fieldCount- " + fieldCount);
+				}
+				
+				if (showOnlyMethods()) {
+					methodCount = getCountForMethod();
+					createMethodContent(tooltipContent);
+					System.out.println("--ONLY methodCount- " + methodCount);
+				}
+				else if (showContracts()) {
+					methodCount = getCountForMethodContentContractCreate(tooltipContent);
+				}	
+				
+				tooltipContent.add(new Label("Fields: " + fieldCount + " Methods: "	+ methodCount +" Invariants: " + ((invariant != null) ?((Integer)invariant[0]) : 0) + " "));
+				System.out.println("Fields: " + fieldCount + " Methods: "	+ methodCount +" Invariants: " + ((invariant != null) ?((Integer)invariant[0]) : 0) + " ");
+	
+				if (showInvariants() && invariant != null && ((Integer)invariant[0]) > 0) {
+					addToToolTip(((Integer)invariant[0]), ((CompartmentFigure) invariant[1]), tooltipContent);
+				}
+				
+				// draw separation line between fields and methods
+				if (invariant != null && (fieldCount + ((Integer)invariant[0]) > 0) && (methodCount > 0)) {
+					int xyValue = (fieldCount + ((Integer)invariant[0])) * (ROLE_PREFERED_SIZE + GRIDLAYOUT_VERTICAL_SPACING) + GRIDLAYOUT_MARGIN_HEIGHT;
+					panel.setBorder(new RoleFigureBorder(xyValue, xyValue));
+				} else 	if (fieldCount > 0 && (methodCount > 0)) {
+					int xyValue = fieldCount * (ROLE_PREFERED_SIZE + GRIDLAYOUT_VERTICAL_SPACING) + GRIDLAYOUT_MARGIN_HEIGHT;
+					panel.setBorder(new RoleFigureBorder(xyValue, xyValue));
+				}
+				
+	
+			} else if (role.getClassFragment().getName().startsWith("*.")) {
+				setContentForFiles(tooltipContent, null);
+			} else {
+				setDirectivesContent(tooltipContent, getClassName());
 			}
-			
-			// draw separation line between fields and methods
-			if (invariant != null && (fieldCount + ((Integer)invariant[0]) > 0) && (methodCount > 0)) {
-				int xyValue = (fieldCount + ((Integer)invariant[0])) * (ROLE_PREFERED_SIZE + GRIDLAYOUT_VERTICAL_SPACING) + GRIDLAYOUT_MARGIN_HEIGHT;
-				panel.setBorder(new RoleFigureBorder(xyValue, xyValue));
-			} else 	if (fieldCount > 0 && (methodCount > 0)) {
-				int xyValue = fieldCount * (ROLE_PREFERED_SIZE + GRIDLAYOUT_VERTICAL_SPACING) + GRIDLAYOUT_MARGIN_HEIGHT;
-				panel.setBorder(new RoleFigureBorder(xyValue, xyValue));
-			}
-			
-
-		} else if (role.getClassFragment().getName().startsWith("*.")) {
-			setContentForFiles(tooltipContent, null);
-		} else {
-			setDirectivesContent(tooltipContent, getClassName());
-		}
-		setToolTip(tooltipContent);
+			setToolTip(tooltipContent);
+		//}
 	}
 
 
@@ -340,7 +355,7 @@ public class RoleFigure extends Figure implements GUIDefaults{
 	private int getCountForMethod(){
 		int methodCount = 0;
 		for (FSTMethod m : role.getClassFragment().getMethods()) {
-			Label methodLabel = createMethodLabel(m);
+			//Label methodLabel = createMethodLabel(m);
 
 			if (matchFilter(m)) {
 				methodCount++;

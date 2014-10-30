@@ -701,7 +701,7 @@ public class FeatureHouseComposer extends ComposerExtensionClass {
 			Program ast = composition.composeAST();
 
 			// run type check
-			fuji.typecheckAST(ast);
+			//fuji.typecheckAST(ast);
 
 			// parsing warnings
 			for (Problem warn : fuji.getWarnings()) {

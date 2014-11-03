@@ -208,23 +208,7 @@ public class RoleFigure extends Figure implements GUIDefaults{
 //		}
 	}
 
-	/**
-	 * @param showEmptyRoles
-	 * @param fieldCount
-	 * @param methodCount
-	 * @return
-	 */
-	private boolean needToShowRole() {
-		boolean showEmptyRoles = CollaborationModelBuilder.showEmptyRoles();
-		int fieldCount = getCountForField();
-		System.out.println("---needtoShow-fieldCount-- " + fieldCount);
-		int methodCount = getCountForMethod();
-		System.out.println("---needtoShow-methodCount-- " + methodCount);
-		
-		return (fieldCount > 0 || methodCount > 0)
-				|| (fieldCount == 0 && methodCount == 0 && showEmptyRoles);
-		
-	}
+	
 
 	private void createContentForDefault() {
 		Figure tooltipContent = new Figure();
@@ -233,10 +217,8 @@ public class RoleFigure extends Figure implements GUIDefaults{
 		
 		if (!(role instanceof FSTArbitraryRole) && role.getDirectives().isEmpty()) {
 			int fieldCount = getCountForField();
-			System.out.println("--ForDefault-fieldCount " + fieldCount);
 			createFieldContent(tooltipContent);
 			int methodCount = getCountForMethod();
-			System.out.println("--ForDefault-methodCount " + methodCount);
 			createMethodContent(tooltipContent);
 			Object[] invariant = createInvariantContent(tooltipContent);
 			addLabel(new Label("Fields: " + fieldCount + " Methods: "	+ methodCount + " Invariants: " + ((Integer)invariant[0]) + " "));
@@ -267,13 +249,11 @@ public class RoleFigure extends Figure implements GUIDefaults{
 				if (showOnlyFields()) {
 					fieldCount = getCountForField();
 					createFieldContent(tooltipContent);
-					System.out.println("--ONLY fieldCount- " + fieldCount);
 				}
 				
 				if (showOnlyMethods()) {
 					methodCount = getCountForMethod();
-					createMethodContent(tooltipContent);
-					System.out.println("--ONLY methodCount- " + methodCount);
+					createMethodContent(tooltipContent);					
 				}
 				else if (showContracts()) {
 					methodCount = getCountForMethodContentContractCreate(tooltipContent);

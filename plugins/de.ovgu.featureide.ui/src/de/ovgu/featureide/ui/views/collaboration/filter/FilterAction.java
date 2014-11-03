@@ -22,6 +22,8 @@ package de.ovgu.featureide.ui.views.collaboration.filter;
 
 import org.eclipse.jface.action.Action;
 
+import de.ovgu.featureide.ui.views.collaboration.CollaborationView;
+
 /**
  * TODO description
  * 
@@ -30,6 +32,7 @@ import org.eclipse.jface.action.Action;
 public class FilterAction extends Action {
 	
 	private Filter filter;
+	private CollaborationView cv;
 	
 	public FilterAction(String text){
 		super(text);
@@ -37,6 +40,10 @@ public class FilterAction extends Action {
 	
 	public void setFilter(Filter f){
 		this.filter = f;
+	}
+	
+	public void setCollaborationView(CollaborationView cv){
+		this.cv = cv;
 	}
 	
 	@Override
@@ -47,5 +54,6 @@ public class FilterAction extends Action {
 		else{
 			FilterController.addSelectedFilter(filter);
 		}
+		cv.refresh();
 	}
 }

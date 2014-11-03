@@ -434,7 +434,7 @@ public class CollaborationView extends ViewPart implements GUIDefaults, ICurrent
 			for (Filter f : Filter.values()) {
 				de.ovgu.featureide.ui.views.collaboration.filter.FilterAction action = (de.ovgu.featureide.ui.views.collaboration.filter.FilterAction)f.getFilterAction();
 				action.setFilter(f);
-				
+				action.setCollaborationView(this);
 				methodsFieldsSubMenu.add(action);
 				
 				if (f.equals(Filter.HIDE_PARAMETERS) || 

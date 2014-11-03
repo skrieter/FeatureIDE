@@ -20,6 +20,8 @@
  */
 package de.ovgu.featureide.ui.views.collaboration.filter;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 
 /**
@@ -45,7 +47,13 @@ public class FilterController {
 		return selectedFilter.contains(filter);
 	}
 	
+	public static boolean isSelected(Filter...filters){
+		return selectedFilter.containsAll(Arrays.asList(filters));
+	}
+	
 	public static EnumSet<Filter> getSelectedFilter(){
 		return selectedFilter;
+		
 	}
+	
 }

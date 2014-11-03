@@ -35,12 +35,11 @@ public class FilteredFstRole {
 	private List<FSTMethod> publicMethods = new ArrayList<FSTMethod>();
 	private List<FSTField> privateFields= new ArrayList<FSTField>();
 	private List<FSTField> publicFields = new ArrayList<FSTField>();
-	private EnumSet<Filter> selectedFilter;
 	private FSTRole role;
 	
-	public FilteredFstRole(EnumSet<Filter> filter,FSTRole role) {
-		this.selectedFilter = filter;
+	public FilteredFstRole(FSTRole role) {
 		this.role = role;
+		setFilteredValues();
 	}
 	
 	public List<FSTMethod> getPrivateMethods() {
@@ -54,6 +53,53 @@ public class FilteredFstRole {
 	}
 	public List<FSTField> getPublicFields() {
 		return publicFields;
+	}
+	
+	private void setFilteredValues(){
+		setPrivateMethods();
+		setPublicMethods();
+		setPrivateFields();
+		setPublicFields();
+	}
+	
+	private void setPrivateMethods(){
+		if(FilterController.isSelected(Filter.SHOW_METHODS,Filter.PRIVATE)){
+			for(FSTMethod method : role.getClassFragment().getMethods()){
+				if(method.isPrivate()){
+					privateMethods.add(method);
+				}
+			}
+		}
+	}
+	
+	private void setPublicMethods(){
+		if(FilterController.isSelected(Filter.SHOW_METHODS,Filter.PUBLIC)){
+			for(FSTMethod method : role.getClassFragment().getMethods()){
+				if(method.isPublic()){
+					publicMethods.add(method);
+				}
+			}
+		}
+	}
+	
+	private void setPrivateFields(){
+		if(FilterController.isSelected(Filter.SHOW_FIELDS,Filter.PRIVATE)){
+			for(FSTField field : role.getClassFragment().getFields()){
+				if(field.isPrivate()){
+					privateFields.add(field);
+				}
+			}
+		}
+	}
+	
+	private void setPublicFields(){
+		if(FilterController.isSelected(Filter.PUBLIC,Filter.SHOW_FIELDS)){
+			for(FSTField field : role.getClassFragment().getFields()){
+				if(field.isPublic()){
+					publicFields.add(field);
+				}
+			}
+		}
 	}
 	
 }

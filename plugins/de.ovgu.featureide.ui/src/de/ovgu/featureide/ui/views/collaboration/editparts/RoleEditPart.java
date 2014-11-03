@@ -73,7 +73,7 @@ public class RoleEditPart extends AbstractGraphicalEditPart {
 
 	@Override
 	protected IFigure createFigure() {
-		FilteredFstRole filteredRole = new FilteredFstRole(FilterController.getSelectedFilter(), getRoleModel());
+		FilteredFstRole filteredRole = new FilteredFstRole(getRoleModel());
 		return new RoleFigure(filteredRole);
 	}
 

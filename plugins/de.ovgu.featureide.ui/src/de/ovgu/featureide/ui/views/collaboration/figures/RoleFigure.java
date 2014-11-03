@@ -179,7 +179,7 @@ public class RoleFigure extends Figure implements GUIDefaults{
 		this.role = role;
 		
 
-		if (needToShowRole()) {
+//		if (needToShowRole()) {
 			selected = role.getFeature().isSelected();
 			GridLayout gridLayout = new GridLayout(1, true);
 			gridLayout.verticalSpacing = GRIDLAYOUT_VERTICAL_SPACING;
@@ -205,15 +205,7 @@ public class RoleFigure extends Figure implements GUIDefaults{
 			size.expand(0, gridLayout.marginHeight * 2);
 			setSize(size);
 			add(panel);
-			
-			/* Duplicate to line 198-202, dont know why --> causing a duplicate line "fields: 0.." when deselecting all filter options
-			if (isFieldMethodFilterActive()) {
-				createContentForFieldMethodFilter();
-			} else {
-				createContentForDefault();
-			}
-			*/
-		}
+//		}
 	}
 
 	/**
@@ -260,7 +252,6 @@ public class RoleFigure extends Figure implements GUIDefaults{
 
 	private void createContentForFieldMethodFilter() {
 		
-		//if (needToShowRole()) {
 			Figure tooltipContent = new Figure();
 			GridLayout contentsLayout = new GridLayout(1,true);
 			tooltipContent.setLayoutManager(contentsLayout);
@@ -311,7 +302,7 @@ public class RoleFigure extends Figure implements GUIDefaults{
 				setDirectivesContent(tooltipContent, getClassName());
 			}
 			setToolTip(tooltipContent);
-		//}
+
 	}
 
 
@@ -355,11 +346,8 @@ public class RoleFigure extends Figure implements GUIDefaults{
 	private int getCountForMethod(){
 		int methodCount = 0;
 		for (FSTMethod m : role.getClassFragment().getMethods()) {
-			//Label methodLabel = createMethodLabel(m);
-
 			if (matchFilter(m)) {
 				methodCount++;
-				
 			}
 		}
 		return methodCount;

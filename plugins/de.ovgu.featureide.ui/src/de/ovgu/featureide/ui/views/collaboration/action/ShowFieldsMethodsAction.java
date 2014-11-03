@@ -107,13 +107,10 @@ public class ShowFieldsMethodsAction extends Action {
 			selected[ONLY_FIELDS] = true;
 			selected[ONLY_METHODS] = true;
 		}
-		/*if(!selected[ONLY_FIELDS] && !selected[ONLY_METHODS]) {
-			selected[ONLY_FIELDS] = true;
-			selected[ONLY_METHODS] = true;
-		}*/
 		
 		selected[index] = !selected[index];
 	}
+	
 	
 	private void noDeclarationTypSelected(boolean[] selected) {
 		if(!selected[PUBLIC_FIELDSMETHODS] && !selected[PROTECTED_FIELDSMETHODS] && 
@@ -128,8 +125,7 @@ public class ShowFieldsMethodsAction extends Action {
 	
 	private boolean isSelected() {
 		switch (index) {
-			case SELECT_ALL:
-				return false;
+			case SELECT_ALL:				
 			case DESELECT_ALL:
 				return false;
 			default:

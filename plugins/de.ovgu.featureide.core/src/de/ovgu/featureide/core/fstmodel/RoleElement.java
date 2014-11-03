@@ -29,7 +29,7 @@ import de.ovgu.featureide.core.signature.abstr.AbstractSignature;
  * 
  * @author Jens Meinicke
  */
-public abstract class RoleElement<T extends RoleElement<T>> implements Comparable<T>, IRoleElement{
+public abstract class RoleElement<T extends RoleElement<T>> implements Comparable<T>, IRoleElement {
 
 	private static final String STATIC = "static";
 	private static final String PUBLIC = "public";
@@ -63,128 +63,74 @@ public abstract class RoleElement<T extends RoleElement<T>> implements Comparabl
 		this.endLine = endLine;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#getRole()
-	 */
 	public FSTRole getRole() {
 		return role;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#setRole(de.ovgu.featureide.core.fstmodel.FSTRole)
-	 */
 	public void setRole(FSTRole parent) {
 		this.role = parent;
 	}
-
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#getFile()
-	 */
+	
 	public IFile getFile() {
 		return role.getFile();
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#getLine()
-	 */
 	public int getLine() {
 		return beginLine;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#setLine(int)
-	 */
 	public void setLine(int lineNumber) {
 		this.beginLine = lineNumber;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#getEndLine()
-	 */
 	public int getEndLine() {
 		return endLine;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#getComposedLine()
-	 */
 	public int getComposedLine() {
 		return composedLine;
 	}
-
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#setComposedLine(int)
-	 */
+	
 	public void setComposedLine(int line) {
 		composedLine = line;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#getBody()
-	 */
 	public String getBody() {
 		return body;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#isFinal()
-	 */
 	public boolean isFinal() {
 		return modifiers.contains(FINAL);
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#isPrivate()
-	 */
 	public boolean isPrivate() {
 		return modifiers.contains(PRIVATE);
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#isProtected()
-	 */
 	public boolean isProtected() {
 		return modifiers.contains(PROTECTED);
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#isPublic()
-	 */
 	public boolean isPublic() {
 		return modifiers.contains(PUBLIC);
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#isStatic()
-	 */
 	public boolean isStatic() {
 		return modifiers.contains(STATIC);
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#getType()
-	 */
 	public String getType() {
 		return type;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#getName()
-	 */
 	public String getName() {
 		return name;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#getModifiers()
-	 */
 	public String getModifiers() {
 		return modifiers;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#toString()
-	 */
 	@Override
 	public String toString() {
 		return getName();
@@ -204,9 +150,6 @@ public abstract class RoleElement<T extends RoleElement<T>> implements Comparabl
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -218,25 +161,16 @@ public abstract class RoleElement<T extends RoleElement<T>> implements Comparabl
 		IRoleElement other = (IRoleElement) obj;
 		if (!other.getClass().equals(this.getClass()))
 			return false;
-	
 		if (!other.getFullName().equals(this.getFullName()))
-			return false;
-		
-		
+			return false;		
 		return true;
 	}
 	
-/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#getJavaDocComment()
-	 */
 	public String getJavaDocComment() {
 		return javaDocComment;
 
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.core.fstmodel.IRoleElement#setJavaDocComment(java.lang.String)
-	 */
 	public void setJavaDocComment(String javaDocComment) {
 		this.javaDocComment = javaDocComment;
 	}
@@ -251,8 +185,4 @@ public abstract class RoleElement<T extends RoleElement<T>> implements Comparabl
 		
 		return this.getFullName().compareToIgnoreCase(element.getFullName());
 	}
-		
-		
-	
-
 }

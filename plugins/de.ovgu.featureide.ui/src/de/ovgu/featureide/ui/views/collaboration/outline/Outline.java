@@ -21,6 +21,8 @@
 package de.ovgu.featureide.ui.views.collaboration.outline;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -81,6 +83,7 @@ import de.ovgu.featureide.core.fstmodel.FSTField;
 import de.ovgu.featureide.core.fstmodel.FSTInvariant;
 import de.ovgu.featureide.core.fstmodel.FSTMethod;
 import de.ovgu.featureide.core.fstmodel.FSTRole;
+import de.ovgu.featureide.core.fstmodel.IRoleElement;
 import de.ovgu.featureide.core.fstmodel.preprocessor.FSTDirective;
 import de.ovgu.featureide.core.listeners.ICurrentBuildListener;
 import de.ovgu.featureide.fm.ui.editors.FeatureModelEditor;
@@ -100,8 +103,6 @@ import de.ovgu.featureide.ui.views.collaboration.GUIDefaults;
 /*
  * TODO #404 fix bug: do not close the tree if a corresponding file was opened
  * with an other way e.g. via collaboration diagram
- * 
- * TODO Sometimes the outline has no content -> display a warning / message
  */
 public class Outline extends ViewPart implements ICurrentBuildListener, IPropertyChangeListener {
 	private static final String OUTLINE_ID = "de.ovgu.featureide.ui.views.outline";
@@ -180,132 +181,99 @@ public class Outline extends ViewPart implements ICurrentBuildListener, IPropert
 		@Override
 		public void selectionChanged(SelectionChangedEvent event) {
 			if (iFile != null) {
-				//if a method or field is selected, the selection's FSTRole is always the first role of the first feature in the respective expandable
-				//list in the outline no matter if the currently opened file contains the method.
+				// if a method or field is selected, the selection's FSTRole is
+				// always the first role of the first feature in the respective
+				// expandable
+				// list in the outline no matter if the currently opened file
+				// contains the method.
 				Object selection = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-				FSTRole r = null;
-				boolean fileAlreadyOpen = false;
+				
+				FSTRole fstRole = null;
+				final TreeItem selectionItem = viewer.getTree().getSelection()[0];
 				if (selection instanceof FSTRole) {
-					r = (FSTRole) selection;
-					selection = viewer.getTree().getSelection()[0].getParentItem().getData();
-				} else if (selection instanceof FSTMethod) {			
-					FSTMethod meth = ((FSTMethod) selection); 
-					fileAlreadyOpen = meth.getFile().getName().equals(iFile.getName()) && (getMethodLine(iFile, meth) > 0);
-					r = meth.getRole();
-				} else  if (selection instanceof FSTField) {
-					FSTField field = ((FSTField) selection); 
-					fileAlreadyOpen = field.getFile().getName().equals(iFile.getName()) && (getFieldLine(iFile, field) > 0);
-					r = field.getRole();
-				} else  if (selection instanceof FSTInvariant) {
-					FSTInvariant invariant = ((FSTInvariant) selection); 
-					fileAlreadyOpen = invariant.getFile().getName().equals(iFile.getName()) && (getInvariantLine(iFile, invariant) > 0);
-					r = invariant.getRole();
-				} else  if (selection instanceof FSTDirective) {
-					fileAlreadyOpen = true;
-				} else {
+					fstRole = (FSTRole) selection;
+					selection = selectionItem.getParentItem().getData();
+				} 
+
+				if (selection instanceof IRoleElement) {
+					IRoleElement roleElement = (IRoleElement) selection;
+					if (roleElement instanceof FSTDirective) {
+						FSTDirective directive = (FSTDirective) roleElement;
+						openFile(directive.getRole());
+						scrollToLine(active_editor, directive.getStartLine(), directive.getEndLine(), directive.getStartOffset(), directive.getEndLength());
+					} else {
+						if (fstRole == null) {
+							for (FSTRole role : roleElement.getRole().getFSTClass().getRoles()) {
+								if (role.getFile().equals(iFile)) {
+									fstRole = role;
+									break;
+								}
+							}
+						} 
+						
+						if (roleElement instanceof FSTMethod) {
+							scrollToElement(roleElement, fstRole.getClassFragment().getMethods());
+						} else if (selection instanceof FSTField) {
+							scrollToElement(roleElement, fstRole.getClassFragment().getFields());
+						} else if (selection instanceof FSTInvariant) {
+							scrollToElement(roleElement, fstRole.getClassFragment().getInvariants());
+						}
+					}
+				}
+			}
+
+		}
+
+		/**
+		 * @param fstRole
+		 * @param roleElement
+		 */
+		private void scrollToElement(IRoleElement roleElement, Collection<? extends IRoleElement> roleElementSet) {
+			for (IRoleElement re : roleElementSet) {
+				if (re.equals(roleElement))  {
+					openFile(re.getRole());
+					scrollToLine(active_editor, re.getLine());
 					return;
 				}
-				if (!fileAlreadyOpen && r.getFile().isAccessible()) {
-					IWorkbench workbench = PlatformUI
-							.getWorkbench();
-					IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-					IWorkbenchPage page = window.getActivePage();
-					IContentType contentType = null;
-					try {
-						iFile = r.getFile();
-						IContentDescription description = iFile
-								.getContentDescription();
-						if (description != null) {
-							contentType = description.getContentType();
-						}
-						IEditorDescriptor desc = null;
-						if (contentType != null) {
-							desc = workbench.getEditorRegistry()
-									.getDefaultEditor(iFile.getName(), contentType);
-						} else {
-							desc = workbench.getEditorRegistry()
-									.getDefaultEditor(iFile.getName());
-						}
-						if (desc != null) {
-							page.openEditor(new FileEditorInput(iFile),
-									desc.getId());
-						} else {
-							// case: there is no default editor for the file
-							page.openEditor(new FileEditorInput(iFile),
-									"org.eclipse.ui.DefaultTextEditor");
-						}
-						
-						
-					} catch (CoreException e) {
-						UIPlugin.getDefault().logError(e);
-					}
-				}
-								
-				
-				if (selection instanceof FSTMethod) {
-					FSTMethod meth = (FSTMethod) selection;
-					int line = getMethodLine(iFile, meth);
-					if (line != -1) {
-						scrollToLine(active_editor, line);
-					}
-				} else if (selection instanceof FSTField) {
-					FSTField field = (FSTField) selection;
-					int line = getFieldLine(iFile, field);
-					if (line != -1) {
-						scrollToLine(active_editor, line);
-					}
-				} else if (selection instanceof FSTInvariant) {
-					FSTInvariant inv = (FSTInvariant) selection;
-					int line = getInvariantLine(iFile, inv);
-					if (line != -1)
-						scrollToLine(active_editor, line);
-				} else if (selection instanceof FSTDirective) {
-					FSTDirective directive = (FSTDirective) selection;
-					scrollToLine(active_editor, directive.getStartLine(), directive.getEndLine(), 
-							directive.getStartOffset(), directive.getEndLength());
-				}
 			}
-
+			openFile(roleElement.getRole());
+			scrollToLine(active_editor, roleElement.getLine());
 		}
 
-		// TODO refactor into FSTModel
-		private int getFieldLine(IFile iFile, FSTField field) {
-			for (FSTRole r : field.getRole().getFSTClass().getRoles()) {
-				if (r.getFile().equals(iFile)) {
-					for (FSTField f : r.getClassFragment().getFields()) {
-						if (f.compareTo(field)==0) {
-							return f.getLine();
-						}
+		/**
+		 * @param role
+		 * @param fileAlreadyOpen
+		 */
+		private void openFile(FSTRole role) {
+			final IFile file = role.getFile();
+			if (file.isAccessible()) {
+				IWorkbench workbench = PlatformUI.getWorkbench();
+				IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+				IWorkbenchPage page = window.getActivePage();
+				IContentType contentType = null;
+				try {
+					iFile = file;
+					IContentDescription description = iFile.getContentDescription();
+					if (description != null) {
+						contentType = description.getContentType();
 					}
-				}
-			}
-			return -1;
-		}
+					IEditorDescriptor desc = null;
+					if (contentType != null) {
+						desc = workbench.getEditorRegistry().getDefaultEditor(iFile.getName(), contentType);
+					} else {
+						desc = workbench.getEditorRegistry().getDefaultEditor(iFile.getName());
+					}
+					if (desc != null) {
+						page.openEditor(new FileEditorInput(iFile), desc.getId());
+					} else {
+						// case: there is no default editor for the file
+						page.openEditor(new FileEditorInput(iFile), "org.eclipse.ui.DefaultTextEditor");
+					}
 
-		private int getInvariantLine(IFile iFile, FSTInvariant inv) {
-			for (FSTRole r : inv.getRole().getFSTClass().getRoles()) {
-				if (r.getFile().equals(iFile)) {
-					for (FSTInvariant i : r.getClassFragment().getInvariants()) {
-						if (i.compareTo(inv)==0) {
-							return i.getLine();
-						}
-					}
+				} catch (CoreException e) {
+					UIPlugin.getDefault().logError(e);
 				}
 			}
-			return -1;
-		}
-
-		private int getMethodLine(IFile iFile, FSTMethod meth) {
-			for (FSTRole r : meth.getRole().getFSTClass().getRoles()) {
-				if (r.getFile().equals(iFile)) {
-					for (FSTMethod m : r.getClassFragment().getMethods()) {
-						if (m.compareTo(meth)==0) {
-							return m.getLine();
-						}
-					}
-				}
-			}
-			return -1;
 		}
 
 	};
@@ -479,7 +447,8 @@ public class Outline extends ViewPart implements ICurrentBuildListener, IPropert
 
 				for (IAction curAction : actionOfProv) {
 					curAction.addPropertyChangeListener(Outline.this);
-					if (curAction instanceof ProviderAction && ((ProviderAction) curAction).getLabelProvider().getOutlineType() == selectedOutlineType) {
+					if (curAction instanceof ProviderAction
+							&& ((ProviderAction) curAction).getLabelProvider().getOutlineType() == selectedOutlineType) {
 						ActionContributionItem item = new ActionContributionItem(curAction);
 
 						item.fill(fMenu, -1);
@@ -536,7 +505,9 @@ public class Outline extends ViewPart implements ICurrentBuildListener, IPropert
 
 											// recreate the context menu in case
 											// we switched to another model
-											if (contextMenu == null || contextMenu.getFeatureModel() != ((FeatureModelEditor) active_editor).getFeatureModel()) {
+											if (contextMenu == null
+													|| contextMenu.getFeatureModel() != ((FeatureModelEditor) active_editor)
+															.getFeatureModel()) {
 												if (contextMenu != null) {
 													// the listener isn't
 													// recreated, if it still
@@ -546,8 +517,8 @@ public class Outline extends ViewPart implements ICurrentBuildListener, IPropert
 													// model
 													viewer.removeDoubleClickListener(contextMenu.dblClickListener);
 												}
-												contextMenu = new FmOutlinePageContextMenu(getSite(), (FeatureModelEditor) active_editor, viewer,
-														((FeatureModelEditor) active_editor).getFeatureModel());
+												contextMenu = new FmOutlinePageContextMenu(getSite(), (FeatureModelEditor) active_editor,
+														viewer, ((FeatureModelEditor) active_editor).getFeatureModel());
 											}
 
 										} else {
@@ -558,12 +529,12 @@ public class Outline extends ViewPart implements ICurrentBuildListener, IPropert
 									}
 
 									if (viewer.getLabelProvider() instanceof OutlineLabelProvider && iFile != null) {
-										((OutlineLabelProvider) viewer.getLabelProvider()).colorizeItems(viewer.getTree().getItems(), iFile);
+										((OutlineLabelProvider) viewer.getLabelProvider())
+												.colorizeItems(viewer.getTree().getItems(), iFile);
 									}
 									viewer.getControl().setRedraw(true);
 									viewer.getControl().setEnabled(true);
 									viewer.refresh();
-
 								}
 							}
 							return Status.OK_STATUS;
@@ -690,7 +661,8 @@ public class Outline extends ViewPart implements ICurrentBuildListener, IPropert
 		if (event.getSource() instanceof ProviderAction && ((ProviderAction) event.getSource()).isChecked()) {
 			for (IAction curAction : actionOfProv) {
 				if (curAction != event.getSource()) {
-					if (((ProviderAction) event.getSource()).getLabelProvider().getOutlineType() == ((ProviderAction) curAction).getLabelProvider().getOutlineType()) {
+					if (((ProviderAction) event.getSource()).getLabelProvider().getOutlineType() == ((ProviderAction) curAction)
+							.getLabelProvider().getOutlineType()) {
 						curAction.setChecked(false);
 					}
 				}

@@ -23,9 +23,10 @@ package de.ovgu.featureide.core.fstmodel;
 import org.eclipse.core.resources.IFile;
 
 /**
- * TODO description
+ *  Class to distinguish between roles with and without contracts in Collaboration Outline
  * 
- * @author stefankr
+ * @author Stefan Krueger
+ * @author Florian Proksch
  */
 public class FSTContractedRole extends FSTRole {
 

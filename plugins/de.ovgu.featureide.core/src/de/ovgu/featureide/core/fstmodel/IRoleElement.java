@@ -4,50 +4,59 @@
  * This file is part of FeatureIDE.
  * 
  * FeatureIDE is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
+ * it under the terms of the GNU Lesser General License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
  * FeatureIDE is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ * GNU Lesser General License for more details.
  * 
- * You should have received a copy of the GNU Lesser General Public License
+ * You should have received a copy of the GNU Lesser General License
  * along with FeatureIDE.  If not, see <http://www.gnu.org/licenses/>.
  *
  * See http://www.fosd.de/featureide/ for further information.
  */
 package de.ovgu.featureide.core.fstmodel;
 
+import org.eclipse.core.resources.IFile;
+
 
 /**
  * TODO description
  * 
- * @author "Andy Kenner"
+ * @author Andy Kenner
  */
 public interface IRoleElement {
 
 	/**
 	 * @return the javaDocComment
 	 */
-	public abstract String getJavaDocComment();
+	String getJavaDocComment();
 
 	/**
 	 * @param javaDocComment the javaDocComment to set
 	 */
-	public abstract void setJavaDocComment(String javaDocComment);
+	void setJavaDocComment(String javaDocComment);
 
+	IFile getFile();
+	
 	/**
 	 * @return
 	 */
-	public abstract FSTRole getRole();
+	FSTRole getRole();
 	
-	public abstract String getFullName();
+	String getFullName();
 
 	/**
 	 * @param role
 	 */
-	public abstract void setRole(FSTRole role);
+	void setRole(FSTRole role);
+
+	/**
+	 * @return
+	 */
+	int getLine();
 
 }

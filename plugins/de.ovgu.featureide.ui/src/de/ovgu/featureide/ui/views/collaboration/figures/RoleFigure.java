@@ -54,6 +54,7 @@ import de.ovgu.featureide.core.fstmodel.preprocessor.FSTDirective;
 import de.ovgu.featureide.fm.core.FMCorePlugin;
 import de.ovgu.featureide.ui.views.collaboration.GUIDefaults;
 import de.ovgu.featureide.ui.views.collaboration.action.ShowFieldsMethodsAction;
+import de.ovgu.featureide.ui.views.collaboration.filter.FilteredFstRole;
 import de.ovgu.featureide.ui.views.collaboration.model.CollaborationModelBuilder;
 
 /**
@@ -72,6 +73,7 @@ public class RoleFigure extends Figure implements GUIDefaults{
 	
 	private IFolder featureFolder;
 	private FSTRole role;
+	private FilteredFstRole filteredRole;
 
 	/**
 	 * This array describes the selection status of the method and field filter.
@@ -207,7 +209,9 @@ public class RoleFigure extends Figure implements GUIDefaults{
 			add(panel);
 //		}
 	}
-
+	public RoleFigure(FilteredFstRole filteredRole){
+		this.filteredRole = filteredRole;
+	}
 	
 
 	private void createContentForDefault() {

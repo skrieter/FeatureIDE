@@ -51,6 +51,8 @@ import de.ovgu.featureide.core.fstmodel.preprocessor.FSTDirective;
 import de.ovgu.featureide.ui.UIPlugin;
 import de.ovgu.featureide.ui.views.collaboration.figures.RoleFigure;
 import de.ovgu.featureide.ui.views.collaboration.figures.RoleFigureLabel;
+import de.ovgu.featureide.ui.views.collaboration.filter.FilterController;
+import de.ovgu.featureide.ui.views.collaboration.filter.FilteredFstRole;
 import de.ovgu.featureide.ui.views.collaboration.outline.Outline;
 
 /**
@@ -71,7 +73,8 @@ public class RoleEditPart extends AbstractGraphicalEditPart {
 
 	@Override
 	protected IFigure createFigure() {
-		return new RoleFigure(getRoleModel());
+		FilteredFstRole filteredRole = new FilteredFstRole(FilterController.getSelectedFilter(), getRoleModel());
+		return new RoleFigure(filteredRole);
 	}
 
 	@Override

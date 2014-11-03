@@ -20,6 +20,8 @@
  */
 package de.ovgu.featureide.ui.views.collaboration.filter;
 
+import org.eclipse.jface.action.IAction;
+
 /**
  * TODO description
  * 
@@ -27,26 +29,27 @@ package de.ovgu.featureide.ui.views.collaboration.filter;
  */
 public enum Filter {
 	
-	SHOW_FIELDS("Show Fields"),
-	SHOW_METHODS("Show Methods"),
-	SHOW_METHOD_CONTRACTS("Show Method Contracts"),
-	SHOW_CLASS_INVARIANTS("Show Class Invariants"),
-	HIDE_PARAMETERS("Hide Parameter/Types"),
-	PUBLIC("Public"),
-	PRIVATE("Private"),
-	PROTECTED("Protected"),
-	DEFAULT("Default"),
-	SELECT_ALL("Select All"),
-	DESELECT_ALL("Deselect All");
+	SHOW_FIELDS(new FilterAction("Show Fields")),
+	SHOW_METHODS(new FilterAction("Show Methods")),
+	SHOW_METHOD_CONTRACTS(new FilterAction("Show Method Contracts")),
+	SHOW_CLASS_INVARIANTS(new FilterAction("Show Class Invariants")),
+	HIDE_PARAMETERS(new FilterAction("Hide Parameter/Types")),
+	PUBLIC(new FilterAction("Public")),
+	PRIVATE(new FilterAction("Private")),
+	PROTECTED(new FilterAction("Protected")),
+	DEFAULT(new FilterAction("Default")),
+	SELECT_ALL(new FilterAction("Select All")),
+	DESELECT_ALL(new FilterAction("Deselect All"));
 	
-	private String filterName;
+	private IAction filterAction;
 	
-	Filter(String name){
-		filterName = name;
+	Filter(IAction filterAction){
+		this.filterAction = filterAction;
+		
 	}
 	
-	public String getName(){
-		return filterName;
+	public IAction getFilterAction(){
+		return this.filterAction;
 	}
 	
 	

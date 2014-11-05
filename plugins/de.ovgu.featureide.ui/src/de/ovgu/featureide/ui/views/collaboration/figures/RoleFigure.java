@@ -197,17 +197,18 @@ public class RoleFigure extends Figure implements GUIDefaults{
 			}
 			setOpaque(true);
 
-			if (isFieldMethodFilterActive()) {
-				createContentForFieldMethodFilter();
-			} else {
-				createContentForDefault();
-			}
-
+//			if (isFieldMethodFilterActive()) {
+//				createContentForFieldMethodFilter();
+//			} else {
+//				createContentForDefault();
+//			}
+			panel.add(new RoleFigureFields(role.getClassFragment().getFields()));
 			Dimension size = getSize();
 			size.expand(0, gridLayout.marginHeight * 2);
 			setSize(size);
 			add(panel);
 //		}
+			
 	}
 	public RoleFigure(FilteredFstRole filteredRole){
 		this.filteredRole = filteredRole;

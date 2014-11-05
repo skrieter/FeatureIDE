@@ -416,7 +416,6 @@ public class CollaborationView extends ViewPart implements GUIDefaults, ICurrent
 		filterAction.setEnabled(isNotEmpty);
 		delAction.setEnabled(isNotEmpty);
 		showUnselectedAction.setEnabled(isNotEmpty);
-		// XYZ - Andy
 		showEmptyRolesAction.setEnabled(isNotEmpty);
 		
 		saveCursorPosition();
@@ -425,7 +424,6 @@ public class CollaborationView extends ViewPart implements GUIDefaults, ICurrent
 		menuMgr.add(filterAction);
 		menuMgr.add(showUnselectedAction);
 		menuMgr.add(delAction);
-		// XYZ - Andy
 		menuMgr.add(showEmptyRolesAction);
 		
 		if (featureProject.getComposer().showContextFieldsAndMethods()) {

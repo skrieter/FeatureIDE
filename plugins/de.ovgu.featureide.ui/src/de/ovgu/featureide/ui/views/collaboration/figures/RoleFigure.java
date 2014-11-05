@@ -54,6 +54,7 @@ import de.ovgu.featureide.core.fstmodel.preprocessor.FSTDirective;
 import de.ovgu.featureide.fm.core.FMCorePlugin;
 import de.ovgu.featureide.ui.views.collaboration.GUIDefaults;
 import de.ovgu.featureide.ui.views.collaboration.action.ShowFieldsMethodsAction;
+import de.ovgu.featureide.ui.views.collaboration.model.CollaborationModelBuilder;
 
 /**
  * <code>RoleFigure</code> represents the graphical representation of a 
@@ -194,20 +195,36 @@ public class RoleFigure extends Figure implements GUIDefaults{
 			}
 			setOpaque(true);
 
-//			if (isFieldMethodFilterActive()) {
-//				createContentForFieldMethodFilter();
-//			} else {
-//				createContentForDefault();
-//			}
-			panel.add(new RoleFigureFields(role.getClassFragment().getFields()));
+			if (isFieldMethodFilterActive()) {
+				createContentForFieldMethodFilter();
+			} else {
+				createContentForDefault();
+			}
+
 			Dimension size = getSize();
 			size.expand(0, gridLayout.marginHeight * 2);
 			setSize(size);
 			add(panel);
 //		}
-			
 	}
-	
+
+	/**
+	 * @param showEmptyRoles
+	 * @param fieldCount
+	 * @param methodCount
+	 * @return
+	 */
+	private boolean needToShowRole() {
+		boolean showEmptyRoles = CollaborationModelBuilder.showEmptyRoles();
+		int fieldCount = getCountForField();
+		System.out.println("---needtoShow-fieldCount-- " + fieldCount);
+		int methodCount = getCountForMethod();
+		System.out.println("---needtoShow-methodCount-- " + methodCount);
+		
+		return (fieldCount > 0 || methodCount > 0)
+				|| (fieldCount == 0 && methodCount == 0 && showEmptyRoles);
+		
+	}
 
 	private void createContentForDefault() {
 		Figure tooltipContent = new Figure();
@@ -216,8 +233,10 @@ public class RoleFigure extends Figure implements GUIDefaults{
 		
 		if (!(role instanceof FSTArbitraryRole) && role.getDirectives().isEmpty()) {
 			int fieldCount = getCountForField();
+			System.out.println("--ForDefault-fieldCount " + fieldCount);
 			createFieldContent(tooltipContent);
 			int methodCount = getCountForMethod();
+			System.out.println("--ForDefault-methodCount " + methodCount);
 			createMethodContent(tooltipContent);
 			Object[] invariant = createInvariantContent(tooltipContent);
 			addLabel(new Label("Fields: " + fieldCount + " Methods: "	+ methodCount + " Invariants: " + ((Integer)invariant[0]) + " "));
@@ -248,11 +267,13 @@ public class RoleFigure extends Figure implements GUIDefaults{
 				if (showOnlyFields()) {
 					fieldCount = getCountForField();
 					createFieldContent(tooltipContent);
+					System.out.println("--ONLY fieldCount- " + fieldCount);
 				}
 				
 				if (showOnlyMethods()) {
 					methodCount = getCountForMethod();
-					createMethodContent(tooltipContent);					
+					createMethodContent(tooltipContent);
+					System.out.println("--ONLY methodCount- " + methodCount);
 				}
 				else if (showContracts()) {
 					methodCount = getCountForMethodContentContractCreate(tooltipContent);

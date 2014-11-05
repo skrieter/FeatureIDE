@@ -43,7 +43,6 @@ import org.eclipse.gef.ui.actions.PrintAction;
 import org.eclipse.gef.ui.parts.GraphicalViewerImpl;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -101,8 +100,6 @@ import de.ovgu.featureide.ui.views.collaboration.action.ShowFieldsMethodsAction;
 import de.ovgu.featureide.ui.views.collaboration.action.ShowUnselectedAction;
 import de.ovgu.featureide.ui.views.collaboration.editparts.CollaborationEditPart;
 import de.ovgu.featureide.ui.views.collaboration.editparts.GraphicalEditPartFactory;
-import de.ovgu.featureide.ui.views.collaboration.filter.Filter;
-import de.ovgu.featureide.ui.views.collaboration.filter.FilterController;
 import de.ovgu.featureide.ui.views.collaboration.model.CollaborationModelBuilder;
 
 /**
@@ -416,6 +413,7 @@ public class CollaborationView extends ViewPart implements GUIDefaults, ICurrent
 		filterAction.setEnabled(isNotEmpty);
 		delAction.setEnabled(isNotEmpty);
 		showUnselectedAction.setEnabled(isNotEmpty);
+		// XYZ - Andy
 		showEmptyRolesAction.setEnabled(isNotEmpty);
 		
 		saveCursorPosition();
@@ -424,20 +422,18 @@ public class CollaborationView extends ViewPart implements GUIDefaults, ICurrent
 		menuMgr.add(filterAction);
 		menuMgr.add(showUnselectedAction);
 		menuMgr.add(delAction);
+		// XYZ - Andy
 		menuMgr.add(showEmptyRolesAction);
 		
 		if (featureProject.getComposer().showContextFieldsAndMethods()) {
 			MenuManager methodsFieldsSubMenu = new MenuManager("Show Fields and Methods");
 			
-			for (Filter f : Filter.values()) {
-				de.ovgu.featureide.ui.views.collaboration.filter.FilterAction action = (de.ovgu.featureide.ui.views.collaboration.filter.FilterAction)f.getFilterAction();
-				action.setFilter(f);
-				action.setCollaborationView(this);
-				methodsFieldsSubMenu.add(action);
+			for (int i = 0; i < setFieldsMethodsActions.length; i++) {
+				methodsFieldsSubMenu.add(setFieldsMethodsActions[i]);
+				setFieldsMethodsActions[i].setChecked(false);
 				
-				if (f.equals(Filter.HIDE_PARAMETERS) || 
-				    f.equals(Filter.SHOW_CLASS_INVARIANTS) ||
-				    f.equals(Filter.DEFAULT)) {
+				if ((i == ShowFieldsMethodsAction.ONLY_INVARIANTS) || (i == ShowFieldsMethodsAction.PRIVATE_FIELDSMETHODS)
+						|| (i == ShowFieldsMethodsAction.HIDE_PARAMETERS_AND_TYPES)) {
 					methodsFieldsSubMenu.add(new Separator());
 				}
 			}
@@ -504,6 +500,10 @@ public class CollaborationView extends ViewPart implements GUIDefaults, ICurrent
 		exportAsAction = new ExportAsAction(EXPORT_AS_LABEL,viewer);
 		showUnselectedAction = new ShowUnselectedAction(UNSELECTED_LABEL, this);
 		showEmptyRolesAction = new ShowEmptyRolesAction(EMPTY_ROLE_LABEL, this);
+		
+		for (int i = 0; i < FIELD_METHOD_LABEL_NAMES.length; i++) {
+			setFieldsMethodsActions[i] = new ShowFieldsMethodsAction(FIELD_METHOD_LABEL_NAMES[i], FIELD_METHOD_IMAGES[i], this, i);
+		}
 		
 		printAction = new PrintAction(this);
 		

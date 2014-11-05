@@ -21,7 +21,6 @@
 package de.ovgu.featureide.ui.views.collaboration.filter;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 
 import de.ovgu.featureide.core.fstmodel.*;

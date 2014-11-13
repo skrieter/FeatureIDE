@@ -20,6 +20,8 @@
  */
 package de.ovgu.featureide.ui.views.collaboration.filter;
 
+import java.util.EnumSet;
+
 import org.eclipse.jface.action.Action;
 
 /**

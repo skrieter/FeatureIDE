@@ -43,6 +43,7 @@ import org.eclipse.gef.ui.actions.PrintAction;
 import org.eclipse.gef.ui.parts.GraphicalViewerImpl;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -100,6 +101,7 @@ import de.ovgu.featureide.ui.views.collaboration.action.ShowFieldsMethodsAction;
 import de.ovgu.featureide.ui.views.collaboration.action.ShowUnselectedAction;
 import de.ovgu.featureide.ui.views.collaboration.editparts.CollaborationEditPart;
 import de.ovgu.featureide.ui.views.collaboration.editparts.GraphicalEditPartFactory;
+import de.ovgu.featureide.ui.views.collaboration.filter.Filter;
 import de.ovgu.featureide.ui.views.collaboration.model.CollaborationModelBuilder;
 
 /**
@@ -298,9 +300,10 @@ public class CollaborationView extends ViewPart implements GUIDefaults, ICurrent
 	private void contributeToActionBars() {
 		IActionBars bars = getViewSite().getActionBars();
 		
-		bars.setGlobalActionHandler(ActionFactory.PRINT.getId(), printAction);
+		//bars.setGlobalActionHandler(ActionFactory.PRINT.getId(), printAction);
 		
 		fillLocalToolBar(bars.getToolBarManager());
+		
 	}
 	
 	/*
@@ -428,14 +431,18 @@ public class CollaborationView extends ViewPart implements GUIDefaults, ICurrent
 		if (featureProject.getComposer().showContextFieldsAndMethods()) {
 			MenuManager methodsFieldsSubMenu = new MenuManager("Show Fields and Methods");
 			
-			for (int i = 0; i < setFieldsMethodsActions.length; i++) {
-				methodsFieldsSubMenu.add(setFieldsMethodsActions[i]);
-				setFieldsMethodsActions[i].setChecked(false);
-				
-				if ((i == ShowFieldsMethodsAction.ONLY_INVARIANTS) || (i == ShowFieldsMethodsAction.PRIVATE_FIELDSMETHODS)
-						|| (i == ShowFieldsMethodsAction.HIDE_PARAMETERS_AND_TYPES)) {
+			for (Filter filter : Filter.values()) {
+				de.ovgu.featureide.ui.views.collaboration.filter.FilterAction filterAction = (de.ovgu.featureide.ui.views.collaboration.filter.FilterAction)filter.getFilterAction();
+				filterAction.setFilter(filter);
+
+				methodsFieldsSubMenu.add(filterAction);
+				if(filter.equals(Filter.DEFAULT)||
+				   filter.equals(Filter.SHOW_CLASS_INVARIANTS)||
+				   filter.equals(Filter.HIDE_PARAMETERS)){
 					methodsFieldsSubMenu.add(new Separator());
 				}
+				
+				
 			}
 			menuMgr.add(methodsFieldsSubMenu);
 		}

@@ -37,9 +37,25 @@ public class FilterController {
 	
 	public static void addSelectedFilter(Filter filter){
 		filter.getFilterAction().setChecked(true);
-		selectedFilter.add(filter);
-		handleSelectAll(filter);
-		handleDeselectAll(filter);
+		if(filter.equals(Filter.SELECT_ALL)){
+			for(Filter f : Filter.values()){
+				if(!f.equals(Filter.DESELECT_ALL) && !f.equals(Filter.HIDE_PARAMETERS)){
+					f.getFilterAction().setChecked(true);
+					selectedFilter.add(f);
+				}
+			}
+		}
+		else if(filter.equals(Filter.DESELECT_ALL)){
+			for(Filter f : Filter.values()){
+				if(!f.equals(Filter.DESELECT_ALL)){
+					f.getFilterAction().setChecked(false);
+				}
+			}
+		}
+		else{
+			selectedFilter.add(filter);
+		}
+		
 		
 	}
 	public static void addSelectedFilter(EnumSet<Filter> filters){
@@ -73,30 +89,5 @@ public class FilterController {
 		
 	}
 	
-	private static void handleSelectAll(Filter filter){
-		if(filter.equals(Filter.SELECT_ALL)){
-			selectedFilter.addAll(EnumSet.complementOf(EnumSet.of(Filter.DESELECT_ALL)));
-			selectedFilter.forEach(new Consumer<Filter>(){
-				@Override
-				public void accept(Filter arg0) {
-					arg0.getFilterAction().setChecked(true);
-					
-				}
-			});
-		}
-	}
-	
-	private static void handleDeselectAll(Filter filter){
-		if(filter.equals(Filter.DESELECT_ALL)){
-			selectedFilter.forEach(new Consumer<Filter>(){
-				@Override
-				public void accept(Filter arg0) {
-					arg0.getFilterAction().setChecked(false);
-					
-				}
-			});
-			selectedFilter.removeAll(EnumSet.allOf(Filter.class));
-		}
-	}
 	
 }

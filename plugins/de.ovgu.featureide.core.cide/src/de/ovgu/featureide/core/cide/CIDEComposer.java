@@ -21,7 +21,32 @@ public class CIDEComposer extends ComposerExtensionClass {
 		
 	public void performFullBuild(IFile config) {
 		System.out.println("starting CIDE build!!!");
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		FeatureModel featureModel = featureProject.getFeatureModel();
+		Configuration configuration = new Configuration(featureModel);
+		ConfigurationReader reader = new ConfigurationReader(configuration);
+		try {
+			reader.readFromFile(config);
+		} catch (CoreException e) {
+			CIDECorePlugin.getDefault().logError(e);
+		} catch (IOException e) {
+			CIDECorePlugin.getDefault().logError(e);
+		}
 
+		Set<Feature> fideFeatures = new HashSet<Feature>(
+				configuration.getSelectedFeatures());
+
+		Set<IFeature> flist = new HashSet<IFeature>();
+		IProject sourceProject = featureProject.getProject();
+
+		for (Feature f : fideFeatures) {
+			flist.add(new FeatureAdapter(f, FeatureModelWrapper
+					.getInstance(sourceProject)));
+		}
+
+		CreateConfigurationJob job = new CreateConfigurationJob(sourceProject,
+				flist, "OUTPUT");
+		job.schedule();
 	}
 	
 	

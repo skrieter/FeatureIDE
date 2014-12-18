@@ -163,11 +163,11 @@ public abstract class ComposerExtensionClass implements IComposerExtensionClass 
 
 	public void addCompiler(IProject project, String sourcePath,
 			String configPath, String buildPath) {
-		addNature(project);
+		addNature(project, JAVA_NATURE);
 		addClasspathFile(project, buildPath);
 	}
 	
-	private void addClasspathFile(IProject project, String buildPath) {
+	protected void addClasspathFile(IProject project, String buildPath) {
 		try {
 			JavaProject javaProject = new JavaProject(project, null);
 			IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
@@ -249,16 +249,16 @@ public abstract class ComposerExtensionClass implements IComposerExtensionClass 
 				null, null, null, false, null, false, new IClasspathAttribute[0]);
 	}
 
-	private void addNature(IProject project) {
+	protected void addNature(IProject project, String nature) {
 		try {
-			if (!project.isAccessible() || project.hasNature(JAVA_NATURE))
+			if (!project.isAccessible() || project.hasNature(nature))
 				return;
 
 			IProjectDescription description = project.getDescription();
 			String[] natures = description.getNatureIds();
 			String[] newNatures = new String[natures.length + 1];
 			System.arraycopy(natures, 0, newNatures, 0, natures.length);
-			newNatures[natures.length] = JAVA_NATURE;
+			newNatures[natures.length] = nature;
 			description.setNatureIds(newNatures);
 			project.setDescription(description, null);
 			

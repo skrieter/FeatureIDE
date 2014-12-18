@@ -73,7 +73,7 @@ public class CIDEComposer extends ComposerExtensionClass {
 
 	@Override
 	public boolean createFolderForFeatures() {
-		return true;
+		return false;
 	}
 	
 	@Override

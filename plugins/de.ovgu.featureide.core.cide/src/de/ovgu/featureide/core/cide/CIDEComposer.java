@@ -56,7 +56,7 @@ public class CIDEComposer extends ComposerExtensionClass {
 		}
 
 		CreateConfigurationJob job = new CreateConfigurationJob(sourceProject,
-				flist, "OUTPUT");
+				flist);
 		job.schedule();
 	}
 	

@@ -21,5 +21,24 @@
             name="de.ovgu.featureide.core.cide">
       </newProjectWizard>
    </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <viewerContribution
+            id="de.ovgu.featureide.core.cide.viewerContribution"
+            targetID="#CompilationUnitEditorContext">
+         <action
+               class="de.ovgu.featureide.core.cide.MarkWithFeatureAction"
+               id="de.ovgu.featureide.core.cide.markwithfeatureaction"
+               label="Mark with feature"
+               menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
+               style="push">
+         </action>
+         <menu
+               id="de.ovgu.featureide.ui.MarkWithFeatureMenu"
+               label="MARK"
+               path="additions">
+         </menu>
+      </viewerContribution>
+   </extension>
 
 </plugin>

@@ -11,6 +11,7 @@ import de.ovgu.featureide.core.builder.IComposerExtensionClass;
 
 public class CIDEComposer extends ComposerExtensionClass {
 	protected static final String CIDE_NATURE = "de.ovgu.cide.core.CIDEProjectNature";
+	private static final ArrayList<String[]> TEMPLATES = createTemplates();
 	CIDEModelBuilder cideModelBuilder;
 	
 	public CIDEComposer() {
@@ -54,14 +55,13 @@ public class CIDEComposer extends ComposerExtensionClass {
 		return TEMPLATES;
 	}
 	
-private static final ArrayList<String[]> TEMPLATES = createTempltes();
-	
-	private static ArrayList<String[]> createTempltes() {
-		 ArrayList<String[]> list = new  ArrayList<String[]>(1);
-		 list.add(JAVA_TEMPLATE);
-		 return list;
+
+	private static ArrayList<String[]> createTemplates() {
+		ArrayList<String[]> list = new ArrayList<String[]>(1);
+		list.add(JAVA_TEMPLATE);
+		return list;
 	}
-	
+
 	@Override
 	public void addCompiler(IProject project, String sourcePath,
 			String configPath, String buildPath) {

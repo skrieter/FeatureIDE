@@ -32,6 +32,8 @@ import de.ovgu.featureide.fm.core.ColorschemeTable;
 import de.ovgu.featureide.fm.core.Feature;
 
 public class CIDEModelBuilder extends PPModelBuilder {
+	
+	ColorAnnotationManager colorAnnotationManager = new ColorAnnotationManager(featureProject);
 
 	public CIDEModelBuilder(IFeatureProject featureProject) {
 		super(featureProject);
@@ -56,7 +58,6 @@ public class CIDEModelBuilder extends PPModelBuilder {
 
 				Vector<String> lines = PPComposerExtensionClass
 						.loadStringsFromFile((IFile) res);
-				// System.out.println(lines);
 				boolean classAdded = false;
 				for (String feature : featureNames) {
 					if (/* containsFeature(text, feature) */true) {
@@ -75,7 +76,9 @@ public class CIDEModelBuilder extends PPModelBuilder {
 				}
 			}
 		}
+		
 	}
+	
 
 	@Override
 	public LinkedList<FSTDirective> buildModelDirectivesForFile(
@@ -88,13 +91,9 @@ public class CIDEModelBuilder extends PPModelBuilder {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			try {
 				DocumentBuilder db = dbf.newDocumentBuilder();
-				IPath path = featureProject.getProject().getLocation();
-				System.out.println(path);
-				// Todo: consider OS-specific separators
-				File f = new File("C:\\Projekt\\EclipseNew\\runtime-EclipseApplication\\Test\\ColorAnnotations.xml");
+				File f = new File(featureProject.getProject().getLocation().toFile().getAbsolutePath(), "ColorAnnotations.xml");
 				Document doc = db.parse(f);
 				Integer  integerLineNumber = Integer.valueOf(lineNumber);
-				System.out.println("xml version "+ doc.getXmlVersion());
 			String featureName = getFeatureForLine(lineNumber, doc);
 			if(featureName!=null){
 				FSTDirective d = new FSTDirective();
@@ -148,7 +147,7 @@ public class CIDEModelBuilder extends PPModelBuilder {
 		}
 		return null;
 	}
-
+	
 	@Override
 	protected List<String> getFeatureNames(String expression) {
 		expression = expression.replaceAll("[(]", "");

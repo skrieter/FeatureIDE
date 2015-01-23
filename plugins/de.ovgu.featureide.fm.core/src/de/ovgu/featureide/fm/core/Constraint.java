@@ -25,8 +25,10 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import org.prop4j.Literal;
 import org.prop4j.Node;
+import org.prop4j.Implies;
+import org.prop4j.Literal;
+import org.prop4j.Not;
 import org.prop4j.NodeWriter;
 import org.prop4j.SatSolver;
 
@@ -255,4 +257,28 @@ public class Constraint implements PropertyConstants {
 		return deadFeatures;
 	}
 
+	/**
+	 * Checks whether a constraint is "simple", i.e. whether it has the form
+	 * "f => g" or "f => not g" where f and g are features.
+	 * @return True if the constraint is simple, otherwise false.
+	 */
+	public boolean isSimple() {
+		Node[] children = getNode().getChildren();
+		
+		if (getNode() instanceof Implies) {
+			Node f = children[0];
+			Node g = children[1];
+
+			if (f instanceof Literal) {
+				Node[] gChildren = g.getChildren();
+				
+				if (g instanceof Literal ||
+						(g instanceof Not && gChildren[0] instanceof Literal && ((Literal) gChildren[0]).positive)) { 
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
 }

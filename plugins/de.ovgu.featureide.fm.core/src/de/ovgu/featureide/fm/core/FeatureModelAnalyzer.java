@@ -914,4 +914,20 @@ public class FeatureModelAnalyzer {
 	public Collection<Feature> getCachedDeadFeatures() {
 		return cachedDeadFeatures;
 	}
+
+	/**
+	 * Checks whether the feature model contains "complex" constraints, i.e.
+	 * constraints that don't have the form "f => g" or "f => not g". 
+	 * 
+	 * @return true if the feature model contains complex constraints, 
+	 * otherwise false.
+	 */
+	public boolean hasComplexConstraints() {
+		for (Constraint c : fm.getConstraints()) {
+			if (!c.isSimple()) {
+				return true;
+			}
+		}
+		return false;		
+	}
 }

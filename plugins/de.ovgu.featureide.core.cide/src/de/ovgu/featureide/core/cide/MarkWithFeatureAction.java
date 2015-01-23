@@ -4,6 +4,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IEditorActionDelegate;
@@ -25,28 +26,35 @@ public class MarkWithFeatureAction implements IEditorActionDelegate,
 	
 	ColorXmlManager colorXmlManager;
 	SelectFeatureDialog selectFeatureDialog = new SelectFeatureDialog();
-
 	public ITextEditor activeEditor = null;
+	
 
 
 	public void run(IAction action) {
+	
+		ISelectionProvider selectionProvider = activeEditor .getSelectionProvider(); 
+		ISelection selection = selectionProvider.getSelection(); 
+		ITextSelection textSelection = (ITextSelection) selection;
+		
+		Integer startLine = Integer.valueOf(textSelection.getStartLine() + 1);
+		Integer endLine = Integer.valueOf(textSelection.getEndLine() + 1);
 	
 		FileEditorInput input = (FileEditorInput)activeEditor.getEditorInput() ;
 	    IFile file = input.getFile();
 	    IProject activeProject = file.getProject();
 	    String activeProjectPath = activeProject.getLocation().toFile().getAbsolutePath();
-		System.out.println(activeProjectPath); 
 		
 		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
 		
 		// Magic --> eintragen in XML
-		String feature = selectFeatureDialog.open(activeEditor);
 		
-		this.colorXmlManager.addAnnotation();
+		//String feature = selectFeatureDialog.open(activeEditor);
+		
+		this.colorXmlManager.addAnnotation(activeProjectPath,startLine,endLine);
 
 		//ColorAnnotationManager colorAnnotationManager = new ColorAnnotationManager(); 
-		ISelectionProvider selectionProvider = activeEditor .getSelectionProvider(); 
-		ISelection selection = selectionProvider.getSelection();
+		
+		
 
 	}
 
@@ -60,7 +68,6 @@ public class MarkWithFeatureAction implements IEditorActionDelegate,
 	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
 		if (targetEditor instanceof ITextEditor) {
 			activeEditor = (ITextEditor) targetEditor;
-			System.out.println("setActiveEditor: "+activeEditor);
 		}
 	}
 	

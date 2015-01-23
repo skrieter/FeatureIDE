@@ -76,4 +76,12 @@ public class Literal extends Node {
 		return (var.equals(((Literal) node).var)) && (positive == ((Literal) node).positive);
 	}
 	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (positive ? 1231 : 1237);
+		result = prime * result + ((var == null) ? 0 : var.hashCode());
+		return result;
+	}
 }

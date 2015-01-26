@@ -75,7 +75,6 @@ public class ColorXmlManager {
 	 * Kurzes Beschreibung
 	 */
 	private void createXml() {
-
 		try {
 			m_rootElement = m_doc.createElement("root");
 			m_doc.appendChild(m_rootElement);
@@ -92,109 +91,87 @@ public class ColorXmlManager {
 			transformer.transform(source, result);
 
 		} catch (TransformerException tfe) {
-
 			tfe.printStackTrace();
 		}
-
 	}
 
-	public void addAnnotation(String activeProjectPath, Integer startLine,Integer endLine) {
+	public void addAnnotation(String activeProjectPath, Integer startLine, Integer endLine, String feature) {
+		Element filesElement = checkOrCreateElement(m_rootElement,"files");
+		Element fileElement = getFileNodeByFilename(activeProjectPath);
+		if (fileElement == null) {
+			// create file element for active file with start and end line numbers
+			Element filesParent = checkOrCreateElement(filesElement,"file");
+			setAttributeContent(filesParent, "path", activeProjectPath);
+			//Element linesElement = checkOrCreateElement(fileElement, "lines");
+			
+			
+			// add selected line
+			Element linesParent = checkOrCreateElement(filesParent, "lines");
+			Element lineParent = checkOrCreateElement(linesParent, "line");
+			setAttributeContent(lineParent, "startLine", startLine.toString());
+			setAttributeContent(lineParent, "endLine", endLine.toString());
+			setAttributeContent(lineParent, "feature", feature);
+			
+		} else {
+			Element possibleMatchedLine = getLineNodesByStartEndline(startLine, endLine);
+			if(possibleMatchedLine == null){
+				Element linesParent = checkOrCreateElement(fileElement, "lines");
+				Element lineElement = checkOrCreateElement(linesParent, "line");
+				//Element linesElement = m_doc.createElement("line");
+				//linesParent.appendChild(lineElement);
+				lineElement.setAttribute("startLine", startLine.toString());
+				lineElement.setAttribute("endLine", endLine.toString());
+				lineElement.setAttribute("feature", feature);
+			}
+			else{
+			
+				
+			}
+			// add selected line 
+		}
 
-		// prüfen/hinzufügen der <file> Elemente
-		NodeList fileList = m_rootElement.getElementsByTagName("file");
-	
-		if (fileList != null && fileList.getLength() > 0) {
+		writeXml();
+	}
 
-			if (fileList != null && fileList.getLength() > 0) {
+	private Element checkOrCreateElement(Element parent, String elementTag) {
+		NodeList elementList = parent.getElementsByTagName(elementTag);
+		if (elementList != null && elementList.getLength() > 0) {
+			return (Element) elementList.item(0);
+		}
+		Element element = m_doc.createElement(elementTag);
+		parent.appendChild(element);
+		return element;
+	}
 
-				for (int i = 0; i < fileList.getLength(); i++) {
-					
-					Element fileElement = (Element) fileList.item(i);
-					// prüfen/hinzufügen der <line> Elemente
-					NodeList lineList = m_rootElement.getElementsByTagName("line");
-
-					if (lineList != null && lineList.getLength() > 0) {
-						
-						for (int j = 0; j < lineList.getLength(); j++) {
-							// Line
-							Element lineElement = (Element) lineList.item(j);
-							
-							// Prüfe ob Attribut schon vorhanden
-							if (!lineElement.hasAttribute("startline")) {
-								lineElement.setAttribute("startline",startLine.toString());
-							}
-							if (!lineElement.hasAttribute("endline")) {
-								lineElement.setAttribute("endline",endLine.toString());
-							}
-							if (!lineElement.hasAttribute("feature")) {
-								lineElement.setAttribute("feature", "");
-							} else {
-								//wenn Attribut noch nicht vorhanden dann Anlegen
-								if (!lineElement.getAttribute("startline").equals(startLine.toString())) {
-									lineElement.setAttribute("startLine",startLine.toString());
-								}
-								if (!lineElement.getAttribute("endline").equals(endLine.toString())) {
-									lineElement.setAttribute("endline",endLine.toString());
-								}
-								// Hier noch Abfrage für Feature
-							}
-						}
-						// File
-						// Prüfe ob Attribut schon vorhanden
-						if (!fileElement.hasAttribute("path")) {
-							fileElement.setAttribute("path", activeProjectPath);
-						} else {
-							if (!fileElement.getAttribute("path").equals(activeProjectPath)) {
-								fileElement.setAttribute("path",activeProjectPath);
-								System.out.println(fileElement.getAttribute("path"));
-							}
-						}
-
-					} else {
-						Element line = m_doc.createElement("line");
-						m_rootElement.appendChild(line);
-						line.setAttribute("startline", startLine.toString());
-						line.setAttribute("endline", endLine.toString());
-						line.setAttribute("feature", "");
-					}
-				}
+	private Element getFileNodeByFilename(String activeFile) {
+		NodeList fileList = m_doc.getElementsByTagName("file");
+		for (int i = 0; i < fileList.getLength();i++){
+			Element fileElement = (Element) fileList.item(i);
+			if(fileElement.getAttribute("path").equals(activeFile)){
+				return fileElement;
 			}
 		}
+		return null;
+	}
 
-		else {
-			Element file = m_doc.createElement("file");
-			m_rootElement.appendChild(file);
-			file.setAttribute("path", activeProjectPath);
+	private Element getLineNodesByStartEndline(Integer startLine, Integer endLine) {
+		
+		NodeList lineList = m_doc.getElementsByTagName("line");
+
+		for (int i = 0; i < lineList.getLength();i++){
+			Element lineElement = (Element) lineList.item(i);
+			if(lineElement.getAttribute("startLine").equals(startLine.toString()) && lineElement.getAttribute("endLine").equals(endLine.toString())){
+				return lineElement;
+			}
 		}
+		return null;
+	}
 
-		/*
-		 * Element file = m_doc.createElement("file");
-		 * m_rootElement.appendChild(file);
-		 * 
-		 * if (!file.hasAttribute("path")) { file.setAttribute("path",
-		 * activeProjectPath); } else { if
-		 * (!file.getAttribute("path").equals(activeProjectPath)) {
-		 * file.setAttribute("path", activeProjectPath);
-		 * System.out.println(file.getAttribute("path")); } }
-		 * 
-		 * // add line element Element line = m_doc.createElement("line");
-		 * file.appendChild(line);
-		 * 
-		 * if (!line.hasAttribute("startline")) { line.setAttribute("startline",
-		 * startLine.toString()); } if (!line.hasAttribute("endline")) {
-		 * line.setAttribute("endline", endLine.toString()); } if
-		 * (!line.hasAttribute("feature")) { line.setAttribute("feature", ""); }
-		 * 
-		 * // ist file für meine datei
-		 * 
-		 * // wenn nicht
-		 * 
-		 * // childnode.setTextContent("12-34-56");
-		 * 
-		 * // writing xml file
-		 */
-		writeXml();
 
+	private void setAttributeContent(Element xmlElement, String attributeName,Object content) {
+		if (!xmlElement.hasAttribute(attributeName)) {
+			xmlElement.setAttribute(attributeName, content.toString());
+		}
 	}
 
 	private void writeXml() {
@@ -208,6 +185,7 @@ public class ColorXmlManager {
 
 			StreamResult output = new StreamResult(m_xmlFile);
 			transformer.transform(source, output);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

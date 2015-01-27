@@ -17,15 +17,10 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.eclipse.ui.texteditor.ITextEditor;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import com.sun.org.apache.xml.internal.security.utils.XPathFactory;
 
 public class ColorXmlManager {
 
@@ -46,7 +41,7 @@ public class ColorXmlManager {
 		m_xmlFile = new File(m_projectPath, m_xmlFileName);
 
 		try {
-			/* std-document facttory handling */
+			/* std-document factory handling */
 			m_docFactory = DocumentBuilderFactory.newInstance();
 			m_docBuilder = m_docFactory.newDocumentBuilder();
 			m_doc = m_docBuilder.newDocument();
@@ -101,80 +96,72 @@ public class ColorXmlManager {
 		}
 	}
 
-	public void addAnnotation(String activeProjectPath, Integer startLine, Integer endLine, String feature) {
-		
+	public void addAnnotation(String activeProjectPath, Integer startLine,
+			Integer endLine, String feature) {
+
 		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
 		XPath xpath = factory.newXPath();
 		try {
-			XPathExpression expression = xpath.compile("root/files/file[@path='"+activeProjectPath+"']");
-			Object o = expression.evaluate(m_doc, XPathConstants.NODE);
-			int i = 0;
+			String fileXPath = "root/files/file[@path='" + activeProjectPath + "']";
+			String featureXPath = "feature[@id='"+feature+"']";
+			String featureAndLinesXPath = "line[@startline='"+startLine.toString()+"' and @endline='"+endLine.toString()+"']";
+			
+			XPathExpression expression = xpath.compile(fileXPath);
+			Node fileNode = (Node) expression.evaluate(m_doc,XPathConstants.NODE);
+			fileNode = appendFileElement(fileNode, activeProjectPath);
+			
+			expression = xpath.compile(featureXPath);
+			Node featureElementNode = (Node)expression.evaluate(fileNode, XPathConstants.NODE);
+			featureElementNode = appendFeatureElement(fileNode, featureElementNode, feature);
+			
+			expression = xpath.compile(featureAndLinesXPath);
+			Element lineElement = (Element)expression.evaluate(featureElementNode, XPathConstants.NODE);
+			appendLineElement(featureElementNode, lineElement, startLine.toString(), endLine.toString());
+			
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
 		}
-		
-		Element filesElement = checkOrCreateElement(m_rootElement,"files");
-		Element fileElement = getFileNodeByFilename(activeProjectPath);
-		if (fileElement == null) {
-			// create file element for active file with start and end line numbers
-			Element filesParent = checkOrCreateElement(filesElement,"file");
-			setAttributeContent(filesParent, "path", activeProjectPath);
-			// add selected line
-			Element linesParent = checkOrCreateElement(filesParent, "lines");
-			Element lineParent = checkOrCreateElement(linesParent, "line");
-			setAttributeContent(lineParent, "startLine", startLine.toString());
-			setAttributeContent(lineParent, "endLine", endLine.toString());
-			setAttributeContent(lineParent, "feature", feature);
-			
-		} else {
-			Element possibleMatchedLine = getLineNodesByStartEndline(startLine, endLine);
-			if(possibleMatchedLine == null){
-				Element linesParent = checkOrCreateElement(fileElement, "lines");
-				possibleMatchedLine = m_doc.createElement("line");
-				linesParent.appendChild(possibleMatchedLine);					
-			}
-			possibleMatchedLine.setAttribute("startLine", startLine.toString());
-			possibleMatchedLine.setAttribute("endLine", endLine.toString());
-			possibleMatchedLine.setAttribute("feature", feature); 
-		}
-
 		writeXml();
 	}
 
-	private Element checkOrCreateElement(Element parent, String elementTag) {
-		NodeList elementList = parent.getElementsByTagName(elementTag);
-		if (elementList != null && elementList.getLength() > 0) {
-			return (Element) elementList.item(0);
+	private Node appendElement(Node parent, Node child, String tagName) {
+		if (child == null) {
+			child = m_doc.createElement(tagName);
+			parent.appendChild(child);
+			return child;
 		}
-		Element element = m_doc.createElement(elementTag);
-		parent.appendChild(element);
-		return element;
+		return (Element) parent.appendChild(child);
 	}
-
-	private Element getFileNodeByFilename(String activeFile) {
-		NodeList fileList = m_doc.getElementsByTagName("file");
-		for (int i = 0; i < fileList.getLength();i++){
-			Element fileElement = (Element) fileList.item(i);
-			if(fileElement.getAttribute("path").equals(activeFile)){
-				return fileElement;
-			}
+	
+	private Node appendLineElement(Node featureElementParent, Node lineElement,String startLine, String endLine){
+		if(lineElement == null){
+			lineElement = appendElement(featureElementParent, lineElement, "line");
+			setAttributeContent((Element)lineElement, "startline", startLine);
+			setAttributeContent((Element)lineElement, "endline", endLine);
 		}
-		return null;
-	}
-
-	private Element getLineNodesByStartEndline(Integer startLine, Integer endLine) {
 		
-		NodeList lineList = m_doc.getElementsByTagName("line");
-
-		for (int i = 0; i < lineList.getLength();i++){
-			Element lineElement = (Element) lineList.item(i);
-			if(lineElement.getAttribute("startLine").equals(startLine.toString()) && lineElement.getAttribute("endLine").equals(endLine.toString())){
-				return lineElement;
-			}
-		}
-		return null;
+		return lineElement;
+		
 	}
-
+	
+	private Node appendFeatureElement(Node fileElementParent, Node featureElement,String featureName){
+		if(featureElement == null){
+			featureElement = appendElement(fileElementParent, featureElement, "feature");
+			setAttributeContent((Element)featureElement, "id", featureName);
+		}
+		
+		return featureElement;
+	}
+	
+	private Node appendFileElement(Node fileElement,String pathName){
+		if(fileElement == null){
+			Element filesElement = m_doc.createElement("files");
+			m_rootElement.appendChild(filesElement);
+			fileElement = appendElement(filesElement, fileElement, "file");
+			setAttributeContent((Element)fileElement, "path", pathName);
+		}
+		return fileElement;
+	}
 
 	private void setAttributeContent(Element xmlElement, String attributeName,Object content) {
 		if (!xmlElement.hasAttribute(attributeName)) {

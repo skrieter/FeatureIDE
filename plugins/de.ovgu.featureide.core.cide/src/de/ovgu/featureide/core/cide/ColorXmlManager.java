@@ -12,6 +12,10 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
 
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.w3c.dom.Attr;
@@ -20,6 +24,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import com.sun.org.apache.xml.internal.security.utils.XPathFactory;
 
 public class ColorXmlManager {
 
@@ -96,15 +102,23 @@ public class ColorXmlManager {
 	}
 
 	public void addAnnotation(String activeProjectPath, Integer startLine, Integer endLine, String feature) {
+		
+		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
+		XPath xpath = factory.newXPath();
+		try {
+			XPathExpression expression = xpath.compile("root/files/file[@path='"+activeProjectPath+"']");
+			Object o = expression.evaluate(m_doc, XPathConstants.NODE);
+			int i = 0;
+		} catch (XPathExpressionException e) {
+			e.printStackTrace();
+		}
+		
 		Element filesElement = checkOrCreateElement(m_rootElement,"files");
 		Element fileElement = getFileNodeByFilename(activeProjectPath);
 		if (fileElement == null) {
 			// create file element for active file with start and end line numbers
 			Element filesParent = checkOrCreateElement(filesElement,"file");
 			setAttributeContent(filesParent, "path", activeProjectPath);
-			//Element linesElement = checkOrCreateElement(fileElement, "lines");
-			
-			
 			// add selected line
 			Element linesParent = checkOrCreateElement(filesParent, "lines");
 			Element lineParent = checkOrCreateElement(linesParent, "line");
@@ -116,18 +130,12 @@ public class ColorXmlManager {
 			Element possibleMatchedLine = getLineNodesByStartEndline(startLine, endLine);
 			if(possibleMatchedLine == null){
 				Element linesParent = checkOrCreateElement(fileElement, "lines");
-				Element lineElement = checkOrCreateElement(linesParent, "line");
-				//Element linesElement = m_doc.createElement("line");
-				//linesParent.appendChild(lineElement);
-				lineElement.setAttribute("startLine", startLine.toString());
-				lineElement.setAttribute("endLine", endLine.toString());
-				lineElement.setAttribute("feature", feature);
+				possibleMatchedLine = m_doc.createElement("line");
+				linesParent.appendChild(possibleMatchedLine);					
 			}
-			else{
-			
-				
-			}
-			// add selected line 
+			possibleMatchedLine.setAttribute("startLine", startLine.toString());
+			possibleMatchedLine.setAttribute("endLine", endLine.toString());
+			possibleMatchedLine.setAttribute("feature", feature); 
 		}
 
 		writeXml();

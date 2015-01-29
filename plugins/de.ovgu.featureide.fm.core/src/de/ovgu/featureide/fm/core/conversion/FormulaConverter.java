@@ -30,20 +30,26 @@ import org.prop4j.NodeReader;
 import org.prop4j.Not;
 
 import de.ovgu.featureide.fm.core.Constraint;
-import de.ovgu.featureide.fm.core.Feature;
 import de.ovgu.featureide.fm.core.FeatureModel;
 
 /**
- * Class that converts any propositional formula into an equivalent feature 
- * model representing that formula.
+ * Class that converts any propositional formula into a product-equivalent 
+ * feature model representing that formula.
  * 
- * This is a proof-of-concept, the resulting feature model is not 
- * optimized for any particular purpose.
+ * Each atomic formula will have a concrete feature in the resulting model.
+ * Additionally, the model will have intermediate abstract features.
+ * 
+ * This is a proof-of-concept, the resulting feature model is not optimized 
+ * for any particular purpose. The conversion also does not try to preserve 
+ * the structure of the formula in the result model.
+ * 
+ * For now, the formula cannot contain a literal named "__root__".
  * 
  * @author Arthur Hammer
  */
 public class FormulaConverter {
 	
+	// TODO: What if formula is empty/constant true/false?
 	public FeatureModel convert(String formula) {
 		if (formula == null) {
 			throw new IllegalArgumentException("Formula cannot be null.");
@@ -59,47 +65,28 @@ public class FormulaConverter {
 		}
 		
 		FeatureModel fm = new FeatureModel();
-		fm.addConstraint(new Constraint(fm, formula));
+		ComplexConstraintConverter converter = new ComplexConstraintConverter();
+		// converter.fm needs to be set before calling any of the converter's internal methods
+		converter.fm = fm;
 		
-		Set<String> featureNames = getFeatureNames(formula);
-		String rootName = "root";
+		fm.setRoot(converter.createAbstractFeature("__root__", false, true));
 		
-		// Find unique name for root
-		int i = 1;
-		while (! featureNames.contains(rootName)) {
-			rootName = rootName + (i++);
-		}		
-		
-		Feature root = new Feature(fm, rootName);
-		root.setAbstract(true);
-		root.setAnd();
-		fm.setRoot(root);
-
-		for (String name: featureNames) {
-			Feature feature = new Feature(fm, name);
-			feature.setMandatory(false);
-			root.addChild(feature);
-			fm.addFeature(feature);
+		for (String name: getFeatureNames(formula)) {
+			converter.createFeatureUnderRoot(name, false);
 		}
 		
-		ComplexConstraintConverter converter = new ComplexConstraintConverter();
+		fm.addConstraint(new Constraint(fm, formula));
 		return converter.convert(fm);
 	}
 	
-	/**
-	 * Finds all feature names from the set of literals in a formula.
-	 * Uses a simple Breadth First Search (Level Order) over the Node tree.
-	 * 
-	 * @param formula Formula to find feature names from
-	 * @return Set of feature names corresponding to the formula's literals 
-	 */
-	protected Set<String> getFeatureNames(Node formula) {
+	// Simple Breadth First Search
+	private Set<String> getFeatureNames(Node formula) {
 		if (formula == null) {
 			throw new IllegalArgumentException("Formula cannot be null.");
 		}
 		
 		LinkedList<Node> toVisit = new LinkedList<Node>();
-		Set<String> featureNames = new HashSet<String>();
+		Set<String> literals = new HashSet<String>();
 		Node node;
 		
 		toVisit.add(new Not(formula)); // Dummy node		
@@ -111,7 +98,7 @@ public class FormulaConverter {
 			if (children != null) {
 				for (int i = 0; i < children.length; i++) {
 					if (children[i] instanceof Literal) {
-						featureNames.add((String) ((Literal) children[i]).var);
+						literals.add((String) ((Literal) children[i]).var);
 					}
 					else if (children[i] != null) {
 						toVisit.add(children[i]);
@@ -120,6 +107,6 @@ public class FormulaConverter {
 			}
 		}
 		
-		return featureNames;
+		return literals;
 	}
 }

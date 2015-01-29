@@ -39,21 +39,9 @@ import de.ovgu.featureide.fm.core.editing.NodeCreator;
 // product-preserving
 // configuration-preserving
 
-// TODO: Might be better to hand over model in each function, very cluttered but better to understand assumptions
-
-// TODO: Tests for all changes
-// TODO: test should be parametrized with folder name and then run tests on all models from that folder (see: TAbstractFeatureModelReaderWriter)
-// TODO: Extract CNFConverter and DNFConverter into own class that just set useCNF and call this class
-
-// TODO: Commit my example models into github -> server cannot run tests otherwise
-
-// TODO: Test all models whether they are equivalent. 
 // TODO: Test all models and time how much longer statistics collecting takes (see: BFeatureModelAnalyser)
 //       time for input model, time for output model
-
-// TODO: Run all tests (run as: Junit) not just mine and see if they pass from all my changes.
-// TODO: Download auto-generated example models from http://featureide.cs.ovgu.de (botttom) and test
-
+// TODO: Download auto-generated example models from http://featureide.cs.ovgu.de (bottom) and test
 // TODO: documentation
 
 /**
@@ -184,10 +172,7 @@ public class ComplexConstraintConverter {
 			
 			Literal literal = (Literal) literals[i];
 			Feature originalFeature = fm.getFeature((String) literal.var);
-			
-			// TEST
-//			if (isConstantTrue(literal) || isConstantFalse(literal)) continue;
-			
+
 			// make sure literal not constant true or false
 			if (originalFeature == null) {
 				throw new IllegalArgumentException("No corresponding feature for literal in formula: " + literal);
@@ -204,19 +189,6 @@ public class ComplexConstraintConverter {
 		}
 		
 		return clauseFeature;
-	}
-
-	// TEST
-	protected boolean isConstantTrue(Literal literal) {
-		assert(literal.var instanceof String);
-		String var = (String) literal.var;
-		return (var.equals("True") && literal.positive) || (var.equals("False") && ! literal.positive);
-	}
-	
-	protected boolean isConstantFalse(Literal literal) {
-		assert(literal.var instanceof String);
-		String var = (String) literal.var;
-		return (var.equals("False") && literal.positive) || (var.equals("True") && ! literal.positive);
 	}
 
 	protected void addSimpleConstraint(Feature f, Feature g, boolean requires) {

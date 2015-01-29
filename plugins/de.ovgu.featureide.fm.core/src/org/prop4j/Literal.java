@@ -60,6 +60,12 @@ public class Literal extends Node {
 	}
 	
 	@Override
+	protected Node clausifyDNF() {
+		//nothing to do
+		return this;
+	}
+	
+	@Override
 	public void simplify() { 
 		//nothing to do (recursive calls reached lowest node)
 	}

@@ -60,14 +60,22 @@ public abstract class Node {
 		return children;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public Node toCNF() {
+		return eliminateAll().clausify();
+	}
+	
+	public Node toDNF() {
+		return eliminateAll().clausifyDNF();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Node eliminateAll() {
 		Node node = this;
 		node = node.eliminate(Choose.class, Equals.class, Implies.class);
 		node = node.eliminate(Not.class);
 		node = node.eliminate(AtMost.class, AtLeast.class);
 		node = node.eliminate(Not.class);
-		return node.clausify();
+		return node;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -199,6 +207,10 @@ public abstract class Node {
 	}
 	
 	protected Node clausify() {
+		throw new RuntimeException(getClass().getName() + " is not supporting this method");
+	}
+	
+	protected Node clausifyDNF() {
 		throw new RuntimeException(getClass().getName() + " is not supporting this method");
 	}
 

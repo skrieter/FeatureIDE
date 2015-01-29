@@ -50,6 +50,14 @@ public class Or extends Node {
 		return createCNF(children);
 	}
 	
+	@Override
+	protected Node clausifyDNF() {
+		for (int i = 0; i < children.length; i++)
+			children[i] = children[i].clausifyDNF();
+		fuseWithSimilarChildren();
+		return this;
+	}
+	
 	private Node createCNF(Node[] nodes) {
 		LinkedList<LinkedList<Node>> clauses = new LinkedList<LinkedList<Node>>();
 		clauses.add(new LinkedList<Node>());

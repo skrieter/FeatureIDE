@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+	<featureModel chosenLayoutAlgorithm="1">
+		<struct>
+			<or abstract="true" mandatory="true" name="Root">
+				<alt mandatory="true" name="A">
+					<and abstract="true" mandatory="true" name="A1">
+						<feature mandatory="true" name="A11"/>
+					</and>
+					<and mandatory="true" name="A2">
+						<feature mandatory="true" name="A21"/>
+						<feature name="A22"/>
+					</and>
+				</alt>
+				<feature abstract="true" mandatory="true" name="B"/>
+				<feature mandatory="true" name="C"/>
+				<feature mandatory="true" name="D"/>
+				<and abstract="true" mandatory="true" name="E">
+					<or name="E1">
+						<feature mandatory="true" name="E11"/>
+						<feature mandatory="true" name="E12"/>
+						<feature mandatory="true" name="E13"/>
+						<and mandatory="true" name="E14">
+							<feature abstract="true" name="E141"/>
+						</and>
+					</or>
+				</and>
+			</or>
+		</struct>
+		<constraints>
+			<rule>
+				<var>E11</var>
+			</rule>
+			<rule>
+				<imp>
+					<var>E12</var>
+					<not>
+						<var>A</var>
+					</not>
+				</imp>
+			</rule>
+			<rule>
+				<disj>
+					<var>B</var>
+					<var>C</var>
+				</disj>
+			</rule>
+			<rule>
+				<not>
+					<var>E13</var>
+				</not>
+			</rule>
+			<rule>
+				<eq>
+					<var>A</var>
+					<eq>
+						<var>E1</var>
+						<var>C</var>
+					</eq>
+				</eq>
+			</rule>
+			<rule>
+				<disj>
+					<var>A22</var>
+					<eq>
+						<conj>
+							<var>E12</var>
+							<var>C</var>
+						</conj>
+						<var>D</var>
+					</eq>
+				</disj>
+			</rule>
+			<rule>
+				<disj>
+					<not>
+						<var>E</var>
+					</not>
+					<disj>
+						<conj>
+							<var>E</var>
+							<var>A11</var>
+						</conj>
+						<var>E141</var>
+					</disj>
+				</disj>
+			</rule>
+			<rule>
+				<disj>
+					<var>A</var>
+					<disj>
+						<not>
+							<var>A</var>
+						</not>
+						<disj>
+							<not>
+								<var>A</var>
+							</not>
+							<var>A</var>
+						</disj>
+					</disj>
+				</disj>
+			</rule>
+			<rule>
+				<conj>
+					<var>E11</var>
+					<conj>
+						<var>E11</var>
+						<var>E11</var>
+					</conj>
+				</conj>
+			</rule>
+			<rule>
+				<imp>
+					<var>Root</var>
+					<var>Root</var>
+				</imp>
+			</rule>
+			<rule>
+				<imp>
+					<not>
+						<var>D</var>
+					</not>
+					<disj>
+						<var>E</var>
+						<disj>
+							<eq>
+								<conj>
+									<var>A21</var>
+									<var>B</var>
+								</conj>
+								<var>C</var>
+							</eq>
+							<var>E13</var>
+						</disj>
+					</disj>
+				</imp>
+			</rule>
+		</constraints>
+		<calculations Auto="true" Constraints="true" Features="true" Redundant="true" Tautology="true"/>
+		<comments/>
+		<featureOrder userDefined="false"/>
+	</featureModel>

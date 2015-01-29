@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+	<featureModel chosenLayoutAlgorithm="1">
+		<struct>
+			<and abstract="true" mandatory="true" name="Root">
+				<feature name="A"/>
+				<feature name="B"/>
+				<feature name="C"/>
+			</and>
+		</struct>
+		<constraints>
+			<rule>
+				<disj>
+					<var>A</var>
+					<var>B</var>
+				</disj>
+			</rule>
+			<rule>
+				<disj>
+					<var>B</var>
+					<var>C</var>
+				</disj>
+			</rule>
+		</constraints>
+		<calculations Auto="true" Constraints="true" Features="true" Redundant="true" Tautology="true"/>
+		<comments/>
+		<featureOrder userDefined="false"/>
+	</featureModel>

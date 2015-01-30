@@ -122,6 +122,19 @@ public class ComplexConstraintConverter {
 	}
 	
 	protected Node normalizeNormalForm(Node normalForm) {
+		if (normalForm.getChildren().length == 0) {
+			String rootName = fm.getRoot().getName();
+			// CNF is empty, i.e. always true
+			// Add artificial clause: root or not root
+			if (normalForm instanceof And && useCNF) {
+				return new And(new Or(new Literal(rootName), new Literal(rootName, false)));
+			}
+			// DNF is empty, i.e. always false
+			// Add artificial clause: root and not root
+			if (normalForm instanceof Or && !useCNF) {
+				return new Or(new And(new Literal(rootName), new Literal(rootName, false)));
+			}
+		}
 		if (normalForm instanceof Or && useCNF) {
 			return new And(normalForm);
 		}
@@ -141,15 +154,13 @@ public class ComplexConstraintConverter {
 	}
 	
 	protected Feature convertFormula(Node formula, String name) {
-		Node normalForm = this.useCNF ? formula.toCNF() : formula.toDNF();
+		Node normalForm = useCNF ? formula.toCNF() : formula.toDNF();
 		normalForm.simplify();
 		normalForm = normalizeNormalForm(normalForm);
-		System.out.println("NormalForm: " + normalForm);
+//		System.out.println((useCNF ? "CNF: " : "DNF: ") + normalForm);
 		return convertNormalForm(normalForm, name);
 	}
 	
-	// TODO: TRUE/FALSE cases
-	// TODO: What if cnf is only a constant true/false? (or an OR of a constant true/false)
 	protected Feature convertNormalForm(Node normalForm, String name) {
 		Node[] clauses = normalForm.getChildren();
 		Feature normalFormFeature = createAbstractFeature(name, true, this.useCNF);
@@ -174,7 +185,6 @@ public class ComplexConstraintConverter {
 			Literal literal = (Literal) literals[i];
 			Feature originalFeature = fm.getFeature((String) literal.var);
 
-			// make sure literal not constant true or false
 			if (originalFeature == null) {
 				throw new IllegalArgumentException("No corresponding feature for literal in formula: " + literal);
 			}

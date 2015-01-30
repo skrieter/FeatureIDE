@@ -21,7 +21,6 @@
 package org.prop4j;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -45,75 +44,6 @@ public class And extends Node {
 			children[i] = children[i].clausify();
 		fuseWithSimilarChildren();
 		return this;
-	}
-	
-	@Override
-	protected Node clausifyDNF() {
-		for (int i = 0; i < children.length; i++)
-			children[i] = children[i].clausifyDNF();
-		fuseWithSimilarChildren();
-		return createDNF(children);
-	}
-	
-	private Node createDNF(Node[] nodes) {
-		LinkedList<LinkedList<Node>> clauses = new LinkedList<LinkedList<Node>>();
-		clauses.add(new LinkedList<Node>());
-		for (Node or : nodes) {
-			LinkedList<Node[]> newClauses = new LinkedList<Node[]>();
-			for (Node and : or instanceof Or ? or.children : new Node[] {or})
-				newClauses.add(and instanceof And ? and.children : new Node[] {and});
-			clauses = updateClauses(clauses, newClauses);
-		}
-		LinkedList<Node> children = new LinkedList<Node>();
-		for (LinkedList<Node> clause : clauses)
-			children.add(new And(clause).clone());
-		return new Or(children);
-	}
-
-	private LinkedList<LinkedList<Node>> updateClauses(LinkedList<LinkedList<Node>> clauses,
-			LinkedList<Node[]> newClauses) {
-		LinkedList<LinkedList<Node>> updatedClauses = new LinkedList<LinkedList<Node>>();
-		for (LinkedList<Node> clause : clauses) {
-			boolean intersection = false;
-			for (Node[] list : newClauses)
-				if (containedIn(list, clause)) {
-					intersection = true;
-					break;
-				}
-			if (intersection)
-				add(updatedClauses, clause);
-			else {
-				for (Node[] list : newClauses) {
-					LinkedList<Node> newClause = clone(clause);
-					for (Node node : list)
-						newClause.add(node.clone());
-					add(updatedClauses, newClause);
-				}
-			}
-		}
-		return updatedClauses;
-	}
-
-	private void add(LinkedList<LinkedList<Node>> clauses,
-			LinkedList<Node> newClause) {
-		for (LinkedList<Node> clause : clauses)
-			if (containedIn(clause, newClause))
-				return;
-		clauses.add(newClause);
-	}
-
-	private boolean containedIn(LinkedList<Node> clause, LinkedList<Node> newClause) {
-		for (Node node : clause)
-			if (!newClause.contains(node))
-				return false;
-		return true;
-	}
-
-	private boolean containedIn(Node[] list, LinkedList<Node> clause) {
-		for (Node node : list)
-			if (!clause.contains(node))
-				return false;
-		return true;
 	}
 	
 	protected void collectChildren(Node node, List<Node> nodes) {
@@ -147,4 +77,5 @@ public class And extends Node {
 	public Node clone() {
 		return new And(clone(children));
 	}
+
 }

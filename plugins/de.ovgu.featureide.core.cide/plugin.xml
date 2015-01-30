@@ -33,9 +33,16 @@
                menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
                style="push">
          </action>
+         <action
+               class="de.ovgu.featureide.core.cide.UnmarkFeatureAction"
+               id="de.ovgu.featureide.core.cide.unmarkfeatureaction"
+               label="Unmark feature ..."
+               menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
+               style="push">
+         </action>
          <menu
                id="de.ovgu.featureide.ui.MarkWithFeatureMenu"
-               label="MARK"
+               label="Mark / Unmark"
                path="additions">
          </menu>
       </viewerContribution>

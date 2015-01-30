@@ -76,8 +76,9 @@ public class ComplexConstraintConverter {
 		if (model == null) {
 			throw new IllegalArgumentException("Feature model cannot be null");
 		}
-		
+
 		fm = model.deepClone();
+		fm.getAnalyser().runCalculationAutomatically = false;
 		List<Node> complexConstraints = getComplexConstraints();
 		
 		if (fm.getRoot() == null || fm.getFeatures().isEmpty() || complexConstraints.isEmpty()) {

@@ -1,28 +1,14 @@
 package de.ovgu.featureide.core.cide;
 
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.w3c.dom.Document;
 
 import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.core.builder.preprocessor.PPComposerExtensionClass;
@@ -60,28 +46,24 @@ public class CIDEModelBuilder extends PPModelBuilder {
 
 		for (IResource res : folder.members()) {
 			if (res instanceof IFolder) {
-				buildModel((IFolder) res, packageName.isEmpty() ? res.getName()
-						: packageName + "/" + res.getName());
+				buildModel((IFolder) res, packageName.isEmpty() ? res.getName() : packageName + "/" + res.getName());
 			} else if (res instanceof IFile) {
 				// String text = getText((IFile)res);
-				String className = packageName.isEmpty() ? res.getName()
-						: packageName + "/" + res.getName();
+				String className = packageName.isEmpty() ? res.getName() : packageName + "/" + res.getName();
 
-				Vector<String> lines = PPComposerExtensionClass
-						.loadStringsFromFile((IFile) res);
+				Vector<String> lines = PPComposerExtensionClass.loadStringsFromFile((IFile) res);
 
 				boolean classAdded = false;
 				for (String feature : featureNames) {
 
 					if (/* containsFeature(text, feature) */true) {
-						System.err.println("buildModel2 :" + feature + " - "
-								+ className);
+						System.err.println("buildModel2 :" + feature + " - " + className);
 						model.addRole(feature, className, (IFile) res);
 						classAdded = true;
 					}
 				}
 				if (classAdded) {
-					LinkedList<FSTDirective> directives = buildModelDirectivesForFile(lines);
+					LinkedList<FSTDirective> directives = buildModelDirectivesForFile(lines,res);
 					addDirectivesToModel(directives, (IFile) res, className);
 				} else {
 					// add class without annotations
@@ -90,14 +72,19 @@ public class CIDEModelBuilder extends PPModelBuilder {
 			}
 		}
 	}
+	
+	public LinkedList<FSTDirective> buildModelDirectivesForFile(Vector<String> lines,IResource res) {
+		
+		return colorAnnotationManager.getDirectives(lines, featureProject,res);
+	}
 
+	/*
 	@Override
 	public LinkedList<FSTDirective> buildModelDirectivesForFile(Vector<String> lines) {
 		
 		return colorAnnotationManager.getDirectives(lines, featureProject);
 	}
-
-
+*/
 	@Override
 	protected List<String> getFeatureNames(String expression) {
 		expression = expression.replaceAll("[(]", "");

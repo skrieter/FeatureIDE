@@ -1,80 +1,50 @@
 package de.ovgu.featureide.core.cide;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Vector;
 
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.texteditor.ITextEditor;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import org.eclipse.core.resources.IResource;
 
 import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.core.fstmodel.preprocessor.FSTDirective;
 import de.ovgu.featureide.core.fstmodel.preprocessor.FSTDirectiveCommand;
 
 public class ColorAnnotationManager {
-	
+
 	private ColorXmlManager m_colorxmlManager;
-	
-	public ColorAnnotationManager(ColorXmlManager colorXmlManager)
-	{
+
+	FeatureElement featureElement = new FeatureElement();
+	LineElement lineElement = new LineElement();
+
+	// Constructor
+	public ColorAnnotationManager(ColorXmlManager colorXmlManager) {
 		m_colorxmlManager = colorXmlManager;
 	}
 
-
-	protected LinkedList<FSTDirective> getDirectives(Vector<String> lines,
-			IFeatureProject featureProject) {
-
-		// für jede Zeile prüfen, ob dafür ein(e) Feature/Farbe festgelegt wurde
-		int lineNumber = 1;
-		int id = 0;
+	protected LinkedList<FSTDirective> getDirectives(Vector<String> lines, IFeatureProject featureProject, IResource res) {
+		
 		LinkedList<FSTDirective> directives = new LinkedList<FSTDirective>();
-		for (String s : lines) {
-				Integer integerLineNumber = Integer.valueOf(lineNumber);
-				String featureName = getFeatureForLine(lineNumber, this.m_colorxmlManager.getParsedDocument());
-				if (featureName != null) {
-					FSTDirective d = new FSTDirective();
-					d.setCommand(FSTDirectiveCommand.COLOR);
-					d.setFeatureName(featureName);
-					d.setLine(lineNumber);
-					d.setStartLine(lineNumber - 1, 0);
-					d.setEndLine(lineNumber, 0);
-					d.setId(id++);
-					d.setExpression("At line:" + " "
-							+ integerLineNumber.toString());
-					directives.add(d);
-				}
-				lineNumber++;
-		}
-		return directives;
-
-	}
+		int id = 0;
+		String pathToFile = res.getLocation().toFile().getAbsolutePath();
+		List<FeatureElement> featureList = m_colorxmlManager.getFeatureForPath(pathToFile, true);
+		
+		for (FeatureElement feature : featureList) {
 	
-	private String getFeatureForLine(int lineNumber, Document dom) {
-		// get the root element
-		Element docEle = dom.getDocumentElement();
-
-		// get a nodelist of elements
-		NodeList nl = docEle.getElementsByTagName("file");
-		if (nl != null && nl.getLength() > 0) {
-			for (int i = 0; i < nl.getLength(); i++) {
-
-				Element el = (Element) nl.item(i);
-				NodeList n = el.getElementsByTagName("line");
-				if (n != null && n.getLength() > 0) {
-					for (int j = 0; j < n.getLength(); j++) {
-						Element line = (Element) n.item(j);
-						if (Integer.parseInt(line.getAttribute("startLine")) == lineNumber) {
-							return line.getAttribute("feature");
-						}
-
-					}
-				}
-
+			for (LineElement line : feature.getLines()) {
+				
+				FSTDirective d = new FSTDirective();
+				d.setFeatureName(feature.getId());
+				d.setLine(Integer.parseInt(line.getStartLine()));
+				d.setStartLine(Integer.parseInt(line.getStartLine()), 0);
+				d.setEndLine(Integer.parseInt(line.getEndLine()), 0);
+				d.setExpression("At line:  " + Integer.parseInt(line.getStartLine()) + " - " + Integer.parseInt(line.getEndLine()));
+				d.setCommand(FSTDirectiveCommand.COLOR);
+				d.setId(id++);
+				directives.add(d);	
 			}
 		}
-		return null;
+		return directives;	
+		
 	}
-
 }

@@ -2,6 +2,8 @@ package de.ovgu.featureide.core.cide;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -16,10 +18,12 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class ColorXmlManager {
@@ -53,7 +57,6 @@ public class ColorXmlManager {
 			System.out.println("ColorAnnotations.xml already exists");
 			this.readXml();
 		} else {
-			// kann es in Grundstruktur anlegen
 			System.out.println("CREATE ColorAnnotations.xml");
 			this.createXml();
 		}
@@ -72,17 +75,13 @@ public class ColorXmlManager {
 		}
 	}
 
-	/*
-	 * Kurzes Beschreibung
-	 */
 	private void createXml() {
 		try {
 			m_rootElement = m_doc.createElement("root");
 			m_doc.appendChild(m_rootElement);
-
+			m_rootElement.appendChild(m_doc.createElement("files"));
 			// write the content into xml file
-			TransformerFactory transformerFactory = TransformerFactory
-					.newInstance();
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
@@ -96,28 +95,27 @@ public class ColorXmlManager {
 		}
 	}
 
-	public void addAnnotation(String activeProjectPath, Integer startLine,
-			Integer endLine, String feature) {
+	public void addAnnotation(String activeProjectPath, Integer startLine, Integer endLine, String feature) {
 
 		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
 		XPath xpath = factory.newXPath();
 		try {
 			String fileXPath = "root/files/file[@path='" + activeProjectPath + "']";
-			String featureXPath = "feature[@id='"+feature+"']";
-			String featureAndLinesXPath = "line[@startline='"+startLine.toString()+"' and @endline='"+endLine.toString()+"']";
-			
+			String featureXPath = "feature[@id='" + feature + "']";
+			String featureAndLinesXPath = "line[@startline='" + startLine.toString() + "' and @endline='" + endLine.toString() + "']";
+
 			XPathExpression expression = xpath.compile(fileXPath);
-			Node fileNode = (Node) expression.evaluate(m_doc,XPathConstants.NODE);
+			Node fileNode = (Node) expression.evaluate(m_doc, XPathConstants.NODE);
 			fileNode = appendFileElement(fileNode, activeProjectPath);
-			
+
 			expression = xpath.compile(featureXPath);
-			Node featureElementNode = (Node)expression.evaluate(fileNode, XPathConstants.NODE);
+			Node featureElementNode = (Node) expression.evaluate(fileNode, XPathConstants.NODE);
 			featureElementNode = appendFeatureElement(fileNode, featureElementNode, feature);
-			
+
 			expression = xpath.compile(featureAndLinesXPath);
-			Element lineElement = (Element)expression.evaluate(featureElementNode, XPathConstants.NODE);
+			Element lineElement = (Element) expression.evaluate(featureElementNode, XPathConstants.NODE);
 			appendLineElement(featureElementNode, lineElement, startLine.toString(), endLine.toString());
-			
+
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
 		}
@@ -132,38 +130,37 @@ public class ColorXmlManager {
 		}
 		return (Element) parent.appendChild(child);
 	}
-	
-	private Node appendLineElement(Node featureElementParent, Node lineElement,String startLine, String endLine){
-		if(lineElement == null){
+
+	private Node appendLineElement(Node featureElementParent, Node lineElement, String startLine, String endLine) {
+		if (lineElement == null) {
 			lineElement = appendElement(featureElementParent, lineElement, "line");
-			setAttributeContent((Element)lineElement, "startline", startLine);
-			setAttributeContent((Element)lineElement, "endline", endLine);
+			setAttributeContent((Element) lineElement, "startline", startLine);
+			setAttributeContent((Element) lineElement, "endline", endLine);
 		}
-		
+
 		return lineElement;
-		
+
 	}
-	
-	private Node appendFeatureElement(Node fileElementParent, Node featureElement,String featureName){
-		if(featureElement == null){
+
+	private Node appendFeatureElement(Node fileElementParent, Node featureElement, String featureName) {
+		if (featureElement == null) {
 			featureElement = appendElement(fileElementParent, featureElement, "feature");
-			setAttributeContent((Element)featureElement, "id", featureName);
+			setAttributeContent((Element) featureElement, "id", featureName);
 		}
-		
+
 		return featureElement;
 	}
-	
-	private Node appendFileElement(Node fileElement,String pathName){
-		if(fileElement == null){
-			Element filesElement = m_doc.createElement("files");
-			m_rootElement.appendChild(filesElement);
+
+	private Node appendFileElement(Node fileElement, String pathName) {
+		if (fileElement == null) {
+			Node filesElement = m_rootElement.getElementsByTagName("files").item(0);
 			fileElement = appendElement(filesElement, fileElement, "file");
-			setAttributeContent((Element)fileElement, "path", pathName);
+			setAttributeContent((Element) fileElement, "path", pathName);
 		}
 		return fileElement;
 	}
 
-	private void setAttributeContent(Element xmlElement, String attributeName,Object content) {
+	private void setAttributeContent(Element xmlElement, String attributeName, Object content) {
 		if (!xmlElement.hasAttribute(attributeName)) {
 			xmlElement.setAttribute(attributeName, content.toString());
 		}
@@ -171,8 +168,7 @@ public class ColorXmlManager {
 
 	private void writeXml() {
 		try {
-			TransformerFactory transformerFactory = TransformerFactory
-					.newInstance();
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
@@ -184,6 +180,65 @@ public class ColorXmlManager {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	// get a list of FeatureElement's for the given path 
+	public List<FeatureElement> getFeatureForPath(String path, boolean alsoFetchLines) {
+		
+		List<FeatureElement> featureList = new ArrayList<FeatureElement>();
+
+		XPathFactory xPathfactory = XPathFactory.newInstance();
+		XPath xpath = xPathfactory.newXPath();
+		try {
+			String featureForPathXPath = "root/files/file[@path='" + path + "']/feature";
+			XPathExpression expr = xpath.compile(featureForPathXPath);
+			NodeList featureNodeList = (NodeList) expr.evaluate(m_doc, XPathConstants.NODESET);
+
+			for (int i = 0; i < featureNodeList.getLength(); i++) {
+				FeatureElement fe = new FeatureElement();
+				Node featureNode = featureNodeList.item(i);
+				Element featureIdElement = (Element) featureNode;
+				String featureId = featureIdElement.getAttribute("id");
+				fe.setId(featureId);
+				if (alsoFetchLines == true) {
+					fe.addAllLines(getLinesForFeature(featureId, path));
+				}
+				featureList.add(fe);
+			}
+		} catch (XPathExpressionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return featureList;
+
+	}
+
+	// get a list of LineElement's for feature which contains startline and endline
+	public List<LineElement> getLinesForFeature(String featureName, String path) {
+		
+		List<LineElement> leList = new ArrayList<LineElement>();
+
+		XPathFactory xPathfactory = XPathFactory.newInstance();
+		XPath xpath = xPathfactory.newXPath();
+		try {
+			String linesForFeatureXPath = "root/files/file[@path='"+path+"']/feature[@id='" + featureName + "']/line";
+			XPathExpression expr = xpath.compile(linesForFeatureXPath);
+			NodeList lines = (NodeList) expr.evaluate(m_doc, XPathConstants.NODESET);
+
+			for (int i = 0; i < lines.getLength(); i++) {
+				LineElement le = new LineElement();
+				Node lineNode = lines.item(i);
+				Element lineElement = (Element) lineNode;
+				le.setStartLine(lineElement.getAttribute("startline"));
+				le.setEndLine(lineElement.getAttribute("endline"));
+				leList.add(le);
+			}
+
+		} catch (XPathExpressionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return leList;
 
 	}
 

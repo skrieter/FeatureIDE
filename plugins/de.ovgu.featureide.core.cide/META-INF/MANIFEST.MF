@@ -4,12 +4,12 @@ Bundle-Name: CIDE Integration Plug-in
 Bundle-SymbolicName: de.ovgu.featureide.core.cide;singleton:=true
 Bundle-Version: 2.7.2.qualifier
 Bundle-Activator: de.ovgu.featureide.core.cide.CIDECorePlugin
-Import-Package: de.ovgu.cide.configuration,
- de.ovgu.cide.features,
- de.ovgu.featureide.fm.core
+Import-Package: de.ovgu.featureide.fm.core,
+ org.eclipse.jface.text,
+ org.eclipse.ui.part,
+ org.eclipse.ui.texteditor
 Require-Bundle: de.ovgu.featureide.core;bundle-version="2.7.2",
  de.ovgu.featureide.fm.core;bundle-version="2.7.2",
  org.eclipse.ui;bundle-version="3.104.0",
  org.eclipse.core.runtime;bundle-version="3.8.0",
- org.eclipse.core.resources;bundle-version="3.8.1",
- de.ovgu.cide.fm.guidsl;bundle-version="2.2.0"
+ org.eclipse.core.resources;bundle-version="3.8.1"

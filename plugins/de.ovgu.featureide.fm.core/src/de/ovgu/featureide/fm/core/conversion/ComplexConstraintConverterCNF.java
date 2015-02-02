@@ -41,7 +41,7 @@ public class ComplexConstraintConverterCNF extends ComplexConstraintConverter {
 	private boolean useEquivalence;
 	
 	public ComplexConstraintConverterCNF() {
-		this(false);
+		this(true);
 	}
 	
 	public ComplexConstraintConverterCNF(boolean useEquivalence) {
@@ -60,8 +60,9 @@ public class ComplexConstraintConverterCNF extends ComplexConstraintConverter {
 	protected void addSimpleConstraint(Feature f, Feature g, boolean requires) {
 		super.addSimpleConstraint(f, g, requires);
 		
-		// TODO: It seems excludes also need an equivalence to preserve configurations
-		if (useEquivalence) {
+		// Reduces number of configurations, adds more constraints. 
+		// Not applicable for exclude constraints.
+		if (requires && useEquivalence) {
 			Node implies = new Implies((requires ? g : new Not(g)), f);
 			fm.addConstraint(new Constraint(fm, implies));
 		}

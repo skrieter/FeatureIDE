@@ -36,7 +36,7 @@ public class ColorAnnotationManager {
 				FSTDirective d = new FSTDirective();
 				d.setFeatureName(feature.getId());
 				d.setLine(Integer.parseInt(line.getStartLine()));
-				d.setStartLine(Integer.parseInt(line.getStartLine()), 0);
+				d.setStartLine(Integer.parseInt(line.getStartLine())-1, 0);
 				d.setEndLine(Integer.parseInt(line.getEndLine()), 0);
 				d.setExpression("At line:  " + Integer.parseInt(line.getStartLine()) + " - " + Integer.parseInt(line.getEndLine()));
 				d.setCommand(FSTDirectiveCommand.COLOR);

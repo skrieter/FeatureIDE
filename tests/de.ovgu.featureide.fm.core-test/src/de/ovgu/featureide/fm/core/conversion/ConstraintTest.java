@@ -70,6 +70,7 @@ public class ConstraintTest {
 			new Implies("f", "g"), true,
 			new Implies("f", new Not("g")), true,
 			new Implies("f", new Literal("g")), true,
+			new Implies("f", new Literal("g", false)), true,
 			new Implies("f", new Not(new Literal("g"))), true,
 			new Implies(new Literal("f"), new Not("g")), true,
 			new Implies(new Literal("f"), new Literal("g")), true,
@@ -97,11 +98,6 @@ public class ConstraintTest {
 			Constraint constraint = new Constraint(null, (Node) constraints[i]);
 			params.add(new Object[]{constraint, constraints[i+1]});
 		}
-		
-		// 1 more test case for negative literal
-		Literal negative = new Literal("g");
-		negative.positive = false;
-		params.add(new Object[]{new Constraint(null, new Implies("f", negative)), true});
 		
 		return params;
 	}

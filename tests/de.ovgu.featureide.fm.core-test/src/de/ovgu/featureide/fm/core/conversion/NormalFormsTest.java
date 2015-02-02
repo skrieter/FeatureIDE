@@ -41,9 +41,7 @@ import org.prop4j.SatSolver;
 import org.sat4j.specs.TimeoutException;
 
 /**
- * Tests for class Constraint and method "isSimple". 
- * 
- * Note: In part, tests depend on correctness and parsed Node structure of NodeReader.
+ * Tests for class NormalForms, generation of CNF and DNF. 
  * 
  * @author Arthur Hammer
  */

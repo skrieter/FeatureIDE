@@ -217,6 +217,13 @@
             label="Export model to Velvet format"
             menubarPath="de.ovgu.featureide.fm.ui.menu/velvet">
          </action>
+         <action
+         	class="de.ovgu.featureide.fm.ui.actions.ExportConvertConstraintsAction"
+            icon="icons/export_wiz.gif"
+            id="de.ovgu.featureide.fm.ui.ExportConvertConstraints"
+            label="Export product-equivalent model with simple constraints"
+         	menubarPath="de.ovgu.featureide.fm.ui.menu/dependency">
+         </action>
       </objectContribution>
       <objectContribution
             adaptable="true"

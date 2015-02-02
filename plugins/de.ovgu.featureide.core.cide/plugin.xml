@@ -29,7 +29,7 @@
          <action
                class="de.ovgu.featureide.core.cide.MarkWithFeatureAction"
                id="de.ovgu.featureide.core.cide.markwithfeatureaction"
-               label="Mark with feature"
+               label="Mark with feature ..."
                menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
                style="push">
          </action>
@@ -45,6 +45,20 @@
                label="Mark / Unmark"
                path="additions">
          </menu>
+         <action
+               class="de.ovgu.featureide.core.cide.ClearFeatureAction"
+               id="de.ovgu.featureide.core.cide.clearfeature"
+               label="Clear feature ..."
+               menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
+               style="push">
+         </action>
+         <action
+               class="de.ovgu.featureide.core.cide.ClearAllFeaturesAction"
+               id="de.ovgu.featureide.core.cide.clearallfeatures"
+               label="Clear all features"
+               menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
+               style="push">
+         </action>
       </viewerContribution>
    </extension>
 

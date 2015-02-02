@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+	<featureModel chosenLayoutAlgorithm="1">
+		<struct>
+			<or abstract="true" mandatory="true" name="Root">
+				<feature mandatory="true" name="A"/>
+				<feature mandatory="true" name="B"/>
+				<feature mandatory="true" name="C"/>
+				<feature mandatory="true" name="D"/>
+				<feature mandatory="true" name="E"/>
+			</or>
+		</struct>
+		<constraints>
+			<rule>
+				<disj>
+					<var>A</var>
+					<var>A</var>
+				</disj>
+			</rule>
+			<rule>
+				<disj>
+					<var>A</var>
+					<disj>
+						<var>A</var>
+						<disj>
+							<var>A</var>
+							<var>A</var>
+						</disj>
+					</disj>
+				</disj>
+			</rule>
+			<rule>
+				<conj>
+					<disj>
+						<not>
+							<var>A</var>
+						</not>
+						<var>B</var>
+					</disj>
+					<disj>
+						<not>
+							<var>A</var>
+						</not>
+						<var>B</var>
+					</disj>
+				</conj>
+			</rule>
+			<rule>
+				<conj>
+					<var>A</var>
+					<var>A</var>
+				</conj>
+			</rule>
+			<rule>
+				<conj>
+					<var>A</var>
+					<conj>
+						<var>A</var>
+						<var>A</var>
+					</conj>
+				</conj>
+			</rule>
+			<rule>
+				<disj>
+					<var>B</var>
+					<disj>
+						<not>
+							<var>B</var>
+						</not>
+						<disj>
+							<var>B</var>
+							<not>
+								<var>B</var>
+							</not>
+						</disj>
+					</disj>
+				</disj>
+			</rule>
+			<rule>
+				<conj>
+					<eq>
+						<var>C</var>
+						<var>D</var>
+					</eq>
+					<eq>
+						<var>D</var>
+						<var>C</var>
+					</eq>
+				</conj>
+			</rule>
+			<rule>
+				<disj>
+					<imp>
+						<var>E</var>
+						<not>
+							<var>C</var>
+						</not>
+					</imp>
+					<not>
+						<not>
+							<imp>
+								<var>E</var>
+								<not>
+									<var>C</var>
+								</not>
+							</imp>
+						</not>
+					</not>
+				</disj>
+			</rule>
+		</constraints>
+		<calculations Auto="true" Constraints="true" Features="true" Redundant="true" Tautology="true"/>
+		<comments/>
+		<featureOrder userDefined="false"/>
+	</featureModel>

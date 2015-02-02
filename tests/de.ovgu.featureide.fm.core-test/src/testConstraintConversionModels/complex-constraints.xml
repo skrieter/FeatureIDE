@@ -28,6 +28,18 @@
 		</struct>
 		<constraints>
 			<rule>
+				<disj>
+					<var>A22</var>
+					<imp>
+						<conj>
+							<var>E12</var>
+							<var>C</var>
+						</conj>
+						<var>D</var>
+					</imp>
+				</disj>
+			</rule>
+			<rule>
 				<var>E11</var>
 			</rule>
 			<rule>
@@ -39,12 +51,6 @@
 				</imp>
 			</rule>
 			<rule>
-				<disj>
-					<var>B</var>
-					<var>C</var>
-				</disj>
-			</rule>
-			<rule>
 				<not>
 					<var>E13</var>
 				</not>
@@ -52,23 +58,11 @@
 			<rule>
 				<eq>
 					<var>A</var>
-					<eq>
+					<imp>
 						<var>E1</var>
 						<var>C</var>
-					</eq>
+					</imp>
 				</eq>
-			</rule>
-			<rule>
-				<disj>
-					<var>A22</var>
-					<eq>
-						<conj>
-							<var>E12</var>
-							<var>C</var>
-						</conj>
-						<var>D</var>
-					</eq>
-				</disj>
 			</rule>
 			<rule>
 				<disj>
@@ -83,57 +77,6 @@
 						<var>E141</var>
 					</disj>
 				</disj>
-			</rule>
-			<rule>
-				<disj>
-					<var>A</var>
-					<disj>
-						<not>
-							<var>A</var>
-						</not>
-						<disj>
-							<not>
-								<var>A</var>
-							</not>
-							<var>A</var>
-						</disj>
-					</disj>
-				</disj>
-			</rule>
-			<rule>
-				<conj>
-					<var>E11</var>
-					<conj>
-						<var>E11</var>
-						<var>E11</var>
-					</conj>
-				</conj>
-			</rule>
-			<rule>
-				<imp>
-					<var>Root</var>
-					<var>Root</var>
-				</imp>
-			</rule>
-			<rule>
-				<imp>
-					<not>
-						<var>D</var>
-					</not>
-					<disj>
-						<var>E</var>
-						<disj>
-							<eq>
-								<conj>
-									<var>A21</var>
-									<var>B</var>
-								</conj>
-								<var>C</var>
-							</eq>
-							<var>E13</var>
-						</disj>
-					</disj>
-				</imp>
 			</rule>
 		</constraints>
 		<calculations Auto="true" Constraints="true" Features="true" Redundant="true" Tautology="true"/>

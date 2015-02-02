@@ -32,17 +32,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.FeatureModel;
-import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.editing.Comparison;
 import de.ovgu.featureide.fm.core.editing.ModelComparator;
 import de.ovgu.featureide.fm.core.io.UnsupportedModelException;
 import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelReader;
 import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelWriter;
-
-// TODO: Add tests for refactorings of complex constraints
 
 /**
  * Tests for ComplexConstraintConverter.
@@ -94,44 +90,64 @@ public class ComplexConstraintConverterTest {
 	@Test
 	public void testConvertCNF() throws UnsupportedModelException {
 		result = cnfConverter.convert(fm);
-		assertTrue(refactoring(fm, result));
+		assertEquals(editType(fm, result), Comparison.REFACTORING);
+		assertFalse(result.getAnalyser().hasComplexConstraints());
 	}
 
 	@Test
 	public void testConvertNaiveCNF() throws UnsupportedModelException {
 		result = cnfConverter.convertNaive(fm);
-		assertTrue(refactoring(fm, result));
+		assertEquals(editType(fm, result), Comparison.REFACTORING);
+		assertFalse(result.getAnalyser().hasComplexConstraints());
 	}
 
 	@Test
 	public void testConvertDNF() throws UnsupportedModelException {
 		result = dnfConverter.convert(fm);
-		assertTrue(refactoring(fm, result));
+		assertEquals(editType(fm, result), Comparison.REFACTORING);
+		assertFalse(result.getAnalyser().hasComplexConstraints());
+	}
+
+	@Test
+	public void testConvertNaiveDNF() throws UnsupportedModelException {
+		result = dnfConverter.convertNaive(fm);
+		assertEquals(editType(fm, result), Comparison.REFACTORING);
+		assertFalse(result.getAnalyser().hasComplexConstraints());
 	}
 
 //	@Test
-//	public void testConvertNaiveDNF() throws UnsupportedModelException {
-//		result = dnfConverter.convertNaive(fm);
-//		assertTrue(refactoring(fm, result));
+//	public void testConvertConfigsCNF() throws TimeoutException {
+//		boolean old = cnfConverter.getUseEquivalence();
+//		cnfConverter.setUseEquivalence(true);
+//		result = cnfConverter.convert(fm);
+//		cnfConverter.setUseEquivalence(old);
+//
+//		Configuration config = new Configuration(fm);
+//		Configuration resultConfig = new Configuration(result);
+//		
+//		assertEquals(config.getSolutions(100000).size(), resultConfig.getSolutions(100000).size());
 //	}
-
-	// TODO: Easier way to get number of configurations?
-	@Test
-	public void testConvertConfigsCNF() throws TimeoutException {
-		boolean old = cnfConverter.getUseEquivalence();
-		cnfConverter.setUseEquivalence(true);
-		result = cnfConverter.convertNaive(fm);
-		cnfConverter.setUseEquivalence(old);
-
-		Configuration config = new Configuration(fm);
-		Configuration resultConfig = new Configuration(result);
-		
-		assertEquals(config.getSolutions(10000).size(), resultConfig.getSolutions(10000).size());
-	}
+	
+//	@Test
+//	public void testConvertConfigsNaiveCNF() throws TimeoutException {
+//		boolean old = cnfConverter.getUseEquivalence();
+//		cnfConverter.setUseEquivalence(true);
+//		result = cnfConverter.convertNaive(fm);
+//		cnfConverter.setUseEquivalence(old);
+//
+//		Configuration config = new Configuration(fm);
+//		Configuration resultConfig = new Configuration(result);
+//		
+//		assertEquals(config.getSolutions(10000).size(), resultConfig.getSolutions(10000).size());
+//	}
 
 	// TODO: For now, we test for refactorings by writing the model into a string and re-parsing it.
 	//       Somehow, directly comparing with the comparator seems not to be working.
 	private static boolean refactoring(FeatureModel fm, FeatureModel fm2) throws UnsupportedModelException {
+		return editType(fm, fm2) == Comparison.REFACTORING;
+	}
+	
+	private static Comparison editType(FeatureModel fm, FeatureModel fm2) throws UnsupportedModelException {
 		XmlFeatureModelWriter writer = new XmlFeatureModelWriter(fm2);
 		XmlFeatureModelReader reader = new XmlFeatureModelReader(new FeatureModel());
 		
@@ -139,8 +155,7 @@ public class ComplexConstraintConverterTest {
 		fm2 = reader.getFeatureModel();
 		
 		Comparison result = comparator.compare(fm, fm2);
-		System.out.println(result);
-		return result == Comparison.REFACTORING;
+		return result;
 	}
 
 	private final static FileFilter getFileFilter(final String s) {

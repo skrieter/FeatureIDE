@@ -13,15 +13,12 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-//import de.ovgu.featureide.ui.editors.annotation.ColorAnnotationModel;
-
 public class MarkWithFeatureAction implements IEditorActionDelegate,
 		IViewActionDelegate {
 	
 	ColorXmlManager colorXmlManager;
 	SelectFeatureDialog selectFeatureDialog = new SelectFeatureDialog();
 	public ITextEditor activeEditor = null;
-
 
 	public void run(IAction action) {
 	
@@ -36,22 +33,16 @@ public class MarkWithFeatureAction implements IEditorActionDelegate,
 	    IFile file = input.getFile();
 	    IProject activeProject = file.getProject();
 	  
-	    
 	    String activeProjectPath = activeProject.getLocation().toFile().getAbsolutePath();
 	    String activeProjectPathToFile = file.getLocation().toFile().getAbsolutePath();
 	    
 		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
 		
-		// Magic --> eintragen in XML
-		
 		String feature = selectFeatureDialog.open(activeEditor);
 		
 		this.colorXmlManager.addAnnotation(activeProjectPathToFile,startLine,endLine,feature);
 
-		//ColorAnnotationManager colorAnnotationManager = new ColorAnnotationManager(); 
-
 	}
-
 
 	public void selectionChanged(IAction action, ISelection selection) {
 	}

@@ -25,6 +25,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.prop4j.And;
+import org.prop4j.NodeWriter;
+import org.prop4j.NormalForms;
 import org.prop4j.Implies;
 import org.prop4j.Literal;
 import org.prop4j.Node;
@@ -36,26 +38,24 @@ import de.ovgu.featureide.fm.core.Feature;
 import de.ovgu.featureide.fm.core.FeatureModel;
 import de.ovgu.featureide.fm.core.editing.NodeCreator;
 
-// product-preserving
-// configuration-preserving
-
-// TODO: Test all models and time how much longer statistics collecting takes (see: BFeatureModelAnalyser)
-//       time for input model, time for output model
-// TODO: Download auto-generated example models from http://featureide.cs.ovgu.de (bottom) and test
-// TODO: documentation
-
 /**
  * A class to convert feature models with arbitrary cross-tree constraints
- * into models with only simple constraints but describing the same set of 
- * product variants. The conversion is a refactoring.
+ * into models with only simple requires and excludes constraints.
  * 
- * A constraint is simple if it has the form "f => g" or "f => not g" where f 
- * and g are features.
+ * A constraint is simple if it has the form "f => g" (requires) or "f => not g"
+ * (excludes) where f and g are features.
+ * 
+ * The resulting model is a refactoring of the input model and as such describes
+ * the same set of product variants. Generally though, it does not describe the 
+ * same set of feature configurations.
+ * 
+ * The converter supports converting using Conjunctive (CNF) and Disjunctive 
+ * Normal Form (DNF), and a designated and a naive method each.
  * 
  * In the following, "feature model" generally refers to the instance variable 
  * "fm" that is set in the "convert" method. When using any of the protected 
  * methods outside of the context of "convert", subclasses and external callers 
- * must ensure that "fm" is set correctly.   
+ * must ensure that "fm" is set correctly and all other preconditions hold.   
  * 
  * @author Arthur Hammer
  */
@@ -68,6 +68,11 @@ public class ComplexConstraintConverter {
 		this(true);
 	}
 	
+	/**
+	 * Whether to use Conjunctive (CNF) or Disjunctive Normal Form (DNF) when
+	 * converting the model. 
+	 * @param useCNF Whether to use CNF or DNF
+	 */
 	public ComplexConstraintConverter(boolean useCNF) {
 		this.useCNF = useCNF; 
 	}
@@ -85,9 +90,21 @@ public class ComplexConstraintConverter {
 			return fm;
 		}
 		
+//		int i = 0;
+//		for (Node complex : complexConstraints) {
+//			Node[] refactored = new Refactor().refactor(complex.clone());
+//			if (refactored != null) {
+//				i++;
+//				System.out.println(complex);
+//				System.out.println(Arrays.toString(refactored));
+//				System.out.println();
+//			}
+//		}
+//		System.out.println("Refactored " + i + " of " + complexConstraints.size() + " constraints.");
+//		
 		removeConstraints(complexConstraints);	
 		And complexFormula = new And(complexConstraints);
-		Feature formulaFeature = convertFormula(complexFormula, (this.useCNF ? "CNF" : "DNF"));
+		Feature formulaFeature = convertFormula(complexFormula, (useCNF ? "CNF" : "DNF"));
 		restructureRootToAnd();
 		fm.getRoot().addChild(formulaFeature);
 		
@@ -108,62 +125,57 @@ public class ComplexConstraintConverter {
 		}
 		
 		Node formula = NodeCreator.createNodes(model);
-		Node[] children = formula.getChildren(); // TODO: empty etc.		
+		System.out.println(NodeWriter.nodeToString(formula, NodeWriter.textualSymbols));
+		Node[] children = formula.getChildren();		
 		
-		// NodeCreator appends three uneccessary nodes
+		// Currently, NodeCreator appends three uneccessary nodes of the form 
+		// "True and (not False) and (... or True)".
+		// For now, we just chop them off. In the future, dynamic detection of
+		// those kinds of nodes might be better.
 		if (children.length >= 3) {
 			formula.setChildren(Arrays.copyOf(children, children.length - 3));
 		}
 			
-		Feature cnfFeature = convertFormula(formula, "CNF");
+		Feature cnfFeature = convertFormula(formula, (useCNF ? "CNF" : "DNF"));
 		newRoot.addChild(cnfFeature);
 
 		return fm;
 	}
 	
-	protected Node normalizeNormalForm(Node normalForm) {
-		if (normalForm.getChildren().length == 0) {
-			String rootName = fm.getRoot().getName();
-			// CNF is empty, i.e. always true
-			// Add artificial clause: root or not root
-			if (normalForm instanceof And && useCNF) {
-				return new And(new Or(new Literal(rootName), new Literal(rootName, false)));
-			}
-			// DNF is empty, i.e. always false
-			// Add artificial clause: root and not root
-			if (normalForm instanceof Or && !useCNF) {
-				return new Or(new And(new Literal(rootName), new Literal(rootName, false)));
-			}
-		}
-		if (normalForm instanceof Or && useCNF) {
-			return new And(normalForm);
-		}
-		if (normalForm instanceof And && !useCNF) {
-			return new Or(normalForm);
-		}
-		if (normalForm instanceof Literal) {
-			if (useCNF) {
-				return new And(new Or(normalForm));
-			}
-			else {
-				return new Or(new And(normalForm));
-			}
-		}
-		
-		return normalForm;	
-	}
-	
 	protected Feature convertFormula(Node formula, String name) {
-		Node normalForm = useCNF ? formula.toCNF() : formula.toDNF();
-		normalForm.simplify();
+//		Node normalForm = formula.clone().toCNF();
+		Node normalForm = useCNF ? NormalForms.toCNF(formula) : NormalForms.toDNF(formula);
 		normalForm = normalizeNormalForm(normalForm);
-//		System.out.println((useCNF ? "CNF: " : "DNF: ") + normalForm);
 		return convertNormalForm(normalForm, name);
 	}
 	
+	/**
+	 * Converts a node in CNF or DNF into a Feature. The feature is added to 
+	 * the feature model, but is not added as a child to any other feature yet.
+	 * 
+	 * Also adds corresponding simple constraints to the feature model.
+	 * 
+	 * This and the following convert method make the following assumptions:
+	 * 
+	 * - All literals in the formula have a corresponding feature in the
+	 *   feature model.
+	 * - The formula does not contain representations for logical true/false 
+	 *   constants.
+	 * - The enclosed object type of all literals is String.
+	 * - The normal form node has a proper CNF or DNF structure and does not 
+	 *   contain null values.
+	 *   
+	 * The methods do not explicitly check the structure of the normal form.
+	 * I.e. if a node is passed in DNF form but useCNF is true, the node will
+	 * be treated as a CNF node.
+	 * 
+	 * @param normalForm
+	 * @param name
+	 * @return
+	 */
 	protected Feature convertNormalForm(Node normalForm, String name) {
 		Node[] clauses = normalForm.getChildren();
-		Feature normalFormFeature = createAbstractFeature(name, true, this.useCNF);
+		Feature normalFormFeature = createAbstractFeature(name, true, useCNF);
 		
 		for (int i = 0; i < clauses.length; i++) {
 			Feature clauseFeature = convertClause(clauses[i], "" + (i+1));
@@ -174,22 +186,22 @@ public class ComplexConstraintConverter {
 	}
 	
 	protected Feature convertClause(Node clause, String name) {
-		Feature clauseFeature = createAbstractFeature("Clause" + name, true, !this.useCNF);	
+		Feature clauseFeature = createAbstractFeature("Clause" + name, true, !useCNF);	
 		Node[] literals = (clause instanceof Literal) ? new Node[]{clause} : clause.getChildren();
 		
 		for (int i = 0; i < literals.length; i++) {
 			if (! (literals[i] instanceof Literal)) {
-				throw new IllegalArgumentException("Node in clause is not a literal: " + literals[i] + "of type: " + literals[i].getClass());
+				throw new IllegalArgumentException("Node in clause is not a literal: " + literals[i] + " of type: " + literals[i].getClass());
 			}
 			
 			Literal literal = (Literal) literals[i];
 			Feature originalFeature = fm.getFeature((String) literal.var);
-
 			if (originalFeature == null) {
-				throw new IllegalArgumentException("No corresponding feature for literal in formula: " + literal);
+				throw new IllegalArgumentException("No corresponding feature in model for literal in formula: " + literal);
 			}
 			
-			if (this.useCNF) {
+			// Skip creating separate literal feature if clause contains only a single literal
+			if (useCNF && literals.length > 1) {
 				Feature literalFeature = createAbstractFeature(originalFeature.getName() + " [" + name + "]", false, false);
 				clauseFeature.addChild(literalFeature);
 				addSimpleConstraint(literalFeature, originalFeature, literal.positive);
@@ -200,6 +212,40 @@ public class ComplexConstraintConverter {
 		}
 		
 		return clauseFeature;
+	}
+
+	/**
+	 * Restructures a Node such that it is in "full" CNF (Ands of Ors of Literals)
+	 * or DNF (Ors of Ands of Literals) form.
+	 * 
+	 * Only does basic restructuring such as wrapping literals into a clause
+	 * and a root node. More complex patterns are not treated and should be 
+	 * handled by the caller.
+	 * 
+	 * @param normalForm
+	 * @return
+	 */
+	protected Node normalizeNormalForm(Node normalForm) {
+		// If CNF is null, it is true. As there are no constants for 
+		// propositional true and false, add an artifical node "root or not root".
+		// If DNF is null, it is false. Add node "root and not root".
+		if (normalForm == null) {
+			String root = fm.getRoot().getName();
+			return useCNF ? 
+					new And(new Or(new Literal(root), new Literal(root, false))) : 
+						new Or(new And(new Literal(root), new Literal(root, false)));
+		}
+		if (normalForm instanceof Or && useCNF) {
+			return new And(normalForm);
+		}
+		if (normalForm instanceof And && !useCNF) {
+			return new Or(normalForm);
+		}
+		if (normalForm instanceof Literal) {
+			return useCNF ? new And(new Or(normalForm)) : new Or(new And(normalForm));
+		}
+		
+		return normalForm;	
 	}
 
 	protected void addSimpleConstraint(Feature f, Feature g, boolean requires) {
@@ -233,6 +279,17 @@ public class ComplexConstraintConverter {
 		return createFeature(name, false, isMandatory, isAnd);
 	}
 	
+	/**
+	 * Creates a new feature. The feature is added to the feature model, but is
+	 * not added as a child to any other feature yet. If a feature with the
+	 * chosen name already exists, a unique name is generated.
+	 * 
+	 * @param name Name of the new feature
+	 * @param isAbstract Whether the feature is abstract or not
+	 * @param isMandatory Whether the feature is mandatory or optional
+	 * @param isAnd Whether the feature is an And- or an Or-group
+	 * @return New feature
+	 */
 	protected Feature createFeature(String name, boolean isAbstract, boolean isMandatory, boolean isAnd) {
 		Feature feature = new Feature(fm, name);
 		feature.setAbstract(isAbstract);
@@ -254,6 +311,14 @@ public class ComplexConstraintConverter {
 		return feature;
 	}
 	
+	/**
+	 * Adds an optional feature to the root if it does not exist yet in the 
+	 * model. Restructures the root to an And-group if necessary.
+	 * 
+	 * @param name Name of the new feature
+	 * @param isAbstract Whether the feature is abstract
+	 * @return New feature if it didn't not exist yet, null otherwise.
+	 */
 	protected Feature createFeatureUnderRoot(String name, boolean isAbstract) {
 		if (fm.getFeature(name) == null) {
 			restructureRootToAnd();
@@ -269,7 +334,7 @@ public class ComplexConstraintConverter {
 		Feature root = fm.getRoot();
 
 		if (!root.isAnd()) {
-			Feature newRoot = createAbstractFeature("__NewRoot__", false, true);
+			Feature newRoot = createAbstractFeature("NewRoot", false, true);
 			newRoot.addChild(root);
 			root.setMandatory(true);			
 			fm.setRoot(newRoot);

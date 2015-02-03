@@ -298,7 +298,7 @@ public class ComplexConstraintConverter {
 		
 		return clauseFeature;
 	}
-
+	
 	/**
 	 * Restructures a Node such that it is in "full" CNF (Ands of Ors of Literals)
 	 * or DNF (Ors of Ands of Literals) form.
@@ -334,12 +334,16 @@ public class ComplexConstraintConverter {
 	}
 
 	protected void addSimpleConstraint(Feature f, Feature g, boolean requires) {
-		Node implies = new Implies(f.getName(), (requires ? g.getName() : new Not(g.getName())));
+		Node fNode = new Literal(f.getName());
+		Node gNode = new Literal(g.getName());
+		
+		Node implies = new Implies(fNode, (requires ? gNode : new Not(gNode)));
 		fm.addConstraint(new Constraint(fm, implies));
 		
 		// biimplications to reduce number of configurations
 		if (requires && useCNF && useEquivalenceConstraints) {
-			implies = new Implies((requires ? g.getName() : new Not(g.getName())), f.getName());
+			// Clone so constraints can be modified independently
+			implies = new Implies(gNode.clone(), fNode.clone());
 			fm.addConstraint(new Constraint(fm, implies));
 		}
 	}

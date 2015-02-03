@@ -34,6 +34,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import de.ovgu.featureide.fm.core.FeatureModel;
+import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
 import de.ovgu.featureide.fm.core.editing.Comparison;
 import de.ovgu.featureide.fm.core.editing.ModelComparator;
 import de.ovgu.featureide.fm.core.io.UnsupportedModelException;
@@ -115,6 +116,58 @@ public class ComplexConstraintConverterTest {
 		assertEquals(Comparison.REFACTORING, editType(input, result));
 		assertFalse(result.getAnalyser().hasComplexConstraints());
 	}
+	
+	
+	// Theses tests do not pass yet: Removing redundant constraints (all at 
+	// once) seems to change the product variants in some cases.
+	// See test model: test-cleanup-redundant-constraints.xml
+//	@Test
+//	public void testCleanupInputModelCNF() throws UnsupportedModelException {
+//		boolean old = cnfConverter.getCleansUpModel();
+//		cnfConverter.setCleansInputModel(true);
+//		
+//		result = cnfConverter.convert(input);
+//		cnfConverter.setCleansInputModel(old);
+//		
+//		assertEquals(Comparison.REFACTORING, editType(input, result));
+//		assertFalse(result.getAnalyser().hasComplexConstraints());
+//	}
+//	
+//	@Test
+//	public void testCleanupInputModelNaiveCNF() throws UnsupportedModelException {
+//		boolean old = cnfConverter.getCleansUpModel();
+//		cnfConverter.setCleansInputModel(true);
+//		
+//		result = cnfConverter.convertNaive(input);
+//		cnfConverter.setCleansInputModel(old);
+//		
+//		assertEquals(Comparison.REFACTORING, editType(input, result));
+//		assertFalse(result.getAnalyser().hasComplexConstraints());
+//	}
+//	
+//	@Test
+//	public void testCleanupInputModelDNF() throws UnsupportedModelException {
+//		boolean old = dnfConverter.getCleansUpModel();
+//		dnfConverter.setCleansInputModel(true);
+//		
+//		result = dnfConverter.convert(input);
+//		dnfConverter.setCleansInputModel(old);
+//		
+//		assertEquals(Comparison.REFACTORING, editType(input, result));
+//		assertFalse(result.getAnalyser().hasComplexConstraints());
+//	}
+//	
+//	@Test
+//	public void testCleanupInputModelNaiveDNF() throws UnsupportedModelException {
+//		boolean old = dnfConverter.getCleansUpModel();
+//		dnfConverter.setCleansInputModel(true);
+//		
+//		result = dnfConverter.convertNaive(input);
+//		dnfConverter.setCleansInputModel(old);
+//		
+//		assertEquals(Comparison.REFACTORING, editType(input, result));
+//		assertFalse(result.getAnalyser().hasComplexConstraints());
+//	}
 	
 //	@Test
 //	public void testConvertConfigsCNF() throws TimeoutException {

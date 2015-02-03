@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+	<featureModel chosenLayoutAlgorithm="1">
+		<struct>
+			<and abstract="true" mandatory="true" name="NewRoot">
+				<or mandatory="true" name="Root">
+					<feature mandatory="true" name="A"/>
+					<feature mandatory="true" name="B"/>
+					<feature mandatory="true" name="C"/>
+				</or>
+				<and abstract="true" mandatory="true" name="CNF">
+					<or abstract="true" mandatory="true" name="Clause1">
+						<feature abstract="true" mandatory="true" name="A [1]"/>
+						<feature abstract="true" mandatory="true" name="B [1]"/>
+					</or>
+					<or abstract="true" mandatory="true" name="Clause2">
+						<feature abstract="true" mandatory="true" name="A [2]"/>
+						<feature abstract="true" mandatory="true" name="B [2]"/>
+					</or>
+				</and>
+			</and>
+		</struct>
+		<constraints>
+			<rule>
+				<imp>
+					<var>A [1]</var>
+					<conj>
+						<var>A</var>
+						<var>A</var>
+					</conj>
+				</imp>
+			</rule>
+			<rule>
+				<imp>
+					<conj>
+						<var>A</var>
+						<var>A</var>
+					</conj>
+					<var>A [1]</var>
+				</imp>
+			</rule>
+			<rule>
+				<imp>
+					<var>B [1]</var>
+					<conj>
+						<var>B</var>
+						<var>B</var>
+					</conj>
+				</imp>
+			</rule>
+			<rule>
+				<imp>
+					<var>B</var>
+					<var>B [1]</var>
+				</imp>
+			</rule>
+			<rule>
+				<imp>
+					<var>A [2]</var>
+					<var>A</var>
+				</imp>
+			</rule>
+			<rule>
+				<imp>
+					<var>A</var>
+					<var>A [2]</var>
+				</imp>
+			</rule>
+			<rule>
+				<imp>
+					<var>B [2]</var>
+					<not>
+						<var>B</var>
+					</not>
+				</imp>
+			</rule>
+		</constraints>
+		<calculations Auto="true" Constraints="true" Features="true" Redundant="true" Tautology="true"/>
+		<comments/>
+		<featureOrder userDefined="false"/>
+	</featureModel>

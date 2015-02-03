@@ -25,7 +25,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.prop4j.And;
-import org.prop4j.NodeWriter;
 import org.prop4j.NormalForms;
 import org.prop4j.Implies;
 import org.prop4j.Literal;
@@ -34,8 +33,10 @@ import org.prop4j.Not;
 import org.prop4j.Or;
 
 import de.ovgu.featureide.fm.core.Constraint;
+import de.ovgu.featureide.fm.core.ConstraintAttribute;
 import de.ovgu.featureide.fm.core.Feature;
 import de.ovgu.featureide.fm.core.FeatureModel;
+import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
 import de.ovgu.featureide.fm.core.editing.NodeCreator;
 
 /**
@@ -63,7 +64,8 @@ public class ComplexConstraintConverter {
 
 	protected FeatureModel fm;
 	protected boolean useCNF;
-	
+	protected boolean cleansInputModel = false;
+
 	public ComplexConstraintConverter() {
 		this(true);
 	}
@@ -77,6 +79,25 @@ public class ComplexConstraintConverter {
 		this.useCNF = useCNF; 
 	}
 
+	/**
+	 * If set, removes redundant and tautology constraints from the input model
+	 * before converting.  If a constraint makes the model void, converts the 
+	 * model into a trivial void model.
+	 * 
+	 * This might result in a smaller output model (number of features and 
+	 * number constraints). However, the constraint analysis usually slows down 
+	 * the conversion process considerably. 
+	 * 
+	 * Default is false.
+	 */
+	public void setCleansInputModel(boolean cleansInputModel) {
+		this.cleansInputModel = cleansInputModel;
+	}
+	
+	public boolean getCleansUpModel() {
+		return cleansInputModel;
+	}
+	
 	public FeatureModel convert(FeatureModel model) {
 		if (model == null) {
 			throw new IllegalArgumentException("Feature model cannot be null");
@@ -84,24 +105,17 @@ public class ComplexConstraintConverter {
 
 		fm = model.deepClone();
 		fm.getAnalyser().runCalculationAutomatically = false;
+		
+		if (cleansInputModel) {
+			cleanupModel();
+		}
+		
 		List<Node> complexConstraints = getComplexConstraints();
 		
 		if (fm.getRoot() == null || fm.getFeatures().isEmpty() || complexConstraints.isEmpty()) {
 			return fm;
 		}
 		
-//		int i = 0;
-//		for (Node complex : complexConstraints) {
-//			Node[] refactored = new Refactor().refactor(complex.clone());
-//			if (refactored != null) {
-//				i++;
-//				System.out.println(complex);
-//				System.out.println(Arrays.toString(refactored));
-//				System.out.println();
-//			}
-//		}
-//		System.out.println("Refactored " + i + " of " + complexConstraints.size() + " constraints.");
-//		
 		removeConstraints(complexConstraints);	
 		And complexFormula = new And(complexConstraints);
 		Feature formulaFeature = convertFormula(complexFormula, (useCNF ? "CNF" : "DNF"));
@@ -116,6 +130,10 @@ public class ComplexConstraintConverter {
 		fm = new FeatureModel();
 		fm.getAnalyser().runCalculationAutomatically = false;
 		
+		if (cleansInputModel) {
+			cleanupModel();
+		}
+		
 		Feature root = model.getRoot();
 		Feature newRoot = createFeature(root.getName(), root.isAbstract(), false, true);
 		fm.setRoot(newRoot);
@@ -125,8 +143,8 @@ public class ComplexConstraintConverter {
 		}
 		
 		Node formula = NodeCreator.createNodes(model);
-		System.out.println(NodeWriter.nodeToString(formula, NodeWriter.textualSymbols));
 		Node[] children = formula.getChildren();		
+		formula.setChildren( Arrays.copyOfRange(children, 1, children.length));
 		
 		// Currently, NodeCreator appends three uneccessary nodes of the form 
 		// "True and (not False) and (... or True)".
@@ -140,6 +158,63 @@ public class ComplexConstraintConverter {
 		newRoot.addChild(cnfFeature);
 
 		return fm;
+	}
+	
+	/**
+	 * Removes redundant and tautology constraints from the feature model.
+	 * 
+	 * This might result in a smaller output model (number of features and 
+	 * number constraints). However, the constraint analysis usually slows down 
+	 * the conversion process considerably.
+	 * 
+	 * If a constraint makes the model void, converts the model into a trivial
+	 * void model.
+	 */
+	protected void cleanupModel() {
+		// TODO: Can we make use of previous analysis (if any) and skip new one?
+		FeatureModelAnalyzer analyzer = fm.getAnalyser();
+		
+		boolean featuresOld = analyzer.calculateFeatures;
+		boolean constraintsOld = analyzer.calculateConstraints;
+		boolean redundantOld = analyzer.calculateRedundantConstraints;
+		boolean tautologyOld = analyzer.calculateTautologyConstraints;
+		
+		analyzer.calculateFeatures = true;
+		analyzer.calculateConstraints = true;
+		analyzer.calculateRedundantConstraints = true;
+		analyzer.calculateTautologyConstraints = true;
+		
+		analyzer.analyzeFeatureModel(null);
+		List<Constraint> toRemove = new LinkedList<Constraint>();
+		
+		for (Constraint c : fm.getConstraints()) {
+			ConstraintAttribute attribute = c.getConstraintAttribute();
+			
+			if (attribute == ConstraintAttribute.REDUNDANT || attribute == ConstraintAttribute.TAUTOLOGY) {
+				toRemove.add(c);
+			}
+			else if (attribute == ConstraintAttribute.VOID_MODEL || attribute == ConstraintAttribute.UNSATISFIABLE ) {
+				// Simplifiy model to only contain a single contradicting constraint 
+				FeatureModel voidModel = new FeatureModel();
+				Feature root = createAbstractFeature(fm.getRoot().getName(), false, false);
+				voidModel.setRoot(root);
+				voidModel.addConstraint(new Constraint(voidModel, new Implies(root, new Not(root))));
+				
+				fm = voidModel;
+				toRemove.clear();
+				break;
+			}
+		}
+
+		for (Constraint c : toRemove) {
+			fm.removeConstraint(c);
+		}
+		
+		// Reset analyzer attributes
+		analyzer.calculateFeatures = featuresOld;
+		analyzer.calculateConstraints = constraintsOld;
+		analyzer.calculateRedundantConstraints = redundantOld;
+		analyzer.calculateTautologyConstraints = tautologyOld;
 	}
 	
 	protected Feature convertFormula(Node formula, String name) {

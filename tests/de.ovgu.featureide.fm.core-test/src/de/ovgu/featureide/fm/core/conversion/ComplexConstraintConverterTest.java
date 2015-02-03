@@ -47,7 +47,7 @@ import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelReader;
 @RunWith(Parameterized.class)
 public class ComplexConstraintConverterTest {
 
-	private static final ComplexConstraintConverterCNF cnfConverter = new ComplexConstraintConverterCNF(true);
+	private static final ComplexConstraintConverterCNF cnfConverter = new ComplexConstraintConverterCNF();
 	private static final ComplexConstraintConverterDNF dnfConverter = new ComplexConstraintConverterDNF();
 	private static final ModelComparator comparator = new ModelComparator(10000);
 

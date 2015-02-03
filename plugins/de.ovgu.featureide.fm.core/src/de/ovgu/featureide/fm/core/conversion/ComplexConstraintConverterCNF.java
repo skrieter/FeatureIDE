@@ -20,13 +20,6 @@
  */
 package de.ovgu.featureide.fm.core.conversion;
 
-import org.prop4j.Implies;
-import org.prop4j.Node;
-import org.prop4j.Not;
-
-import de.ovgu.featureide.fm.core.Constraint;
-import de.ovgu.featureide.fm.core.Feature;
-
 /**
  * A class to convert feature models with arbitrary cross-tree constraints
  * into models with only simple constraints but describing the same set of 
@@ -38,33 +31,7 @@ import de.ovgu.featureide.fm.core.Feature;
  */
 public class ComplexConstraintConverterCNF extends ComplexConstraintConverter {
 	
-	private boolean useEquivalence;
-	
 	public ComplexConstraintConverterCNF() {
-		this(true);
-	}
-	
-	public ComplexConstraintConverterCNF(boolean useEquivalence) {
-		this.useEquivalence = useEquivalence;
-	}
-	
-	public void setUseEquivalence(boolean useEquivalence) {
-		this.useEquivalence = useEquivalence;
-	}
-	
-	public boolean getUseEquivalence() {
-		return useEquivalence;
-	}
-	
-	@Override
-	protected void addSimpleConstraint(Feature f, Feature g, boolean requires) {
-		super.addSimpleConstraint(f, g, requires);
-		
-		// Reduces number of configurations, adds more constraints. 
-		// Not applicable for exclude constraints.
-		if (requires && useEquivalence) {
-			Node implies = new Implies((requires ? g.getName() : new Not(g.getName())), f.getName());
-			fm.addConstraint(new Constraint(fm, implies));
-		}
+		super(true);
 	}
 }

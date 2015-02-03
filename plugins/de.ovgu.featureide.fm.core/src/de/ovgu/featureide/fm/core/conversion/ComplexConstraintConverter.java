@@ -64,6 +64,7 @@ public class ComplexConstraintConverter {
 
 	protected FeatureModel fm;
 	protected boolean useCNF;
+	protected boolean useEquivalenceConstraints = true; 
 	protected boolean cleansInputModel = false;
 
 	public ComplexConstraintConverter() {
@@ -77,6 +78,23 @@ public class ComplexConstraintConverter {
 	 */
 	public ComplexConstraintConverter(boolean useCNF) {
 		this.useCNF = useCNF; 
+	}
+	
+	/**
+	 * If set, adds biimplications for requires constraints instead of single 
+	 * implications. (Not applicable for excludes constraints or DNF conversion.)
+	 * 
+	 * Generally reduces the number of feature configurations but adds more
+	 * constraints.  
+	 * 
+	 * Default is true.
+	 */
+	public void setUseEquivalenceConstraints(boolean useEquivalence) {
+		this.useEquivalenceConstraints = useEquivalence;
+	}
+	
+	public boolean setUseEquivalenceConstraints() {
+		return useEquivalenceConstraints;
 	}
 
 	/**
@@ -326,6 +344,12 @@ public class ComplexConstraintConverter {
 	protected void addSimpleConstraint(Feature f, Feature g, boolean requires) {
 		Node implies = new Implies(f.getName(), (requires ? g.getName() : new Not(g.getName())));
 		fm.addConstraint(new Constraint(fm, implies));
+		
+		// biimplications to reduce number of configurations
+		if (requires && useCNF && useEquivalenceConstraints) {
+			implies = new Implies((requires ? g.getName() : new Not(g.getName())), f.getName());
+			fm.addConstraint(new Constraint(fm, implies));
+		}
 	}
 	
 	protected List<Node> getComplexConstraints() {

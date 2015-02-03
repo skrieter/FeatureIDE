@@ -144,6 +144,10 @@ public class ComplexConstraintConverter {
 	}
 	
 	public FeatureModel convertNaive(FeatureModel model) {
+		if (model == null) {
+			throw new IllegalArgumentException("Feature model cannot be null");
+		}
+		
 		model = model.deepClone(); 
 		fm = new FeatureModel();
 		fm.getAnalyser().runCalculationAutomatically = false;

@@ -325,21 +325,20 @@ public class ComplexConstraintConverter {
 		if (literals.length == 1) {
 			Literal l = (Literal) literals[0];
 			if (l.positive) {
-				return l;
+				return l.clone();
 			}
-			l.flip();
-			return new Not(l);
+			return new Not(new Literal(l.var));
 		}
 		// Extract simple implication from binary disjunction
 		if (literals.length == 2) {
-			Literal f = (Literal) literals[0];
-			Literal g = (Literal) literals[1];
+			Literal f = (Literal) literals[0].clone();
+			Literal g = (Literal) literals[1].clone();
 			
 			if (!f.positive) {
-				return new Implies(new Not(f), g);
+				return new Implies(new Literal(f.var), g);
 			}
 			if (!g.positive) {
-				return new Implies(new Not(g), f);
+				return new Implies(new Literal(g.var), f);
 			}
 		}
 		

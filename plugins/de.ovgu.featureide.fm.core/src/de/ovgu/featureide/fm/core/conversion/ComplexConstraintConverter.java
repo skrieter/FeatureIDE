@@ -263,6 +263,12 @@ public class ComplexConstraintConverter {
 		Feature normalFormFeature = createAbstractFeature(name, true, useCNF);
 		
 		for (int i = 0; i < clauses.length; i++) {
+			Node refactored = refactorClauseToSimpleConstraint(clauses[i]);
+			if (refactored != null) {
+				fm.addConstraint(new Constraint(fm, refactored));
+				continue;
+			}
+			
 			Feature clauseFeature = convertClause(clauses[i], "" + (i+1));
 			normalFormFeature.addChild(clauseFeature);
 		}
@@ -273,7 +279,7 @@ public class ComplexConstraintConverter {
 	protected Feature convertClause(Node clause, String name) {
 		Feature clauseFeature = createAbstractFeature("Clause" + name, true, !useCNF);	
 		Node[] literals = (clause instanceof Literal) ? new Node[]{clause} : clause.getChildren();
-		
+
 		for (int i = 0; i < literals.length; i++) {
 			if (! (literals[i] instanceof Literal)) {
 				throw new IllegalArgumentException("Node in clause is not a literal: " + literals[i] + " of type: " + literals[i].getClass());
@@ -297,6 +303,46 @@ public class ComplexConstraintConverter {
 		}
 		
 		return clauseFeature;
+	}
+
+	/**
+	 * Only applicable to CNF as we can extract implications from disjunction 
+	 * clauses. We cannot extract implications from conjunction clauses for 
+	 * DNF.
+	 */
+	protected Node refactorClauseToSimpleConstraint(Node clause) {
+		if (!useCNF) {
+			return null;
+		}
+		
+		Node[] literals = clause.getChildren();
+		
+		if (literals == null) {
+			return null;
+		}
+		// Single literals are simple constraints
+		if (literals.length == 1) {
+			Literal l = (Literal) literals[0];
+			if (l.positive) {
+				return l;
+			}
+			l.flip();
+			return new Not(l);
+		}
+		// Extract simple implication from binary disjunction
+		if (literals.length == 2) {
+			Literal f = (Literal) literals[0];
+			Literal g = (Literal) literals[1];
+			
+			if (!f.positive) {
+				return new Implies(new Not(f), g);
+			}
+			if (!g.positive) {
+				return new Implies(new Not(g), f);
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -342,7 +388,6 @@ public class ComplexConstraintConverter {
 		
 		// biimplications to reduce number of configurations
 		if (requires && useCNF && useEquivalenceConstraints) {
-			// Clone so constraints can be modified independently
 			implies = new Implies(gNode.clone(), fNode.clone());
 			fm.addConstraint(new Constraint(fm, implies));
 		}

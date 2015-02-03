@@ -254,7 +254,6 @@ public class ComplexConstraintConverter {
 	 *   feature model.
 	 * - The formula does not contain representations for logical true/false 
 	 *   constants.
-	 * - The enclosed object type of all literals is String.
 	 * - The normal form node has a proper CNF or DNF structure and does not 
 	 *   contain null values.
 	 *   

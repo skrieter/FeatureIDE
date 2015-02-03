@@ -52,7 +52,7 @@ public class ComplexConstraintConverterTest {
 	private static final ComplexConstraintConverterDNF dnfConverter = new ComplexConstraintConverterDNF();
 	private static final ModelComparator comparator = new ModelComparator(10000);
 
-	private FeatureModel fm;
+	private FeatureModel input;
 	private FeatureModel result;
 	@SuppressWarnings("unused")
 	private String name; 
@@ -61,7 +61,7 @@ public class ComplexConstraintConverterTest {
 	protected static File MODEL_FILE_FOLDER = new File("/home/itidbrun/TeamCity/buildAgent/work/featureide/tests/de.ovgu.featureide.fm.core-test/src/" + FOLDER_NAME + "/");
 
 	public ComplexConstraintConverterTest(FeatureModel fm, String name) {
-		this.fm = fm;
+		this.input = fm;
 		this.name = name;
 	}
 
@@ -83,38 +83,39 @@ public class ComplexConstraintConverterTest {
 			models[1] = f.getName();
 			params.add(models);
 		}
-
+		
 		return params;
 	}
 
+	// Output models are refactorings and don't have complex constraints
 	@Test
 	public void testConvertCNF() throws UnsupportedModelException {
-		result = cnfConverter.convert(fm);
-		assertEquals(editType(fm, result), Comparison.REFACTORING);
+		result = cnfConverter.convert(input);
+		assertEquals(Comparison.REFACTORING, editType(input, result));
 		assertFalse(result.getAnalyser().hasComplexConstraints());
 	}
 
 	@Test
 	public void testConvertNaiveCNF() throws UnsupportedModelException {
-		result = cnfConverter.convertNaive(fm);
-		assertEquals(editType(fm, result), Comparison.REFACTORING);
+		result = cnfConverter.convertNaive(input);
+		assertEquals(Comparison.REFACTORING, editType(input, result));
 		assertFalse(result.getAnalyser().hasComplexConstraints());
 	}
 
 	@Test
 	public void testConvertDNF() throws UnsupportedModelException {
-		result = dnfConverter.convert(fm);
-		assertEquals(editType(fm, result), Comparison.REFACTORING);
+		result = dnfConverter.convert(input);
+		assertEquals(Comparison.REFACTORING, editType(input, result));
 		assertFalse(result.getAnalyser().hasComplexConstraints());
 	}
 
 	@Test
 	public void testConvertNaiveDNF() throws UnsupportedModelException {
-		result = dnfConverter.convertNaive(fm);
-		assertEquals(editType(fm, result), Comparison.REFACTORING);
+		result = dnfConverter.convertNaive(input);
+		assertEquals(Comparison.REFACTORING, editType(input, result));
 		assertFalse(result.getAnalyser().hasComplexConstraints());
 	}
-
+	
 //	@Test
 //	public void testConvertConfigsCNF() throws TimeoutException {
 //		boolean old = cnfConverter.getUseEquivalence();

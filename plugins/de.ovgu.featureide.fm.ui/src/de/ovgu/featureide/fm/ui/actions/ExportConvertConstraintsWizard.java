@@ -107,11 +107,12 @@ public class ExportConvertConstraintsWizard extends Wizard implements INewWizard
 				default:
 					return Status.CANCEL_STATUS;
 				}
-
+				
 				XmlFeatureModelWriter writer = new XmlFeatureModelWriter(result);
 				writer.writeToFile(new File(outputPath));
 				
 				try {
+					// TODO: Refresh if result is saved outside of input model project?
 					inputModelFile.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
 				} catch (CoreException e) {
 					FMUIPlugin.getDefault().logError(e);

@@ -44,7 +44,7 @@ import de.ovgu.featureide.fm.ui.actions.ExportConvertConstraintsWizard.Conversio
  * 
  * @author Arthur Hammer
  */
-public class ExportConvertConstraintsPage extends WizardPage{
+public class ExportConvertConstraintsPage extends WizardPage {
 	
 	private static final String LABEL_METHOD = "Method:";
 	private static final String TOOLTIP_METHOD = "Which method to use when converting to a product-equivalent model without complex constraints.";

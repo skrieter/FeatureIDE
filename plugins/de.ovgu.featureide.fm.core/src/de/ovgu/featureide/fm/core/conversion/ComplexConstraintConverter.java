@@ -309,6 +309,7 @@ public class ComplexConstraintConverter {
 	 * Only applicable to CNF as we can extract implications from disjunction 
 	 * clauses. We cannot extract implications from conjunction clauses for 
 	 * DNF.
+	 * @return Simple constraint if one could be extracted, null otherwise
 	 */
 	protected Node refactorClauseToSimpleConstraint(Node clause) {
 		if (!useCNF) {

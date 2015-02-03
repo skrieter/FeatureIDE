@@ -34,12 +34,10 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import de.ovgu.featureide.fm.core.FeatureModel;
-import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
 import de.ovgu.featureide.fm.core.editing.Comparison;
 import de.ovgu.featureide.fm.core.editing.ModelComparator;
 import de.ovgu.featureide.fm.core.io.UnsupportedModelException;
 import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelReader;
-import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelWriter;
 
 /**
  * Tests for ComplexConstraintConverter.
@@ -92,28 +90,28 @@ public class ComplexConstraintConverterTest {
 	@Test
 	public void testConvertCNF() throws UnsupportedModelException {
 		result = cnfConverter.convert(input);
-		assertEquals(Comparison.REFACTORING, editType(input, result));
+		assertEquals(Comparison.REFACTORING, comparator.compare(input, result));
 		assertFalse(result.getAnalyser().hasComplexConstraints());
 	}
 
 	@Test
 	public void testConvertNaiveCNF() throws UnsupportedModelException {
 		result = cnfConverter.convertNaive(input);
-		assertEquals(Comparison.REFACTORING, editType(input, result));
+		assertEquals(Comparison.REFACTORING, comparator.compare(input, result));
 		assertFalse(result.getAnalyser().hasComplexConstraints());
 	}
 
 	@Test
 	public void testConvertDNF() throws UnsupportedModelException {
 		result = dnfConverter.convert(input);
-		assertEquals(Comparison.REFACTORING, editType(input, result));
+		assertEquals(Comparison.REFACTORING, comparator.compare(input, result));
 		assertFalse(result.getAnalyser().hasComplexConstraints());
 	}
 
 	@Test
 	public void testConvertNaiveDNF() throws UnsupportedModelException {
 		result = dnfConverter.convertNaive(input);
-		assertEquals(Comparison.REFACTORING, editType(input, result));
+		assertEquals(Comparison.REFACTORING, comparator.compare(input, result));
 		assertFalse(result.getAnalyser().hasComplexConstraints());
 	}
 	
@@ -129,7 +127,7 @@ public class ComplexConstraintConverterTest {
 //		result = cnfConverter.convert(input);
 //		cnfConverter.setCleansInputModel(old);
 //		
-//		assertEquals(Comparison.REFACTORING, editType(input, result));
+//		assertEquals(Comparison.REFACTORING, comparator.compare(input, result));
 //		assertFalse(result.getAnalyser().hasComplexConstraints());
 //	}
 //	
@@ -141,7 +139,7 @@ public class ComplexConstraintConverterTest {
 //		result = cnfConverter.convertNaive(input);
 //		cnfConverter.setCleansInputModel(old);
 //		
-//		assertEquals(Comparison.REFACTORING, editType(input, result));
+//		assertEquals(Comparison.REFACTORING, comparator.compare(input, result));
 //		assertFalse(result.getAnalyser().hasComplexConstraints());
 //	}
 //	
@@ -153,7 +151,7 @@ public class ComplexConstraintConverterTest {
 //		result = dnfConverter.convert(input);
 //		dnfConverter.setCleansInputModel(old);
 //		
-//		assertEquals(Comparison.REFACTORING, editType(input, result));
+//		assertEquals(Comparison.REFACTORING, comparator.compare(input, result));
 //		assertFalse(result.getAnalyser().hasComplexConstraints());
 //	}
 //	
@@ -165,7 +163,7 @@ public class ComplexConstraintConverterTest {
 //		result = dnfConverter.convertNaive(input);
 //		dnfConverter.setCleansInputModel(old);
 //		
-//		assertEquals(Comparison.REFACTORING, editType(input, result));
+//		assertEquals(Comparison.REFACTORING, comparator.compare(input, result));
 //		assertFalse(result.getAnalyser().hasComplexConstraints());
 //	}
 	
@@ -194,23 +192,6 @@ public class ComplexConstraintConverterTest {
 //		
 //		assertEquals(config.getSolutions(10000).size(), resultConfig.getSolutions(10000).size());
 //	}
-
-	// TODO: For now, we test for refactorings by writing the model into a string and re-parsing it.
-	//       Somehow, directly comparing with the comparator seems not to be working.
-	private static boolean refactoring(FeatureModel fm, FeatureModel fm2) throws UnsupportedModelException {
-		return editType(fm, fm2) == Comparison.REFACTORING;
-	}
-	
-	private static Comparison editType(FeatureModel fm, FeatureModel fm2) throws UnsupportedModelException {
-		XmlFeatureModelWriter writer = new XmlFeatureModelWriter(fm2);
-		XmlFeatureModelReader reader = new XmlFeatureModelReader(new FeatureModel());
-		
-		reader.readFromString(writer.writeToString());
-		fm2 = reader.getFeatureModel();
-		
-		Comparison result = comparator.compare(fm, fm2);
-		return result;
-	}
 
 	private final static FileFilter getFileFilter(final String s) {
 		FileFilter filter = new FileFilter() {

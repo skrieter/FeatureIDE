@@ -63,7 +63,7 @@ public class ComplexConstraintConverterCNF extends ComplexConstraintConverter {
 		// Reduces number of configurations, adds more constraints. 
 		// Not applicable for exclude constraints.
 		if (requires && useEquivalence) {
-			Node implies = new Implies((requires ? g : new Not(g)), f);
+			Node implies = new Implies((requires ? g.getName() : new Not(g.getName())), f.getName());
 			fm.addConstraint(new Constraint(fm, implies));
 		}
 	}

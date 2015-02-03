@@ -98,7 +98,7 @@ public class FormulaConverter {
 			if (children != null) {
 				for (int i = 0; i < children.length; i++) {
 					if (children[i] instanceof Literal) {
-						literals.add((String) ((Literal) children[i]).var);
+						literals.add(((Literal) children[i]).var.toString());
 					}
 					else if (children[i] != null) {
 						toVisit.add(children[i]);

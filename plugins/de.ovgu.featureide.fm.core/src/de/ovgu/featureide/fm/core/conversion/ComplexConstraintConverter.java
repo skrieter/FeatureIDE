@@ -270,7 +270,7 @@ public class ComplexConstraintConverter {
 			}
 			
 			Literal literal = (Literal) literals[i];
-			Feature originalFeature = fm.getFeature((String) literal.var);
+			Feature originalFeature = fm.getFeature(literal.var.toString());
 			if (originalFeature == null) {
 				throw new IllegalArgumentException("No corresponding feature in model for literal in formula: " + literal);
 			}
@@ -324,7 +324,8 @@ public class ComplexConstraintConverter {
 	}
 
 	protected void addSimpleConstraint(Feature f, Feature g, boolean requires) {
-		Node implies = new Implies(f, (requires ? g : new Not(g)));
+		Node implies = new Implies(f.getName(), (requires ? g.getName() : new Not(g.getName())));
+//		Node implies = new Implies(f, (requires ? g : new Not(g)));
 		fm.addConstraint(new Constraint(fm, implies));
 	}
 	

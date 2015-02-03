@@ -60,13 +60,13 @@ public class ConstraintTest {
 			"f iff g", false,
 			"f or g", false,
 			"f and g", false,
-			"not f", false,
-			"f", false,
+			"not f", true,  
+			"f", true,
 			"not f or g", false,
 			"f or not g", false,
 			"f implies (a and b and c and d)", false,
-			"true", false,
-			"false", false,
+			"true", true,
+			"false", true,
 			new Implies("f", "g"), true,
 			new Implies("f", new Not("g")), true,
 			new Implies("f", new Literal("g")), true,
@@ -104,6 +104,6 @@ public class ConstraintTest {
 	
 	@Test
 	public void testIsSimple() {
-		assertEquals(constraint.isSimple(), expected);
+		assertEquals(expected, constraint.isSimple());
 	}
 }

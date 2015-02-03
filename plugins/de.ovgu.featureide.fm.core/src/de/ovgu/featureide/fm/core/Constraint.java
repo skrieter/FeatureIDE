@@ -259,13 +259,16 @@ public class Constraint implements PropertyConstants {
 
 	/**
 	 * Checks whether a constraint is "simple", i.e. whether it has the form
-	 * "f => g" or "f => not g" where f and g are features.
+	 * "f => g" or "f => not g" where f and g are features. 
+	 * Additionally, literals are also simple.
 	 * @return True if the constraint is simple, otherwise false.
 	 */
 	public boolean isSimple() {
-		Node[] children = getNode().getChildren();
-		
-		if (getNode() instanceof Implies) {
+		if (propNode instanceof Literal) {
+			return true;
+		}
+		if (propNode instanceof Implies) {
+			Node[] children = propNode.getChildren();
 			Node f = children[0];
 			Node g = children[1];
 

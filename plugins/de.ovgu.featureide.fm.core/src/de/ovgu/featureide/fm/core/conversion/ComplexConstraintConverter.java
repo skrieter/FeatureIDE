@@ -196,11 +196,6 @@ public class ComplexConstraintConverter {
 		// TODO: Can we make use of previous analysis (if any) and skip new one?
 		FeatureModelAnalyzer analyzer = fm.getAnalyser();
 		
-		boolean featuresOld = analyzer.calculateFeatures;
-		boolean constraintsOld = analyzer.calculateConstraints;
-		boolean redundantOld = analyzer.calculateRedundantConstraints;
-		boolean tautologyOld = analyzer.calculateTautologyConstraints;
-		
 		analyzer.calculateFeatures = true;
 		analyzer.calculateConstraints = true;
 		analyzer.calculateRedundantConstraints = true;
@@ -224,19 +219,13 @@ public class ComplexConstraintConverter {
 				
 				fm = voidModel;
 				toRemove.clear();
-				break;
+				return;
 			}
 		}
 
 		for (Constraint c : toRemove) {
 			fm.removeConstraint(c);
 		}
-		
-		// Reset analyzer attributes
-		analyzer.calculateFeatures = featuresOld;
-		analyzer.calculateConstraints = constraintsOld;
-		analyzer.calculateRedundantConstraints = redundantOld;
-		analyzer.calculateTautologyConstraints = tautologyOld;
 	}
 	
 	protected Feature convertFormula(Node formula, String name) {

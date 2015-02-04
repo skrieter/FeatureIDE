@@ -20,14 +20,12 @@
  */
 package de.ovgu.featureide.fm.core.conversion;
 
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.prop4j.NodeReader;
-import org.prop4j.Not;
 
 import de.ovgu.featureide.fm.core.Constraint;
 import de.ovgu.featureide.fm.core.FeatureModel;
@@ -43,13 +41,10 @@ import de.ovgu.featureide.fm.core.FeatureModel;
  * for any particular purpose. The conversion also does not try to preserve 
  * the structure of the formula in the result model.
  * 
- * For now, the formula cannot contain a literal named "__root__".
- * 
  * @author Arthur Hammer
  */
 public class FormulaConverter {
 	
-	// TODO: What if formula is empty/constant true/false?
 	public FeatureModel convert(String formula) {
 		if (formula == null) {
 			throw new IllegalArgumentException("Formula cannot be null.");
@@ -69,9 +64,17 @@ public class FormulaConverter {
 		// converter.fm needs to be set before calling any of the converter's internal methods
 		converter.fm = fm;
 		
-		fm.setRoot(converter.createAbstractFeature("__root__", false, true));
+		Set<String> featureNames = getFeatureNames(formula);
+		String rootName = "Root";
 		
-		for (String name: getFeatureNames(formula)) {
+		int i = 1;
+		while (featureNames.contains(rootName)) {
+			rootName += "-" + (i++);
+		}
+		
+		fm.setRoot(converter.createAbstractFeature(rootName, false, true));
+		
+		for (String name: featureNames) {
 			converter.createFeatureUnderRoot(name, false);
 		}
 		
@@ -79,34 +82,20 @@ public class FormulaConverter {
 		return converter.convert(fm);
 	}
 	
-	// Simple Breadth First Search
-	private Set<String> getFeatureNames(Node formula) {
-		if (formula == null) {
-			throw new IllegalArgumentException("Formula cannot be null.");
-		}
-		
-		LinkedList<Node> toVisit = new LinkedList<Node>();
-		Set<String> literals = new HashSet<String>();
-		Node node;
-		
-		toVisit.add(new Not(formula)); // Dummy node		
-		
-		while (! toVisit.isEmpty()) {
-			node = toVisit.removeFirst();
-			Node[] children = node.getChildren();
-			
-			if (children != null) {
-				for (int i = 0; i < children.length; i++) {
-					if (children[i] instanceof Literal) {
-						literals.add(((Literal) children[i]).var.toString());
-					}
-					else if (children[i] != null) {
-						toVisit.add(children[i]);
-					}
-				}
+	private Set<String> getFeatureNames(Node node) {
+		Set<String> features = new LinkedHashSet<String>();
+		getFeatureNames(node, features);
+		return features;
+	}
+	
+	private void getFeatureNames(Node node, Set<String> features) {
+		if (node instanceof Literal) {
+			features.add(((Literal) node).var.toString());
+		} 
+		else {
+			for (Node child : node.getChildren()){
+				getFeatureNames(child, features);
 			}
 		}
-		
-		return literals;
 	}
 }

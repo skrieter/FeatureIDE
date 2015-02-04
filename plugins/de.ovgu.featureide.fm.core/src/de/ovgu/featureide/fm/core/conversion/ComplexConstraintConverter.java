@@ -163,11 +163,11 @@ public class ComplexConstraintConverter {
 		removeConstraints(complexConstraints);	
 		And complexFormula = new And(complexConstraints);
 		Feature formulaFeature = convertFormula(complexFormula, (useCNF ? "CNF" : "DNF"));
-		if (xorFeatureGroup != null && xorFeatureGroup.hasChildren()) {
-			formulaFeature.addChild(xorFeatureGroup);
-		}
 		restructureRootToAnd();
 		fm.getRoot().addChild(formulaFeature);
+		if (xorFeatureGroup != null && xorFeatureGroup.hasChildren()) {
+			fm.getRoot().addChild(xorFeatureGroup);
+		}
 		
 		return fm;
 	}
@@ -206,10 +206,10 @@ public class ComplexConstraintConverter {
 		}
 			
 		Feature formulaFeature = convertFormula(formula, (useCNF ? "CNF" : "DNF"));
-		if (xorFeatureGroup != null && xorFeatureGroup.hasChildren()) {
-			formulaFeature.addChild(xorFeatureGroup);
-		}
 		newRoot.addChild(formulaFeature);
+		if (xorFeatureGroup != null && xorFeatureGroup.hasChildren()) {
+			newRoot.addChild(xorFeatureGroup);
+		}
 		
 		return fm;
 	}
@@ -239,10 +239,6 @@ public class ComplexConstraintConverter {
 	 * The methods do not explicitly check the structure of the normal form.
 	 * I.e. if a node is passed in DNF form but useCNF is true, the node will
 	 * be treated as a CNF node.
-	 * 
-	 * @param normalForm
-	 * @param name
-	 * @return
 	 */
 	protected Feature convertNormalForm(Node normalForm, String name) {
 		Node[] clauses = normalForm.getChildren();

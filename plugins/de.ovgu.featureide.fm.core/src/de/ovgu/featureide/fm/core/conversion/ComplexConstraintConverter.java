@@ -63,7 +63,7 @@ import de.ovgu.featureide.fm.core.editing.NodeCreator;
 public class ComplexConstraintConverter {
 
 	protected FeatureModel fm;
-	protected boolean useCNF;
+	protected boolean useCNF = true;
 	
 	protected boolean reduceConfigurations = true;
 	protected boolean preserveConfigurations = false;
@@ -71,7 +71,6 @@ public class ComplexConstraintConverter {
 	protected boolean cleanInputModel = false;
 
 	public ComplexConstraintConverter() {
-		this(true);
 	}
 	
 	/**
@@ -94,8 +93,8 @@ public class ComplexConstraintConverter {
 	 * 
 	 * Default is true.
 	 */
-	public void setReduceConfigurations(boolean useEquivalence) {
-		this.reduceConfigurations = useEquivalence;
+	public void setReduceConfigurations(boolean reduceConfigurations) {
+		this.reduceConfigurations = reduceConfigurations;
 	}
 	
 	public boolean getReduceConfigurations() {
@@ -114,9 +113,9 @@ public class ComplexConstraintConverter {
 	 * 
 	 * Default is false;
 	 */
-	public void setPreserveConfigurations(boolean preserve) {
-		this.preserveConfigurations = preserve;
-		this.reduceConfigurations = preserve ? true : reduceConfigurations;
+	public void setPreserveConfigurations(boolean preserveConfigurations) {
+		this.preserveConfigurations = preserveConfigurations;
+		this.reduceConfigurations = preserveConfigurations ? true : reduceConfigurations;
 	}
 	
 	public boolean getPreserveConfigurations() {
@@ -129,16 +128,16 @@ public class ComplexConstraintConverter {
 	 * model into a trivial void model.
 	 * 
 	 * This might result in a smaller output model (number of features and 
-	 * number constraints). However, the constraint analysis usually slows down 
-	 * the conversion process considerably. 
+	 * number constraints). However, the constraint analysis might considerably
+	 * slow down the conversion process. 
 	 * 
 	 * Default is false.
 	 */
-	public void setCleanInputModel(boolean cleansInputModel) {
+	public void setCleansInputModel(boolean cleansInputModel) {
 		this.cleanInputModel = cleansInputModel;
 	}
 	
-	public boolean getCleanInputModel() {
+	public boolean getCleansInputModel() {
 		return cleanInputModel;
 	}
 	
@@ -152,7 +151,7 @@ public class ComplexConstraintConverter {
 		xorFeatureGroup = null;
 		
 		if (cleanInputModel) {
-			cleanupModel();
+			cleanModel();
 		}
 		
 		List<Node> complexConstraints = getComplexConstraints();
@@ -184,7 +183,7 @@ public class ComplexConstraintConverter {
 		xorFeatureGroup = null;
 		
 		if (cleanInputModel) {
-			cleanupModel();
+			cleanModel();
 		}
 		
 		Feature root = model.getRoot();
@@ -197,7 +196,6 @@ public class ComplexConstraintConverter {
 		
 		Node formula = NodeCreator.createNodes(model);
 		Node[] children = formula.getChildren();		
-		formula.setChildren( Arrays.copyOfRange(children, 1, children.length));
 		
 		// Currently, NodeCreator appends three uneccessary nodes of the form 
 		// "True and (not False) and (... or True)".
@@ -212,7 +210,7 @@ public class ComplexConstraintConverter {
 			formulaFeature.addChild(xorFeatureGroup);
 		}
 		newRoot.addChild(formulaFeature);
-
+		
 		return fm;
 	}
 	
@@ -302,7 +300,7 @@ public class ComplexConstraintConverter {
 	 * If a constraint makes the model void, converts the model into a trivial
 	 * void model.
 	 */
-	protected void cleanupModel() {
+	protected void cleanModel() {
 		// TODO: Can we make use of previous analysis (if any) and skip new one?
 		FeatureModelAnalyzer analyzer = fm.getAnalyser();
 		
@@ -344,10 +342,7 @@ public class ComplexConstraintConverter {
 	 * 
 	 * Only does basic restructuring such as wrapping literals into a clause
 	 * and a root node. More complex patterns are not treated and should be 
-	 * handled by the caller.
-	 * 
-	 * @param normalForm
-	 * @return
+	 * handled separately.
 	 */
 	protected Node normalizeNormalForm(Node normalForm) {
 		// If CNF is null, it is true. As there are no constants for 
@@ -550,7 +545,7 @@ public class ComplexConstraintConverter {
 	 * 
 	 * @param name Name of the new feature
 	 * @param isAbstract Whether the feature is abstract
-	 * @return New feature if it didn't not exist yet, null otherwise.
+	 * @return New feature if it did not exist yet, null otherwise.
 	 */
 	protected Feature createFeatureUnderRoot(String name, boolean isAbstract) {
 		if (fm.getFeature(name) == null) {

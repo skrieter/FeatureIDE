@@ -163,10 +163,13 @@ public class ComplexConstraintConverter {
 		removeConstraints(complexConstraints);	
 		And complexFormula = new And(complexConstraints);
 		Feature formulaFeature = convertFormula(complexFormula, (useCNF ? "CNF" : "DNF"));
-		restructureRootToAnd();
-		fm.getRoot().addChild(formulaFeature);
-		if (xorFeatureGroup != null && xorFeatureGroup.hasChildren()) {
-			fm.getRoot().addChild(xorFeatureGroup);
+		
+		if (formulaFeature != null && formulaFeature.hasChildren()) {
+			restructureRootToAnd();
+			fm.getRoot().addChild(formulaFeature);
+			if (xorFeatureGroup != null && xorFeatureGroup.hasChildren()) {
+				fm.getRoot().addChild(xorFeatureGroup);
+			}
 		}
 		
 		return fm;
@@ -206,9 +209,12 @@ public class ComplexConstraintConverter {
 		}
 			
 		Feature formulaFeature = convertFormula(formula, (useCNF ? "CNF" : "DNF"));
-		newRoot.addChild(formulaFeature);
-		if (xorFeatureGroup != null && xorFeatureGroup.hasChildren()) {
-			newRoot.addChild(xorFeatureGroup);
+		if (formulaFeature != null && formulaFeature.hasChildren()) {
+			restructureRootToAnd();
+			newRoot.addChild(formulaFeature);
+			if (xorFeatureGroup != null && xorFeatureGroup.hasChildren()) {
+				newRoot.addChild(xorFeatureGroup);
+			}
 		}
 		
 		return fm;
@@ -554,7 +560,7 @@ public class ComplexConstraintConverter {
 		return null;
 	}
 	
-	protected void restructureRootToAnd() {
+	protected Feature restructureRootToAnd() {
 		Feature root = fm.getRoot();
 
 		if (!root.isAnd()) {
@@ -563,5 +569,7 @@ public class ComplexConstraintConverter {
 			root.setMandatory(true);			
 			fm.setRoot(newRoot);
 		}
+		
+		return fm.getRoot();
 	}
 }

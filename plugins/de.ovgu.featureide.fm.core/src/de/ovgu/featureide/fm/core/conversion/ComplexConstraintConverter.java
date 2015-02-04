@@ -397,10 +397,10 @@ public class ComplexConstraintConverter {
 			Literal g = (Literal) literals[1].clone();
 			
 			if (!f.positive) {
-				return new Implies(new Literal(f.var), g);
+				return new Implies(new Literal(f.var), g.positive ? new Literal(g.var) : new Not(new Literal(g.var)));
 			}
 			if (!g.positive) {
-				return new Implies(new Literal(g.var), f);
+				return new Implies(new Literal(g.var), f.positive ? new Literal(f.var) : new Not(new Literal(f.var)));
 			}
 		}
 		

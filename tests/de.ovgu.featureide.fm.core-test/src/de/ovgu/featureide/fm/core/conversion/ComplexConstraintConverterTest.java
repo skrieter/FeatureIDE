@@ -32,8 +32,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.FeatureModel;
+import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.editing.Comparison;
 import de.ovgu.featureide.fm.core.editing.ModelComparator;
 import de.ovgu.featureide.fm.core.io.UnsupportedModelException;
@@ -47,8 +49,8 @@ import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelReader;
 @RunWith(Parameterized.class)
 public class ComplexConstraintConverterTest {
 
-	private static final ComplexConstraintConverterCNF cnfConverter = new ComplexConstraintConverterCNF();
-	private static final ComplexConstraintConverterDNF dnfConverter = new ComplexConstraintConverterDNF();
+	private static ComplexConstraintConverterCNF cnfConverter;
+	private static ComplexConstraintConverterDNF dnfConverter;
 	private static final ModelComparator comparator = new ModelComparator(10000);
 
 	private FeatureModel input;
@@ -89,6 +91,7 @@ public class ComplexConstraintConverterTest {
 	// Output models are refactorings and don't have complex constraints
 	@Test
 	public void testConvertCNF() throws UnsupportedModelException {
+		cnfConverter = new ComplexConstraintConverterCNF();
 		result = cnfConverter.convert(input);
 		assertEquals(Comparison.REFACTORING, comparator.compare(input, result));
 		assertFalse(result.getAnalyser().hasComplexConstraints());
@@ -96,6 +99,7 @@ public class ComplexConstraintConverterTest {
 
 	@Test
 	public void testConvertNaiveCNF() throws UnsupportedModelException {
+		cnfConverter = new ComplexConstraintConverterCNF();
 		result = cnfConverter.convertNaive(input);
 		assertEquals(Comparison.REFACTORING, comparator.compare(input, result));
 		assertFalse(result.getAnalyser().hasComplexConstraints());
@@ -103,6 +107,7 @@ public class ComplexConstraintConverterTest {
 
 	@Test
 	public void testConvertDNF() throws UnsupportedModelException {
+		dnfConverter = new ComplexConstraintConverterDNF();
 		result = dnfConverter.convert(input);
 		assertEquals(Comparison.REFACTORING, comparator.compare(input, result));
 		assertFalse(result.getAnalyser().hasComplexConstraints());
@@ -110,9 +115,36 @@ public class ComplexConstraintConverterTest {
 
 	@Test
 	public void testConvertNaiveDNF() throws UnsupportedModelException {
+		dnfConverter = new ComplexConstraintConverterDNF();
 		result = dnfConverter.convertNaive(input);
 		assertEquals(Comparison.REFACTORING, comparator.compare(input, result));
 		assertFalse(result.getAnalyser().hasComplexConstraints());
+	}
+	
+	@Test
+	public void testPreserveConfigsCNF() throws TimeoutException {
+		cnfConverter = new ComplexConstraintConverterCNF();
+		cnfConverter.setPreserveConfigurations(true);
+		result = cnfConverter.convert(input);
+
+		Configuration config = new Configuration(input);
+		Configuration resultConfig = new Configuration(result);
+		
+		assertEquals(Comparison.REFACTORING, comparator.compare(input, result));
+		assertEquals(config.getSolutions(100000).size(), resultConfig.getSolutions(100000).size());
+	}
+	
+	@Test
+	public void testPreserveConfigsNaiveCNF() throws TimeoutException {
+		cnfConverter = new ComplexConstraintConverterCNF();
+		cnfConverter.setPreserveConfigurations(true);
+		result = cnfConverter.convertNaive(input);
+
+		Configuration config = new Configuration(input);
+		Configuration resultConfig = new Configuration(result);
+		
+		assertEquals(Comparison.REFACTORING, comparator.compare(input, result));
+		assertEquals(config.getSolutions(100000).size(), resultConfig.getSolutions(100000).size());
 	}
 	
 	
@@ -167,32 +199,6 @@ public class ComplexConstraintConverterTest {
 //		assertFalse(result.getAnalyser().hasComplexConstraints());
 //	}
 	
-//	@Test
-//	public void testConvertConfigsCNF() throws TimeoutException {
-//		boolean old = cnfConverter.getUseEquivalence();
-//		cnfConverter.setUseEquivalence(true);
-//		result = cnfConverter.convert(fm);
-//		cnfConverter.setUseEquivalence(old);
-//
-//		Configuration config = new Configuration(fm);
-//		Configuration resultConfig = new Configuration(result);
-//		
-//		assertEquals(config.getSolutions(100000).size(), resultConfig.getSolutions(100000).size());
-//	}
-	
-//	@Test
-//	public void testConvertConfigsNaiveCNF() throws TimeoutException {
-//		boolean old = cnfConverter.getUseEquivalence();
-//		cnfConverter.setUseEquivalence(true);
-//		result = cnfConverter.convertNaive(fm);
-//		cnfConverter.setUseEquivalence(old);
-//
-//		Configuration config = new Configuration(fm);
-//		Configuration resultConfig = new Configuration(result);
-//		
-//		assertEquals(config.getSolutions(10000).size(), resultConfig.getSolutions(10000).size());
-//	}
-
 	private final static FileFilter getFileFilter(final String s) {
 		FileFilter filter = new FileFilter() {
 			@Override

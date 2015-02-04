@@ -65,9 +65,18 @@ public class ComplexConstraintConverter {
 	protected FeatureModel fm;
 	protected boolean useCNF = true;
 	
+	/** Only for CNF */
 	protected boolean reduceConfigurations = true;
+	/** Only for CNF */
 	protected boolean preserveConfigurations = false;
-	protected Feature xorFeatureGroup; 
+	/** Only for CNF */
+	protected Feature xorFeatures; 
+	/** 
+	 * Only for CNF: Whether to add converted clause features directly to the
+	 * root or use an intermediate feature for readability.
+	 */
+	protected boolean skipIntermediateFeature = false;
+	/** For CNF and DNF */
 	protected boolean cleanInputModel = false;
 
 	public ComplexConstraintConverter() {
@@ -84,7 +93,7 @@ public class ComplexConstraintConverter {
 	
 	/**
 	 * If set, tries to reduce the number of feature configurations in the 
-	 * output feature model by adding biimplication constraints for requires 
+	 * output feature model by adding bi-implication constraints for requires 
 	 * constraints instead of single implications. Not applicable for DNF 
 	 * conversion.
 	 * 
@@ -148,14 +157,12 @@ public class ComplexConstraintConverter {
 
 		fm = model.deepClone();
 		fm.getAnalyser().runCalculationAutomatically = false;
-		xorFeatureGroup = null;
-		
+		xorFeatures = null;
 		if (cleanInputModel) {
 			cleanModel();
 		}
 		
 		List<Node> complexConstraints = getComplexConstraints();
-		
 		if (fm.getRoot() == null || fm.getFeatures().isEmpty() || complexConstraints.isEmpty()) {
 			return fm;
 		}
@@ -163,12 +170,28 @@ public class ComplexConstraintConverter {
 		removeConstraints(complexConstraints);	
 		And complexFormula = new And(complexConstraints);
 		Feature formulaFeature = convertFormula(complexFormula, (useCNF ? "CNF" : "DNF"));
+		boolean hasNewFeatures = formulaFeature != null && formulaFeature.hasChildren(); 
+		boolean hasXorFeatures = xorFeatures != null && xorFeatures.hasChildren();
 		
-		if (formulaFeature != null && formulaFeature.hasChildren()) {
-			restructureRootToAnd();
-			fm.getRoot().addChild(formulaFeature);
-			if (xorFeatureGroup != null && xorFeatureGroup.hasChildren()) {
-				fm.getRoot().addChild(xorFeatureGroup);
+		if (hasNewFeatures) {
+			Feature root = restructureRootToAnd();
+			// Add CNF clause features directly to root.
+			if (useCNF && skipIntermediateFeature) {
+				for (Feature clause : formulaFeature.getChildren()) {
+					root.addChild(clause);
+				}
+				if (hasXorFeatures) {
+					for (Feature xor : xorFeatures.getChildren()) {
+						root.addChild(xor);
+					}
+				}
+			}
+			// Add enclosing CNF/DNF feature iself to root
+			else {
+				root.addChild(formulaFeature);
+				if (hasXorFeatures) {
+					root.addChild(xorFeatures);
+				}
 			}
 		}
 		
@@ -183,15 +206,13 @@ public class ComplexConstraintConverter {
 		model = model.deepClone(); 
 		fm = new FeatureModel();
 		fm.getAnalyser().runCalculationAutomatically = false;
-		xorFeatureGroup = null;
-		
+		xorFeatures = null;
 		if (cleanInputModel) {
 			cleanModel();
 		}
 		
-		Feature root = model.getRoot();
-		Feature newRoot = createFeature(root.getName(), root.isAbstract(), false, true);
-		fm.setRoot(newRoot);
+		Feature root = createFeature(model.getRoot().getName(), model.getRoot().isAbstract(), false, true);
+		fm.setRoot(root);
 		
 		for (Feature feature: model.getFeatures()) {
 			createFeatureUnderRoot(feature.getName(), feature.isAbstract());
@@ -209,11 +230,27 @@ public class ComplexConstraintConverter {
 		}
 			
 		Feature formulaFeature = convertFormula(formula, (useCNF ? "CNF" : "DNF"));
-		if (formulaFeature != null && formulaFeature.hasChildren()) {
-			restructureRootToAnd();
-			newRoot.addChild(formulaFeature);
-			if (xorFeatureGroup != null && xorFeatureGroup.hasChildren()) {
-				newRoot.addChild(xorFeatureGroup);
+		boolean hasNewFeatures = formulaFeature != null && formulaFeature.hasChildren(); 
+		boolean hasXorFeatures = xorFeatures != null && xorFeatures.hasChildren();
+		
+		if (hasNewFeatures) {
+			// Add CNF clause features directly to root.
+			if (useCNF && skipIntermediateFeature) {
+				for (Feature clause : formulaFeature.getChildren()) {
+					root.addChild(clause);
+				}
+				if (hasXorFeatures) {
+					for (Feature xor : xorFeatures.getChildren()) {
+						root.addChild(xor);
+					}
+				}
+			}
+			// Add enclosing CNF/DNF feature iself to root
+			else {
+				root.addChild(formulaFeature);
+				if (hasXorFeatures) {
+					root.addChild(xorFeatures);
+				}
 			}
 		}
 		
@@ -395,8 +432,8 @@ public class ComplexConstraintConverter {
 		}
 		// Extract simple implication from binary disjunction
 		if (literals.length == 2) {
-			Literal f = (Literal) literals[0].clone();
-			Literal g = (Literal) literals[1].clone();
+			Literal f = (Literal) literals[0];
+			Literal g = (Literal) literals[1];
 			
 			if (!f.positive) {
 				return new Implies(new Literal(f.var), g.positive ? new Literal(g.var) : new Not(new Literal(g.var)));
@@ -410,17 +447,21 @@ public class ComplexConstraintConverter {
 	}
 	
 	/**
-	 * Encodes a biimplication for an excludes constraint "f <=> not g" into
+	 * Encodes a bi-implication for an excludes constraint "f <=> not g" into
 	 * a feature hierarchy and additional simple constraints. 
 	 * 
 	 * Newly created features and constraints are added to the feature model
 	 * The feature group is added as child to the instance variable "xorFeatureGroup".
+	 * 
+	 * (Encoded as follows: As a new abstract feature "f XOR g" with an 
+	 * alternative group and new abstract children f' and g'. In addition, 
+	 * constraints "f' <=> f" and "g' <=> g".) 
 	 */
 	protected void convertExcludesConstraint(Feature f, Feature g) {
 		// Q: Add constraints to the end of the constraint list to declutter and 
 		// preserve readability?
-		if (xorFeatureGroup == null) {
-			xorFeatureGroup = createAbstractFeature("Exclude-Constraints", true, true);
+		if (xorFeatures == null) {
+			xorFeatures = createAbstractFeature("Exclude-Constraints", true, true);
 		}
 		
 		Feature xorFeature = createAbstractFeature(f.getName() + " XOR " + g.getName(), true, false);
@@ -430,7 +471,7 @@ public class ComplexConstraintConverter {
 		Feature xorG = createAbstractFeature(g.getName() + " [XOR]", true, false);
 		xorFeature.addChild(xorF);
 		xorFeature.addChild(xorG);
-		xorFeatureGroup.addChild(xorFeature);
+		xorFeatures.addChild(xorFeature);
 		
 		addRequires(xorF, f);
 		addRequires(f, xorF);
@@ -546,7 +587,7 @@ public class ComplexConstraintConverter {
 	 * model. Restructures the root to an And-group if necessary.
 	 * 
 	 * @param name Name of the new feature
-	 * @param isAbstract Whether the feature is abstract
+	 * @param isAbstract Whether the feature is abstract or concrete
 	 * @return New feature if it did not exist yet, null otherwise.
 	 */
 	protected Feature createFeatureUnderRoot(String name, boolean isAbstract) {

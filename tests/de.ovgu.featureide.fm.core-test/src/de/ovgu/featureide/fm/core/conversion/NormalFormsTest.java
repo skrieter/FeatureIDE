@@ -66,10 +66,10 @@ public class NormalFormsTest {
 	private static final Node TRUE = new Or(new Literal("a"), new Not(new Literal("a")));
 	private static final Node FALSE = new And(new Literal("a"), new Not(new Literal("a")));
 	
-	private Node node;
+	private Node formula;
 	
-	public NormalFormsTest(Node node) {
-		this.node = node;
+	public NormalFormsTest(Node formula) {
+		this.formula = formula;
 	}
 	
 	@Parameters(name = "{0}")
@@ -78,8 +78,6 @@ public class NormalFormsTest {
 		NodeReader reader = new NodeReader();
 		
 		for (int i = 0; i < formulas.length; i++) {
-			System.out.println(formulas[i]);
-			System.out.println(reader.stringToNode(formulas[i]));
 			params.add(new Object[]{reader.stringToNode(formulas[i])});
 		}
 		
@@ -88,39 +86,39 @@ public class NormalFormsTest {
 	
 	@Test
 	public void testToCNFEquivalent() throws TimeoutException {
-		Node cnf = NormalForms.toCNF(node.clone());
+		Node cnf = NormalForms.toCNF(formula.clone());
 		if (cnf == null) {
 			cnf = TRUE;
 		}
 		
-		Node test = new Not(new Equals(cnf, node));
+		Node test = new Not(new Equals(cnf, formula));
 		SatSolver solver = new SatSolver(test, 10000);
 		assertFalse(solver.isSatisfiable());
 	}
 	
 	@Test
 	public void testToDNFEquivalent() throws TimeoutException {
-		Node dnf = NormalForms.toDNF(node.clone());
+		Node dnf = NormalForms.toDNF(formula.clone());
 		if (dnf == null) {
 			dnf = FALSE;
 		}
 		
-		Node test = new Not(new Equals(dnf, node));
+		Node test = new Not(new Equals(dnf, formula));
 		SatSolver solver = new SatSolver(test, 10000);
 		assertFalse(solver.isSatisfiable());
 	}
 	
 	@Test
 	public void testToNNFEquivalent() throws TimeoutException {
-		Node nnf = NormalForms.toNNF(node.clone());
-		Node test = new Not(new Equals(nnf, node));
+		Node nnf = NormalForms.toNNF(formula.clone());
+		Node test = new Not(new Equals(nnf, formula));
 		SatSolver solver = new SatSolver(test, 10000);
 		assertFalse(solver.isSatisfiable());
 	}
 	
 	@Test
 	public void testToCNFStructure() throws TimeoutException {
-		Node cnf = NormalForms.toCNF(node.clone());
+		Node cnf = NormalForms.toCNF(formula.clone());
 		// Always true passes
 		if (cnf == null) {
 			return;
@@ -149,7 +147,7 @@ public class NormalFormsTest {
 	
 	@Test
 	public void testToDNFStructure() throws TimeoutException {
-		Node dnf = NormalForms.toDNF(node.clone());
+		Node dnf = NormalForms.toDNF(formula.clone());
 		// Always false passes
 		if (dnf == null) {
 			return;

@@ -64,7 +64,10 @@ public class ComplexConstraintConverter {
 
 	protected FeatureModel fm;
 	protected boolean useCNF;
-	protected boolean useEquivalenceConstraints = true; 
+	
+	protected boolean reduceConfigurations = true;
+	protected boolean preserveConfigurations = false;
+	protected Feature xorFeatureGroup; 
 	protected boolean cleanInputModel = false;
 
 	public ComplexConstraintConverter() {
@@ -81,20 +84,43 @@ public class ComplexConstraintConverter {
 	}
 	
 	/**
-	 * If set, adds biimplications for requires constraints instead of single 
-	 * implications. (Not applicable for excludes constraints or DNF conversion.)
+	 * If set, tries to reduce the number of feature configurations in the 
+	 * output feature model by adding biimplication constraints for requires 
+	 * constraints instead of single implications. Not applicable for DNF 
+	 * conversion.
 	 * 
 	 * Generally reduces the number of feature configurations but adds more
-	 * constraints.  
+	 * constraints (roughly twice as many).
 	 * 
 	 * Default is true.
 	 */
-	public void setUseEquivalenceConstraints(boolean useEquivalence) {
-		this.useEquivalenceConstraints = useEquivalence;
+	public void setReduceConfigurations(boolean useEquivalence) {
+		this.reduceConfigurations = useEquivalence;
 	}
 	
-	public boolean setUseEquivalenceConstraints() {
-		return useEquivalenceConstraints;
+	public boolean getReduceConfigurations() {
+		return reduceConfigurations;
+	}
+	
+	/**
+	 * If set, ensures the output feature model has the same number of 
+	 * feature configurations as the input model. Not applicable for DNF 
+	 * conversion.
+	 *
+	 * Setting this will also set reduceConfigurations to true.
+	 * 
+	 * The number of additional features and constraints needed to preserve
+	 * the number of feature configurations can be quite large.
+	 * 
+	 * Default is false;
+	 */
+	public void setPreserveConfigurations(boolean preserve) {
+		this.preserveConfigurations = preserve;
+		this.reduceConfigurations = preserve ? true : reduceConfigurations;
+	}
+	
+	public boolean getPreserveConfigurations() {
+		return preserveConfigurations;
 	}
 
 	/**
@@ -123,6 +149,7 @@ public class ComplexConstraintConverter {
 
 		fm = model.deepClone();
 		fm.getAnalyser().runCalculationAutomatically = false;
+		xorFeatureGroup = null;
 		
 		if (cleanInputModel) {
 			cleanupModel();
@@ -137,6 +164,9 @@ public class ComplexConstraintConverter {
 		removeConstraints(complexConstraints);	
 		And complexFormula = new And(complexConstraints);
 		Feature formulaFeature = convertFormula(complexFormula, (useCNF ? "CNF" : "DNF"));
+		if (xorFeatureGroup != null && xorFeatureGroup.hasChildren()) {
+			formulaFeature.addChild(xorFeatureGroup);
+		}
 		restructureRootToAnd();
 		fm.getRoot().addChild(formulaFeature);
 		
@@ -151,6 +181,7 @@ public class ComplexConstraintConverter {
 		model = model.deepClone(); 
 		fm = new FeatureModel();
 		fm.getAnalyser().runCalculationAutomatically = false;
+		xorFeatureGroup = null;
 		
 		if (cleanInputModel) {
 			cleanupModel();
@@ -176,56 +207,13 @@ public class ComplexConstraintConverter {
 			formula.setChildren(Arrays.copyOf(children, children.length - 3));
 		}
 			
-		Feature cnfFeature = convertFormula(formula, (useCNF ? "CNF" : "DNF"));
-		newRoot.addChild(cnfFeature);
+		Feature formulaFeature = convertFormula(formula, (useCNF ? "CNF" : "DNF"));
+		if (xorFeatureGroup != null && xorFeatureGroup.hasChildren()) {
+			formulaFeature.addChild(xorFeatureGroup);
+		}
+		newRoot.addChild(formulaFeature);
 
 		return fm;
-	}
-	
-	/**
-	 * Removes redundant and tautology constraints from the feature model.
-	 * 
-	 * This might result in a smaller output model (number of features and 
-	 * number constraints). However, the constraint analysis usually slows down 
-	 * the conversion process considerably.
-	 * 
-	 * If a constraint makes the model void, converts the model into a trivial
-	 * void model.
-	 */
-	protected void cleanupModel() {
-		// TODO: Can we make use of previous analysis (if any) and skip new one?
-		FeatureModelAnalyzer analyzer = fm.getAnalyser();
-		
-		analyzer.calculateFeatures = true;
-		analyzer.calculateConstraints = true;
-		analyzer.calculateRedundantConstraints = true;
-		analyzer.calculateTautologyConstraints = true;
-		
-		analyzer.analyzeFeatureModel(null);
-		List<Constraint> toRemove = new LinkedList<Constraint>();
-		
-		for (Constraint c : fm.getConstraints()) {
-			ConstraintAttribute attribute = c.getConstraintAttribute();
-			
-			if (attribute == ConstraintAttribute.REDUNDANT || attribute == ConstraintAttribute.TAUTOLOGY) {
-				toRemove.add(c);
-			}
-			else if (attribute == ConstraintAttribute.VOID_MODEL || attribute == ConstraintAttribute.UNSATISFIABLE ) {
-				// Simplifiy model to only contain a single contradicting constraint 
-				FeatureModel voidModel = new FeatureModel();
-				Feature root = createAbstractFeature(fm.getRoot().getName(), false, false);
-				voidModel.setRoot(root);
-				voidModel.addConstraint(new Constraint(voidModel, new Implies(root, new Not(root))));
-				
-				fm = voidModel;
-				toRemove.clear();
-				return;
-			}
-		}
-
-		for (Constraint c : toRemove) {
-			fm.removeConstraint(c);
-		}
 	}
 	
 	protected Feature convertFormula(Node formula, String name) {
@@ -279,7 +267,7 @@ public class ComplexConstraintConverter {
 	protected Feature convertClause(Node clause, String name) {
 		Feature clauseFeature = createAbstractFeature("Clause" + name, true, !useCNF);	
 		Node[] literals = (clause instanceof Literal) ? new Node[]{clause} : clause.getChildren();
-
+		
 		for (int i = 0; i < literals.length; i++) {
 			if (! (literals[i] instanceof Literal)) {
 				throw new IllegalArgumentException("Node in clause is not a literal: " + literals[i] + " of type: " + literals[i].getClass());
@@ -291,7 +279,6 @@ public class ComplexConstraintConverter {
 				throw new IllegalArgumentException("No corresponding feature in model for literal in formula: " + literal);
 			}
 			
-			// Skip creating separate literal feature if clause contains only a single literal
 			if (useCNF && literals.length > 1) {
 				Feature literalFeature = createAbstractFeature(originalFeature.getName() + " [" + name + "]", false, false);
 				clauseFeature.addChild(literalFeature);
@@ -306,45 +293,51 @@ public class ComplexConstraintConverter {
 	}
 
 	/**
-	 * Only applicable to CNF as we can extract implications from disjunction 
-	 * clauses. We cannot extract implications from conjunction clauses for 
-	 * DNF.
-	 * @return Simple constraint if one could be extracted, null otherwise
+	 * Removes redundant and tautology constraints from the feature model.
+	 * 
+	 * This might result in a smaller output model (number of features and 
+	 * number constraints). However, the constraint analysis usually slows down 
+	 * the conversion process considerably.
+	 * 
+	 * If a constraint makes the model void, converts the model into a trivial
+	 * void model.
 	 */
-	protected Node refactorClauseToSimpleConstraint(Node clause) {
-		if (!useCNF) {
-			return null;
-		}
+	protected void cleanupModel() {
+		// TODO: Can we make use of previous analysis (if any) and skip new one?
+		FeatureModelAnalyzer analyzer = fm.getAnalyser();
 		
-		Node[] literals = clause.getChildren();
+		analyzer.calculateFeatures = true;
+		analyzer.calculateConstraints = true;
+		analyzer.calculateRedundantConstraints = true;
+		analyzer.calculateTautologyConstraints = true;
 		
-		if (literals == null) {
-			return null;
-		}
-		// Single literals are simple constraints
-		if (literals.length == 1) {
-			Literal l = (Literal) literals[0];
-			if (l.positive) {
-				return l.clone();
-			}
-			return new Not(new Literal(l.var));
-		}
-		// Extract simple implication from binary disjunction
-		if (literals.length == 2) {
-			Literal f = (Literal) literals[0].clone();
-			Literal g = (Literal) literals[1].clone();
+		analyzer.analyzeFeatureModel(null);
+		List<Constraint> toRemove = new LinkedList<Constraint>();
+		
+		for (Constraint c : fm.getConstraints()) {
+			ConstraintAttribute attribute = c.getConstraintAttribute();
 			
-			if (!f.positive) {
-				return new Implies(new Literal(f.var), g);
+			if (attribute == ConstraintAttribute.REDUNDANT || attribute == ConstraintAttribute.TAUTOLOGY) {
+				toRemove.add(c);
 			}
-			if (!g.positive) {
-				return new Implies(new Literal(g.var), f);
+			else if (attribute == ConstraintAttribute.VOID_MODEL || attribute == ConstraintAttribute.UNSATISFIABLE ) {
+				// Simplifiy model to only contain a single contradicting constraint 
+				FeatureModel voidModel = new FeatureModel();
+				Feature root = createAbstractFeature(fm.getRoot().getName(), false, false);
+				voidModel.setRoot(root);
+				voidModel.addConstraint(new Constraint(voidModel, new Implies(root, new Not(root))));
+				
+				fm = voidModel;
+				toRemove.clear();
+				return;
 			}
 		}
-		
-		return null;
-	}
 	
+		for (Constraint c : toRemove) {
+			fm.removeConstraint(c);
+		}
+	}
+
 	/**
 	 * Restructures a Node such that it is in "full" CNF (Ands of Ors of Literals)
 	 * or DNF (Ors of Ands of Literals) form.
@@ -379,18 +372,118 @@ public class ComplexConstraintConverter {
 		return normalForm;	
 	}
 
-	protected void addSimpleConstraint(Feature f, Feature g, boolean requires) {
-		Node fNode = new Literal(f.getName());
-		Node gNode = new Literal(g.getName());
-		
-		Node implies = new Implies(fNode, (requires ? gNode : new Not(gNode)));
-		fm.addConstraint(new Constraint(fm, implies));
-		
-		// biimplications to reduce number of configurations
-		if (requires && useCNF && useEquivalenceConstraints) {
-			implies = new Implies(gNode.clone(), fNode.clone());
-			fm.addConstraint(new Constraint(fm, implies));
+	/**
+	 * Only applicable to CNF as we can extract implications from disjunction 
+	 * clauses. We cannot extract implications from conjunction clauses for 
+	 * DNF.
+	 * @return Simple constraint if one could be extracted, null otherwise
+	 */
+	protected Node refactorClauseToSimpleConstraint(Node clause) {
+		if (!useCNF) {
+			return null;
 		}
+		
+		Node[] literals = clause.getChildren();
+		
+		if (literals == null) {
+			return null;
+		}
+		// Single literals are simple constraints
+		if (literals.length == 1) {
+			Literal l = (Literal) literals[0];
+			if (l.positive) {
+				return l;
+			}
+			return new Not(new Literal(l.var));
+		}
+		// Extract simple implication from binary disjunction
+		if (literals.length == 2) {
+			Literal f = (Literal) literals[0].clone();
+			Literal g = (Literal) literals[1].clone();
+			
+			if (!f.positive) {
+				return new Implies(new Literal(f.var), g);
+			}
+			if (!g.positive) {
+				return new Implies(new Literal(g.var), f);
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Encodes a biimplication for an excludes constraint "f <=> not g" into
+	 * a feature hierarchy and additional simple constraints. 
+	 * 
+	 * Newly created features and constraints are added to the feature model
+	 * The feature group is added as child to the instance variable "xorFeatureGroup".
+	 */
+	protected void convertExcludesConstraint(Feature f, Feature g) {
+		// Q: Add constraints to the end of the constraint list to declutter and 
+		// preserve readability?
+		if (xorFeatureGroup == null) {
+			xorFeatureGroup = createAbstractFeature("Exclude-Constraints", true, true);
+		}
+		
+		Feature xorFeature = createAbstractFeature(f.getName() + " XOR " + g.getName(), true, false);
+		xorFeature.setAlternative();
+	
+		Feature xorF = createAbstractFeature(f.getName() + " [XOR]", true, false);
+		Feature xorG = createAbstractFeature(g.getName() + " [XOR]", true, false);
+		xorFeature.addChild(xorF);
+		xorFeature.addChild(xorG);
+		xorFeatureGroup.addChild(xorFeature);
+		
+		addRequires(xorF, f);
+		addRequires(f, xorF);
+		addRequires(xorG, g);
+		addRequires(g, xorG);
+	}
+
+	/**
+	 * Adds a simple "f => g" (requires) or "f => not g" (excludes) constraint 
+	 * to the feature model.
+	 * 
+	 * For conversions using CNF:
+	 * 
+	 * If set to reduce or preserve the number of feature configurations, also
+	 * adds simple "g => f" constraints to ensure f and g cannot be selected 
+	 * individually. 
+	 * 
+	 * This is only applicable for requires constraints as "not g => f" is not
+	 * a simple constraint.
+	 * 
+	 * In that case, if the converter is set to preserve the exact number of 
+	 * configurations, excludes constraints are instead encoded as exclusive-or
+	 * feature hierarchies and additional simple constraints.
+	 */
+	protected void addSimpleConstraint(Feature f, Feature g, boolean requires) {
+		// Encode special case for excludes for preserving number of configurations
+		if (!requires && useCNF && preserveConfigurations) {
+			convertExcludesConstraint(f, g);
+			return;
+		}
+		
+		if (requires) {
+			addRequires(f, g);
+			if (useCNF && (reduceConfigurations || preserveConfigurations)) {
+				addRequires(g, f);
+			}
+		}
+		else {
+			addExcludes(f, g);
+		}
+	}
+	
+	protected void addRequires(Feature f, Feature g) {
+		Node implies = new Implies(new Literal(f.getName()), new Literal(g.getName()));
+		fm.addConstraint(new Constraint(fm, implies));
+	}
+	
+	protected void addExcludes(Feature f, Feature g) {
+		Node implies = new Implies(new Literal(f.getName()), new Not(new Literal(g.getName())));
+		fm.addConstraint(new Constraint(fm, implies));
 	}
 	
 	protected List<Node> getComplexConstraints() {

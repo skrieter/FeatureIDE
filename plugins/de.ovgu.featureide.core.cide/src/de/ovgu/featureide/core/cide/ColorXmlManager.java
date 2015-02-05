@@ -20,8 +20,10 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -40,7 +42,7 @@ public class ColorXmlManager {
 		/*
 		 * Path (Projekt) + std-dateinamen --> m_xmlFullPath
 		 */
-		
+
 		m_projectPath = projectPath;
 		m_xmlFile = new File(m_projectPath, m_xmlFileName);
 
@@ -75,7 +77,7 @@ public class ColorXmlManager {
 		}
 	}
 
-	private void createXml() {
+	protected void createXml() {
 		try {
 			m_rootElement = m_doc.createElement("root");
 			m_doc.appendChild(m_rootElement);
@@ -110,7 +112,7 @@ public class ColorXmlManager {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void addAnnotation(String activeProjectPath, Integer startLine, Integer endLine, String feature) {
 
 		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
@@ -182,15 +184,10 @@ public class ColorXmlManager {
 		}
 	}
 
-	private void removeElement(Node nodeToRemove) {
-		nodeToRemove.getParentNode().removeChild(nodeToRemove);
-	}
-
 	// get a list of FeatureElement's for the given path
 	public List<FeatureElement> getFeatureForPath(String path, boolean alsoFetchLines) {
 
 		List<FeatureElement> featureList = new ArrayList<FeatureElement>();
-
 		XPathFactory xPathfactory = XPathFactory.newInstance();
 		XPath xpath = xPathfactory.newXPath();
 		try {
@@ -219,7 +216,6 @@ public class ColorXmlManager {
 
 	// get a list of LineElement's for feature which contains startline and endline
 	public List<LineElement> getLinesForFeature(String featureName, String path) {
-
 		List<LineElement> leList = new ArrayList<LineElement>();
 
 		XPathFactory xPathfactory = XPathFactory.newInstance();
@@ -237,13 +233,11 @@ public class ColorXmlManager {
 				le.setEndLine(lineElement.getAttribute("endline"));
 				leList.add(le);
 			}
-
 		} catch (XPathExpressionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return leList;
-
 	}
 
 	public void deleteAnnotaion(String activeProjectPath, Integer markedStartLine, Integer markedEndLine, String feature) {
@@ -254,6 +248,10 @@ public class ColorXmlManager {
 			XPathExpression expression = xpath.compile(lineXPath);
 			NodeList lineNodes = (NodeList) expression.evaluate(m_doc, XPathConstants.NODESET);
 
+			String featureXPath = "root/files/file[@path='" + activeProjectPath + "']/feature[@id='" + feature + "']";
+			XPathExpression expr = xpath.compile(featureXPath);
+			Node featureNode = (Node) expr.evaluate(m_doc, XPathConstants.NODE);
+
 			for (int i = 0; i < lineNodes.getLength(); i++) {
 				Node lineElement = lineNodes.item(i);
 				int endLineAttribute = Integer.parseInt(lineElement.getAttributes().item(0).getNodeValue());
@@ -261,7 +259,7 @@ public class ColorXmlManager {
 
 				// remove area from startLine to endLine
 				if (startLineAttribute == markedStartLine && endLineAttribute == markedEndLine) {
-					removeElement(lineElement);
+					removeNode(lineElement);
 				}
 
 				// remove start line(s)
@@ -275,52 +273,48 @@ public class ColorXmlManager {
 					markedStartLine--;
 					lineElement.getAttributes().item(0).setTextContent(markedStartLine.toString());
 				}
-
+				// remove area between start- and end line
 				if (startLineAttribute < markedStartLine && endLineAttribute > markedEndLine) {
 					markedStartLine--;
 					markedEndLine++;
 					lineElement.getAttributes().item(0).setTextContent(markedStartLine.toString());
 
-					String featureXPath = "root/files/file[@path='" + activeProjectPath + "']/feature[@id='" + feature + "']";
-					XPathExpression expr = xpath.compile(featureXPath);
-					Node featureNode = (Node) expr.evaluate(m_doc, XPathConstants.NODE);
 					Element element = m_doc.createElement("line");
 					element.setAttribute("startline", markedEndLine.toString());
 					element.setAttribute("endline", String.valueOf(endLineAttribute));
 					featureNode.appendChild(element);
-
-				}	
-
+				}
 			}
-
+			//update lineNodes
+			lineNodes = (NodeList) expression.evaluate(m_doc, XPathConstants.NODESET);
+			
+			if (lineNodes.getLength() == 0) {
+				removeNode(featureNode);
+			}
+			
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
 		}
 		writeXml();
-
 	}
 
-	// remove all annotaions from the selected feature 
+	// remove all annotaions from the selected feature
 	public void deleteFeatureAnnotation(String activeProjectPath, Integer markedStartLine, Integer markedEndLine, String feature) {
-
 		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
 		XPath xpath = factory.newXPath();
 		try {
 			String featureXPath = "root/files/file[@path='" + activeProjectPath + "']/feature[@id='" + feature + "']";
 			XPathExpression expression = xpath.compile(featureXPath);
 			Node featureNode = (Node) expression.evaluate(m_doc, XPathConstants.NODE);
-			removeElement(featureNode);
-
+			removeNode(featureNode);
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
 		}
 		writeXml();
-
 	}
-	
-	// remove annotations of all features 
-	public void removeAllAnnotations(String activeProjectPath) {
 
+	// remove annotations of all features
+	public void removeAllAnnotations(String activeProjectPath) {
 		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
 		XPath xpath = factory.newXPath();
 		try {
@@ -328,8 +322,63 @@ public class ColorXmlManager {
 			XPathExpression expression = xpath.compile(featureXPath);
 			NodeList featureNodes = (NodeList) expression.evaluate(m_doc, XPathConstants.NODESET);
 			for (int i = 0; i < featureNodes.getLength(); i++) {
-				removeElement(featureNodes.item(i));
+				removeNode(featureNodes.item(i));
 			}
+		} catch (XPathExpressionException e) {
+			e.printStackTrace();
+		}
+		writeXml();
+	}
+
+	private void removeNode(Node nodeToRemove) {
+		nodeToRemove.getParentNode().removeChild(nodeToRemove);
+	}
+
+	private void compareLineNodes(Node node1, Node node2) {
+		// node1
+		int startline1 = Integer.parseInt(node1.getAttributes().item(1).getTextContent());
+		int endline1 = Integer.parseInt(node1.getAttributes().item(0).getTextContent());
+		// node2
+		int startline2 = Integer.parseInt(node2.getAttributes().item(1).getTextContent());
+		int endline2 = Integer.parseInt(node2.getAttributes().item(0).getTextContent());
+		
+		System.out.println("******************");
+		System.out.println("Node 1");
+		System.out.println("------");
+		System.out.println("startline: " + startline1);
+		System.out.println("endline: " + endline1);
+		System.out.println();
+		System.out.println("Node 2");
+		System.out.println("------");
+		System.out.println("startline: " + startline2);
+		System.out.println("endline: " + endline2);
+		System.out.println("******************");
+
+		// New marked area above existing marked area (Node2 above Node1)
+		if ((startline1 - 1) == (endline2)) {
+			node1.getAttributes().item(1).setTextContent(String.valueOf(startline2));
+			removeNode(node2);
+		}
+	}
+
+	public void mergeLines(String activeProjectPath, String feature) {
+		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
+		XPath xpath = factory.newXPath();
+		try {
+			String lineXPath = "root/files/file[@path='" + activeProjectPath + "']/feature[@id='" + feature + "']/line";
+			XPathExpression expression = xpath.compile(lineXPath);
+			NodeList lineNodes = (NodeList) expression.evaluate(m_doc, XPathConstants.NODESET);
+			for (int i = 0; i < lineNodes.getLength(); i++) {
+				Node node1 = lineNodes.item(i);
+				for (int j = 0; j < lineNodes.getLength(); j++) {
+					Node node2 = lineNodes.item(j);
+					if (!node1.equals(node2)) {
+						compareLineNodes(node1, node2);
+
+					}
+				}
+			}
+
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
 		}

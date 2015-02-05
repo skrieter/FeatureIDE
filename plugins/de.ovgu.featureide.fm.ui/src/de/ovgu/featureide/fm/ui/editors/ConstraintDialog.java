@@ -967,7 +967,7 @@ public class ConstraintDialog implements GUIDefaults {
 		@Override
 		public void invoke(ValidationMessage message) {
 			if (message.validationResult != ValidationResult.OK) {
-				headerPanel.setDetails("Redundancy occurred inside your constraint.");
+				headerPanel.setDetails("The constraint is redundant.");
 				headerPanel.setColor(HeaderPanel.BubbleColor.RED);
 			}
 		}

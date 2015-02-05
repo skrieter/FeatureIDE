@@ -16,6 +16,7 @@ import de.ovgu.featureide.core.fstmodel.FSTClass;
 import de.ovgu.featureide.core.fstmodel.preprocessor.FSTDirective;
 import de.ovgu.featureide.core.fstmodel.preprocessor.PPModelBuilder;
 
+
 public class CIDEModelBuilder extends PPModelBuilder {
 
 	ColorAnnotationManager colorAnnotationManager;
@@ -29,6 +30,11 @@ public class CIDEModelBuilder extends PPModelBuilder {
 		super(featureProject);
 		this.colorXmlManager = new ColorXmlManager(featureProject.getProject().getLocation().toFile().getAbsolutePath());		
 		this.colorAnnotationManager = new ColorAnnotationManager(this.colorXmlManager);
+		 
+		// if ColorAnnotations.xml doesnt exist -> create
+		if (this.colorXmlManager.getParsedDocument()==null){
+			this.colorXmlManager.createXml();
+		}
 	}
 
 	/**
@@ -41,9 +47,11 @@ public class CIDEModelBuilder extends PPModelBuilder {
 		/* ColorAnnotationVerarbeitung */
 		// Anlegen TODO: wird jedes Mal ne angelegt, wenn das Model gebuildet wird, überdenken
 		
+		if (this.colorXmlManager.getParsedDocument()==null){
+			this.colorXmlManager.createXml();
+		}
 		this.colorXmlManager.readXml();
 		
-
 		for (IResource res : folder.members()) {
 			if (res instanceof IFolder) {
 				buildModel((IFolder) res, packageName.isEmpty() ? res.getName() : packageName + "/" + res.getName());
@@ -73,6 +81,8 @@ public class CIDEModelBuilder extends PPModelBuilder {
 		}
 	}
 	
+	
+	
 	public LinkedList<FSTDirective> buildModelDirectivesForFile(Vector<String> lines,IResource res) {
 		
 		return colorAnnotationManager.getDirectives(lines, featureProject,res);
@@ -85,6 +95,7 @@ public class CIDEModelBuilder extends PPModelBuilder {
 		return colorAnnotationManager.getDirectives(lines, featureProject);
 	}
 */
+	
 	@Override
 	protected List<String> getFeatureNames(String expression) {
 		expression = expression.replaceAll("[(]", "");

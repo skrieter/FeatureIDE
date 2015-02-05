@@ -41,7 +41,7 @@ public class MarkWithFeatureAction implements IEditorActionDelegate,
 		String feature = selectFeatureDialog.open(activeEditor);
 		
 		this.colorXmlManager.addAnnotation(activeProjectPathToFile,startLine,endLine,feature);
-
+		while(this.colorXmlManager.mergeLines(activeProjectPathToFile, feature));
 	}
 
 	public void selectionChanged(IAction action, ISelection selection) {

@@ -18,6 +18,7 @@ public class ClearFeatureAction implements IEditorActionDelegate, IViewActionDel
 	public ITextEditor activeEditor = null;
 	ColorXmlManager colorXmlManager;
 	SelectFeatureDialog selectFeatureDialog = new SelectFeatureDialog();
+	SelectPossibleFeatureDialog selectPossibleFeatureDialog = new SelectPossibleFeatureDialog();
 
 	public void run(IAction action) {
 		ISelectionProvider selectionProvider = activeEditor.getSelectionProvider();
@@ -36,7 +37,9 @@ public class ClearFeatureAction implements IEditorActionDelegate, IViewActionDel
 
 		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
 
-		String feature = selectFeatureDialog.open(activeEditor);
+		//String feature = selectFeatureDialog.open(activeEditor);
+		String feature = selectPossibleFeatureDialog.open(activeEditor, activeProjectPathToFile, this.colorXmlManager.getParsedDocument());
+		
 		this.colorXmlManager.deleteFeatureAnnotation(activeProjectPathToFile, startLine, endLine, feature);
 	}
 

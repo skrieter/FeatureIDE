@@ -3,9 +3,7 @@ package de.ovgu.featureide.core.cide;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewActionDelegate;
@@ -14,7 +12,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 public class ClearAllFeaturesAction implements IEditorActionDelegate, IViewActionDelegate {
-
+	
 	public ITextEditor activeEditor = null;
 	ColorXmlManager colorXmlManager;
 	SelectFeatureDialog selectFeatureDialog = new SelectFeatureDialog();
@@ -31,6 +29,7 @@ public class ClearAllFeaturesAction implements IEditorActionDelegate, IViewActio
 		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
 
 		this.colorXmlManager.removeAllAnnotations(activeProjectPathToFile);
+		
 	}
 
 	public void selectionChanged(IAction action, ISelection selection) {

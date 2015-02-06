@@ -9,6 +9,7 @@ import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.core.builder.ComposerExtensionClass;
 import de.ovgu.featureide.core.builder.IComposerExtensionClass;
 
+
 public class CIDEComposer extends ComposerExtensionClass {
 	protected static final String CIDE_NATURE = "de.ovgu.cide.core.CIDEProjectNature";
 	private static final ArrayList<String[]> TEMPLATES = createTemplates();
@@ -22,8 +23,9 @@ public class CIDEComposer extends ComposerExtensionClass {
 	public boolean initialize(IFeatureProject project) {
 		boolean supSuccess = super.initialize(project);
 		cideModelBuilder = new CIDEModelBuilder(project);
-
-	//	prepareFullBuild(null);
+		buildFSTModel();
+		
+	//	prepareFullBuild(null); 
 	//	annotationChecking();
 
 		return supSuccess && cideModelBuilder != null;
@@ -63,8 +65,7 @@ public class CIDEComposer extends ComposerExtensionClass {
 	}
 
 	@Override
-	public void addCompiler(IProject project, String sourcePath,
-			String configPath, String buildPath) {
+	public void addCompiler(IProject project, String sourcePath, String configPath, String buildPath) {
 		super.addCompiler(project, sourcePath, configPath, buildPath);
 		addNature(project, CIDE_NATURE);
 		addClasspathFile(project, sourcePath);
@@ -78,6 +79,6 @@ public class CIDEComposer extends ComposerExtensionClass {
 	@Override
 	public void buildFSTModel(){
 		cideModelBuilder.buildModel();
-		
+
 	}
 }

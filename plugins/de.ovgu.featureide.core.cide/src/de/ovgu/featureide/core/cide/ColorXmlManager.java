@@ -285,13 +285,13 @@ public class ColorXmlManager {
 					featureNode.appendChild(element);
 				}
 			}
-			//update lineNodes
+			// update lineNodes
 			lineNodes = (NodeList) expression.evaluate(m_doc, XPathConstants.NODESET);
-			
+
 			if (lineNodes.getLength() == 0) {
 				removeNode(featureNode);
 			}
-			
+
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
 		}
@@ -334,14 +334,14 @@ public class ColorXmlManager {
 		nodeToRemove.getParentNode().removeChild(nodeToRemove);
 	}
 
-	private void compareLineNodes(Node node1, Node node2) {
+	private boolean compareLineNodes(Node node1, Node node2) {
 		// node1
 		int startline1 = Integer.parseInt(node1.getAttributes().item(1).getTextContent());
 		int endline1 = Integer.parseInt(node1.getAttributes().item(0).getTextContent());
 		// node2
 		int startline2 = Integer.parseInt(node2.getAttributes().item(1).getTextContent());
 		int endline2 = Integer.parseInt(node2.getAttributes().item(0).getTextContent());
-		
+
 		System.out.println("******************");
 		System.out.println("Node 1");
 		System.out.println("------");
@@ -358,13 +358,22 @@ public class ColorXmlManager {
 		if ((startline1 - 1) == (endline2)) {
 			node1.getAttributes().item(1).setTextContent(String.valueOf(startline2));
 			removeNode(node2);
+			System.out.println("merged");
+			return true;
 		}
+		if (startline2 >= startline1 && endline2 <= endline1) {
+			removeNode(node2);
+			return true;
+		}
+		System.out.println("not merged");
+		return false;
 	}
 
-	public void mergeLines(String activeProjectPath, String feature) {
+	public boolean mergeLines(String activeProjectPath, String feature) {
 		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
 		XPath xpath = factory.newXPath();
 		try {
+
 			String lineXPath = "root/files/file[@path='" + activeProjectPath + "']/feature[@id='" + feature + "']/line";
 			XPathExpression expression = xpath.compile(lineXPath);
 			NodeList lineNodes = (NodeList) expression.evaluate(m_doc, XPathConstants.NODESET);
@@ -373,7 +382,11 @@ public class ColorXmlManager {
 				for (int j = 0; j < lineNodes.getLength(); j++) {
 					Node node2 = lineNodes.item(j);
 					if (!node1.equals(node2)) {
-						compareLineNodes(node1, node2);
+						if (compareLineNodes(node1, node2)) {
+							System.out.println("merging!");
+							writeXml();
+							return true;
+						}
 
 					}
 				}
@@ -382,7 +395,7 @@ public class ColorXmlManager {
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
 		}
-		writeXml();
+		return false;
 	}
 
 	public Document getParsedDocument() {

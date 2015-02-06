@@ -17,9 +17,10 @@ public class UnmarkFeatureAction implements IEditorActionDelegate, IViewActionDe
 
 	public ITextEditor activeEditor = null;
 	ColorXmlManager colorXmlManager;
-	SelectFeatureDialog selectFeatureDialog = new SelectFeatureDialog();
+	SelectMarkedFeatureDialog selectMarkedFeatureDialog = new SelectMarkedFeatureDialog();
 
 	public void run(IAction action) {
+		
 		ISelectionProvider selectionProvider = activeEditor.getSelectionProvider();
 		ISelection selection = selectionProvider.getSelection();
 		ITextSelection textSelection = (ITextSelection) selection;
@@ -36,9 +37,9 @@ public class UnmarkFeatureAction implements IEditorActionDelegate, IViewActionDe
 
 		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
 
-		String feature = selectFeatureDialog.open(activeEditor);
-
+		String feature = selectMarkedFeatureDialog.open(activeEditor, activeProjectPathToFile, this.colorXmlManager.getParsedDocument());
 		this.colorXmlManager.deleteAnnotaion(activeProjectPathToFile, startLine, endLine, feature);
+		
 	}
 
 	public void selectionChanged(IAction action, ISelection selection) {

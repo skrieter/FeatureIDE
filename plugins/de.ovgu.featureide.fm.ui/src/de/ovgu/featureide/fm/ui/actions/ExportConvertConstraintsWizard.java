@@ -43,6 +43,7 @@ import de.ovgu.featureide.fm.core.io.FeatureModelReaderIFileWrapper;
 import de.ovgu.featureide.fm.core.io.UnsupportedModelException;
 import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelReader;
 import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelWriter;
+import de.ovgu.featureide.fm.core.job.AStoppableJob;
 import de.ovgu.featureide.fm.ui.FMUIPlugin;
 
 
@@ -80,9 +81,8 @@ public class ExportConvertConstraintsWizard extends Wizard implements INewWizard
 		final String outputPath = page.fileName.getText();
 		String jobName = "Exporting product-equivalent model with simple constraints (" + inputModelFile.getName() +")";
 
-		// TODO: AStoppableJob? (how to auto-cancel/kill?)	
-		Job job = new Job(jobName) {
-			protected IStatus run(IProgressMonitor monitor) {
+		Job job = new AStoppableJob(jobName) {
+			protected boolean work() {
 				FeatureModel model = readModel(inputModelFile);
 				ComplexConstraintConverter converter;
 				FeatureModel result;
@@ -105,19 +105,19 @@ public class ExportConvertConstraintsWizard extends Wizard implements INewWizard
 					result = converter.convertNaive(model);
 					break;
 				default:
-					return Status.CANCEL_STATUS;
+					return false;
 				}
 				
 				XmlFeatureModelWriter writer = new XmlFeatureModelWriter(result);
 				writer.writeToFile(new File(outputPath));
 				
 				try {
-					// TODO: Refresh if result is saved outside of input model project?
-					inputModelFile.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+					inputModelFile.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
 				} catch (CoreException e) {
 					FMUIPlugin.getDefault().logError(e);
+					return false;
 				}
-				return Status.OK_STATUS;
+				return true;
 			}
 		};
 

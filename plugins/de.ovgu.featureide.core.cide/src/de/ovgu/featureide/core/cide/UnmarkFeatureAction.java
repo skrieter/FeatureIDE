@@ -1,5 +1,7 @@
 package de.ovgu.featureide.core.cide;
 
+import java.util.ArrayList;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.IAction;
@@ -37,10 +39,12 @@ public class UnmarkFeatureAction implements IEditorActionDelegate, IViewActionDe
 
 		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
 
-		String feature = selectMarkedFeatureDialog.open(activeEditor, activeProjectPathToFile, this.colorXmlManager.getParsedDocument());
-		
-		if (feature != null) {
-			this.colorXmlManager.deleteAnnotaion(activeProjectPathToFile, startLine, endLine, feature);
+		ArrayList<String> features = selectMarkedFeatureDialog.open(activeEditor, activeProjectPathToFile, this.colorXmlManager.getParsedDocument());
+
+		for (String feature : features) {
+			if (feature != null) {
+				this.colorXmlManager.deleteAnnotaion(activeProjectPathToFile, startLine, endLine, feature);
+			}
 		}
 	}
 

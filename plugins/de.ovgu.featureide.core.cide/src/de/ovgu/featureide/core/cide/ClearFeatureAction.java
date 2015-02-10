@@ -1,5 +1,7 @@
 package de.ovgu.featureide.core.cide;
 
+import java.util.ArrayList;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.IAction;
@@ -17,17 +19,16 @@ public class ClearFeatureAction implements IEditorActionDelegate, IViewActionDel
 
 	public ITextEditor activeEditor = null;
 	ColorXmlManager colorXmlManager;
-	SelectFeatureDialog selectFeatureDialog = new SelectFeatureDialog();
-	SelectPossibleFeatureDialog selectPossibleFeatureDialog = new SelectPossibleFeatureDialog();
+	ClearFeatureDialog clearFeatureDialog = new ClearFeatureDialog();
 
 	public void run(IAction action) {
 		ISelectionProvider selectionProvider = activeEditor.getSelectionProvider();
 		ISelection selection = selectionProvider.getSelection();
 		ITextSelection textSelection = (ITextSelection) selection;
-		
+
 		Integer startLine = Integer.valueOf(textSelection.getStartLine() + 1);
 		Integer endLine = Integer.valueOf(textSelection.getEndLine() + 1);
-		
+
 		FileEditorInput input = (FileEditorInput) activeEditor.getEditorInput();
 		IFile file = input.getFile();
 		IProject activeProject = file.getProject();
@@ -37,10 +38,13 @@ public class ClearFeatureAction implements IEditorActionDelegate, IViewActionDel
 
 		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
 
-		//String feature = selectFeatureDialog.open(activeEditor);
-		String feature = selectPossibleFeatureDialog.open(activeEditor, activeProjectPathToFile, this.colorXmlManager.getParsedDocument());
-		
-		this.colorXmlManager.deleteFeatureAnnotation(activeProjectPathToFile, startLine, endLine, feature);
+		ArrayList<String> features = clearFeatureDialog.open(activeEditor, activeProjectPathToFile, this.colorXmlManager.getParsedDocument());
+
+		for (String feature : features) {
+			if (feature != null) {
+				this.colorXmlManager.deleteFeatureAnnotation(activeProjectPathToFile, startLine, endLine, feature);
+			}
+		}
 	}
 
 	public void selectionChanged(IAction action, ISelection selection) {

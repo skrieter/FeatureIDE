@@ -1,5 +1,6 @@
 package de.ovgu.featureide.core.cide;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Vector;
@@ -14,8 +15,10 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.ListDialog;
+import org.eclipse.ui.dialogs.ListSelectionDialog;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.w3c.dom.Document;
@@ -25,12 +28,57 @@ import org.w3c.dom.NodeList;
 import de.ovgu.featureide.core.CorePlugin;
 import de.ovgu.featureide.core.IFeatureProject;
 
+public class ClearFeatureDialog {
 
-public class SelectPossibleFeatureDialog{
+	public ArrayList<String> open(ITextEditor activeEditor, String path, Document doc) {
 
+		Shell shell = null;
+		Vector<String> featureList = new Vector<String>();
+		IFeatureProject featureProject = null;
+		ArrayList<String> returnFeatures = new ArrayList<String>();
+		if (activeEditor != null) {
+			IFile inputFile = ((FileEditorInput) activeEditor.getEditorInput()).getFile();
+			featureProject = CorePlugin.getFeatureProject(inputFile);
+		}
+		if (featureProject != null) {
 
-	public String open(ITextEditor activeEditor, String path, Document doc) {
+			XPathFactory xPathfactory = XPathFactory.newInstance();
+			XPath xpath = xPathfactory.newXPath();
+			try {
+				String featureForPathXPath = "root/files/file[@path='" + path + "']/feature/@id";
+				XPathExpression expr = xpath.compile(featureForPathXPath);
+				NodeList featureNodes = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+				for (int i = 0; i < featureNodes.getLength(); i++) {
+					Node featureNode = featureNodes.item(i);
+					String feature = featureNode.getTextContent().toString();
+					if (!featureList.contains(feature)) {
+						featureList.add(feature);
+					}
+				}
+			} catch (XPathExpressionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		Collections.sort(featureList);
 		
+		ListSelectionDialog dialog = new ListSelectionDialog(shell, featureList, ArrayContentProvider.getInstance(), new LabelProvider(), "Choose feature(s)");
+		dialog.setTitle("FeatureDialog");
+		if (dialog.open() == Window.OK) {
+			System.out.println("Selected feature: " + Arrays.toString(dialog.getResult()));
+			if (dialog.getResult().length > 0) {
+				Object array[] = dialog.getResult();
+				for (int i = 0; i < array.length; i++) {
+					returnFeatures.add((String) array[i]);
+				}
+			
+				return returnFeatures;
+			}
+		}
+		// Object[] result = dialog.getResult();
+		return null;
+		
+		/*
 		Shell parentShel = null;
 		ListDialog listDialog = new ListDialog(parentShel);
 		listDialog.setTitle("FeatureDialog");
@@ -40,25 +88,26 @@ public class SelectPossibleFeatureDialog{
 
 		Vector<String> featureList = new Vector<String>();
 		IFeatureProject featureProject = null;
-		
+
 		if (activeEditor != null) {
 			IFile inputFile = ((FileEditorInput) activeEditor.getEditorInput()).getFile();
 			featureProject = CorePlugin.getFeatureProject(inputFile);
 		}
 		if (featureProject != null) {
-			
+
 			XPathFactory xPathfactory = XPathFactory.newInstance();
 			XPath xpath = xPathfactory.newXPath();
 			try {
 				String featureForPathXPath = "root/files/file[@path='" + path + "']/feature/@id";
 				XPathExpression expr = xpath.compile(featureForPathXPath);
 				NodeList featureNodes = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-				for (int i = 0; i< featureNodes.getLength();i++) {
+				for (int i = 0; i < featureNodes.getLength(); i++) {
 					Node featureNode = featureNodes.item(i);
 					String feature = featureNode.getTextContent().toString();
-					featureList.add(feature);
+					if (!featureList.contains(feature)) {
+						featureList.add(feature);
+					}
 				}
-				
 			} catch (XPathExpressionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -69,12 +118,14 @@ public class SelectPossibleFeatureDialog{
 		listDialog.setInput(featureList);
 		if (listDialog.open() == Dialog.OK) {
 			System.out.println("Selected feature: " + Arrays.toString(listDialog.getResult()));
-			Object array[] = listDialog.getResult();
-			return (String) array[0];
+			if (listDialog.getResult().length > 0) {
+				Object array[] = listDialog.getResult();
+				return (String) array[0];
+			}
 		}
+
 		return null;
-		
+*/
 	}
 
 }
-

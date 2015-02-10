@@ -27,6 +27,8 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -46,18 +48,28 @@ import de.ovgu.featureide.fm.ui.actions.ExportConvertConstraintsWizard.Conversio
  */
 public class ExportConvertConstraintsPage extends WizardPage {
 	
-	private static final String LABEL_METHOD = "Method:";
-	private static final String TOOLTIP_METHOD = "Which method to use when converting to a product-equivalent model without complex constraints.";
+	private static final String METHOD_LABEL = "Method:";
+	private static final String METHOD_TOOLTIP = "Which method to use when converting to a product-equivalent model without complex constraints.";
 	
-	private static final String COMBO_LABEL_CNF = "Conjunctive Normal Form (CNF) (recommended)";
-	private static final String COMBO_LABEL_CNF_NAIVE = "CNF Naive";
-	private static final String COMBO_LABEL_DNF = "Disjunctive Normal Form (DNF)";
-	private static final String COMBO_LABEL_DNF_NAIVE = "DNF Naive";
+	private static final String COMBO_CNF_LABEL = "Conjunctive Normal Form (CNF) (recommended)";
+	private static final String COMBO_CNF_NAIVE_LABEL = "CNF Naive";
+	private static final String COMBO_DNF_LABEL = "Disjunctive Normal Form (DNF)";
+	private static final String COMBO_DNF_NAIVE_LABEL = "DNF Naive";
+	
+	private static final String REDUCE_CONFIGS_LABEL = "Reduce configurations:";
+	private static final String REDUCE_CONFIGS_TOOLTIP = "Whether to attempt to reduce the number of configurations. May result in larger number of constraints. (Only for CNF methods)";
+	private static final String PRESERVE_CONFIGS_LABEL = "Preserve configurations:";
+	private static final String PRESERVE_CONFIGS_TOOLTIP = "Whether to preserve the exact number of configurations. May result in large number of additional features and constraints. (Only for CNF methods)";
+	
+	
 	
 	private IFile inputModelFile;
-	private Combo comboMethod;
+	private Combo methodCombo;
+	
 	protected Text fileName;
 	protected ConversionMethod selectedMethod;
+	protected boolean reduceConfigurations = false;
+	protected boolean preserveConfigurations = false;
 	
 	protected ExportConvertConstraintsPage(String pageName, IFile inputFile) {
 		super(pageName);
@@ -76,16 +88,16 @@ public class ExportConvertConstraintsPage extends WizardPage {
 		composite.setLayout(layout);
 
 		Label labelGenerate = new Label(composite, SWT.NULL);
-		labelGenerate.setText(LABEL_METHOD);
-		labelGenerate.setToolTipText(TOOLTIP_METHOD);
+		labelGenerate.setText(METHOD_LABEL);
+		labelGenerate.setToolTipText(METHOD_TOOLTIP);
 		
-		comboMethod = new Combo(composite, SWT.BORDER | SWT.SINGLE | SWT.READ_ONLY);
-		comboMethod.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		comboMethod.add(COMBO_LABEL_CNF);
-		comboMethod.add(COMBO_LABEL_CNF_NAIVE);
-		comboMethod.add(COMBO_LABEL_DNF);
-		comboMethod.add(COMBO_LABEL_DNF_NAIVE);
-		comboMethod.setText(COMBO_LABEL_CNF);
+		methodCombo = new Combo(composite, SWT.BORDER | SWT.SINGLE | SWT.READ_ONLY);
+		methodCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		methodCombo.add(COMBO_CNF_LABEL);
+		methodCombo.add(COMBO_CNF_NAIVE_LABEL);
+		methodCombo.add(COMBO_DNF_LABEL);
+		methodCombo.add(COMBO_DNF_NAIVE_LABEL);
+		methodCombo.setText(COMBO_CNF_LABEL);
 		selectedMethod = ConversionMethod.CNF;
 
 		Label fileNameLabel = new Label(composite, SWT.NULL);
@@ -102,6 +114,43 @@ public class ExportConvertConstraintsPage extends WizardPage {
 		
 		Button browseButton = new Button(fileComposite, SWT.NONE);
 		browseButton.setText("Browse...");
+		
+		final Label reduceConfigsLabel = new Label(composite, SWT.NULL);
+		reduceConfigsLabel.setText(REDUCE_CONFIGS_LABEL);
+		reduceConfigsLabel.setToolTipText(REDUCE_CONFIGS_TOOLTIP);
+		final Button reduceConfigsButton = new Button(composite, SWT.CHECK);
+		reduceConfigsButton.setToolTipText(REDUCE_CONFIGS_TOOLTIP);
+		reduceConfigsButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		reduceConfigsButton.setSelection(reduceConfigurations);
+		
+		final Label preserveConfigsLabel = new Label(composite, SWT.NULL);
+		preserveConfigsLabel.setText(PRESERVE_CONFIGS_LABEL);
+		preserveConfigsLabel.setToolTipText(PRESERVE_CONFIGS_TOOLTIP);
+		final Button preserveConfigsButton = new Button(composite, SWT.CHECK);
+		preserveConfigsButton.setToolTipText(PRESERVE_CONFIGS_TOOLTIP);
+		preserveConfigsButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		preserveConfigsButton.setSelection(reduceConfigurations);
+		
+		// Add listeners
+		methodCombo.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				ConversionMethod[] methods = new ConversionMethod[]{ConversionMethod.CNF, ConversionMethod.CNF_NAIVE, ConversionMethod.DNF, ConversionMethod.DNF_NAIVE};
+				int selection = methodCombo.getSelectionIndex();
+				selectedMethod = methods[selection];
+				boolean useCNF = selection < 2;
+				reduceConfigsButton.setEnabled(useCNF); 
+				reduceConfigsLabel.setEnabled(useCNF);
+				preserveConfigsButton.setEnabled(useCNF);
+				preserveConfigsLabel.setEnabled(useCNF);
+			}
+		});
+		
+		fileName.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				checkFileName();
+			}
+		});
+		
 		browseButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
 				String selectedPath = openFileDialog();
@@ -115,19 +164,27 @@ public class ExportConvertConstraintsPage extends WizardPage {
 			}
 		});
 		
-		fileName.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				checkFileName();
+		reduceConfigsButton.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				reduceConfigurations = reduceConfigsButton.getSelection();
+			}
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 		});
 		
-		comboMethod.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				ConversionMethod[] methods = new ConversionMethod[]{ConversionMethod.CNF, ConversionMethod.CNF_NAIVE, ConversionMethod.DNF, ConversionMethod.DNF_NAIVE};
-				selectedMethod = methods[comboMethod.getSelectionIndex()];
+		preserveConfigsButton.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				preserveConfigurations = preserveConfigsButton.getSelection();
+				reduceConfigsButton.setEnabled(!preserveConfigurations);
+			}
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 		});
-
+		
 		setControl(composite);
 		checkFileName();
 	}

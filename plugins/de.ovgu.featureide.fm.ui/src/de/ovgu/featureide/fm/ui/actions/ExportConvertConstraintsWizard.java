@@ -43,6 +43,7 @@ import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelWriter;
 import de.ovgu.featureide.fm.core.job.AStoppableJob;
 import de.ovgu.featureide.fm.ui.FMUIPlugin;
 
+import static de.ovgu.featureide.fm.ui.actions.ExportConvertConstraintsWizard.ConversionMethod.*;
 
 /**
  * Wizard for exporting models using ComplexConstraintConverter.
@@ -84,25 +85,15 @@ public class ExportConvertConstraintsWizard extends Wizard implements INewWizard
 				ComplexConstraintConverter converter;
 				FeatureModel result;
 				
-				switch(method) {
-				case CNF:
+				if (method == CNF || method == CNF_NAIVE) {
 					converter = new ComplexConstraintConverterCNF();
-					result = converter.convert(model);
-					break;
-				case CNF_NAIVE:
-					converter = new ComplexConstraintConverterCNF();
-					result = converter.convertNaive(model);
-					break;
-				case DNF:
+					converter.setReduceConfigurations(page.reduceConfigurations);
+					converter.setPreserveConfigurations(page.preserveConfigurations);
+					result = (method == CNF) ? converter.convert(model) : converter.convertNaive(model);
+				}
+				else {
 					converter = new ComplexConstraintConverterDNF();
-					result = converter.convert(model);
-					break;
-				case DNF_NAIVE:
-					converter = new ComplexConstraintConverterDNF();
-					result = converter.convertNaive(model);
-					break;
-				default:
-					return false;
+					result = (method == DNF) ? converter.convert(model) : converter.convertNaive(model);
 				}
 				
 				XmlFeatureModelWriter writer = new XmlFeatureModelWriter(result);

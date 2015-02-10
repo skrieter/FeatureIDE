@@ -66,7 +66,7 @@ public class ComplexConstraintConverter {
 	protected boolean useCNF = true;
 	
 	/** Only for CNF */
-	protected boolean reduceConfigurations = true;
+	protected boolean reduceConfigurations = false;
 	/** Only for CNF */
 	protected boolean preserveConfigurations = false;
 	/** Only for CNF */
@@ -151,11 +151,15 @@ public class ComplexConstraintConverter {
 	}
 	
 	public FeatureModel convert(FeatureModel model) {
+		return convert(model, true);
+	}
+	
+	protected FeatureModel convert(FeatureModel model, boolean clone) {
 		if (model == null) {
 			throw new IllegalArgumentException("Feature model cannot be null");
 		}
 
-		fm = model.deepClone();
+		fm = clone ? model.deepClone() : model;
 		fm.getAnalyser().runCalculationAutomatically = false;
 		xorFeatures = null;
 		if (cleanInputModel) {
@@ -228,33 +232,9 @@ public class ComplexConstraintConverter {
 		if (children.length >= 3) {
 			formula.setChildren(Arrays.copyOf(children, children.length - 3));
 		}
-			
-		Feature formulaFeature = convertFormula(formula, (useCNF ? "CNF" : "DNF"));
-		boolean hasNewFeatures = formulaFeature != null && formulaFeature.hasChildren(); 
-		boolean hasXorFeatures = xorFeatures != null && xorFeatures.hasChildren();
 		
-		if (hasNewFeatures) {
-			// Add CNF clause features directly to root.
-			if (useCNF && skipIntermediateFeature) {
-				for (Feature clause : formulaFeature.getChildren()) {
-					root.addChild(clause);
-				}
-				if (hasXorFeatures) {
-					for (Feature xor : xorFeatures.getChildren()) {
-						root.addChild(xor);
-					}
-				}
-			}
-			// Add enclosing CNF/DNF feature iself to root
-			else {
-				root.addChild(formulaFeature);
-				if (hasXorFeatures) {
-					root.addChild(xorFeatures);
-				}
-			}
-		}
-		
-		return fm;
+		fm.addConstraint(new Constraint(fm, formula));
+		return convert(fm, false);
 	}
 	
 	protected Feature convertFormula(Node formula, String name) {

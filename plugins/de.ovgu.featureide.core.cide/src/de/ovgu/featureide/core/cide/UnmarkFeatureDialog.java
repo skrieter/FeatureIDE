@@ -28,7 +28,7 @@ import org.w3c.dom.NodeList;
 import de.ovgu.featureide.core.CorePlugin;
 import de.ovgu.featureide.core.IFeatureProject;
 
-public class SelectMarkedFeatureDialog {
+public class UnmarkFeatureDialog {
 
 	public String open(ITextEditor activeEditor, String path, Document doc) {
 
@@ -64,13 +64,13 @@ public class SelectMarkedFeatureDialog {
 
 				for (int i = 0; i < lineNodes.getLength(); i++) {
 					Node lineNode = lineNodes.item(i);
-					Integer endlineAttribute = Integer.parseInt(lineNode.getAttributes().item(0).getNodeValue());
-					Integer startlineAttribute = Integer.parseInt(lineNode.getAttributes().item(1).getNodeValue());
-					
+					Integer endlineAttribute = Integer.parseInt(lineNode.getAttributes().getNamedItem("endline").getNodeValue());
+					Integer startlineAttribute = Integer.parseInt(lineNode.getAttributes().getNamedItem("startline").getNodeValue());
+
 					if (endlineAttribute >= endLine && startlineAttribute <= startLine) {
-						
-						//get feature id and add to featurelist
-						String feature = lineNode.getParentNode().getAttributes().item(0).getTextContent();
+
+						// get feature id and add to featurelist
+						String feature = lineNode.getParentNode().getAttributes().getNamedItem("id").getTextContent();
 						featureList.add(feature);
 					}
 				}
@@ -79,16 +79,18 @@ public class SelectMarkedFeatureDialog {
 				e.printStackTrace();
 			}
 		}
-		
-		//sort featurelist
+
+		// sort featurelist
 		Collections.sort(featureList);
 
 		// TODO sort FeatureList
 		listDialog.setInput(featureList);
 		if (listDialog.open() == Dialog.OK) {
 			System.out.println("Selected feature: " + Arrays.toString(listDialog.getResult()));
-			Object array[] = listDialog.getResult();
-			return (String) array[0];
+			if (listDialog.getResult().length > 0) {
+				Object array[] = listDialog.getResult();
+				return (String) array[0];
+			}
 		}
 		return null;
 

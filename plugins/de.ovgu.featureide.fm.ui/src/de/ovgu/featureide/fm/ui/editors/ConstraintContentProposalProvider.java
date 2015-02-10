@@ -190,6 +190,7 @@ public class ConstraintContentProposalProvider implements
 		ArrayList<String> featureList = new ArrayList<String>(features);
 		Collections.sort(featureList, String.CASE_INSENSITIVE_ORDER);
 		
+		System.out.println("WORD : " + wordBefore.trim());
 		
 		if (") ".equals(wordBefore) || features.contains(wordBefore.trim()) || wordBefore.trim().endsWith("\"")) {
 			proposals.add(new ContentProposal("and"));

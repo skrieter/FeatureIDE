@@ -173,5 +173,9 @@ public interface GUIDefaults {
 	public static final Image IMAGE_CIRCLE_GREEN = FMUIPlugin.getImage("fugue-icons/circle_green.png");
 	public static final Image IMAGE_CIRCLE_YELLOW = FMUIPlugin.getImage("fugue-icons/circle_red.png");
 	public static final Image IMAGE_CIRCLE_RED = FMUIPlugin.getImage("fugue-icons/circle_yellow.png");
+	
+	public static final Image IMAGE_CONSTRAINT_DIALOG_INTELLICOMPLETION_FEATURE = FMUIPlugin.getImage("proposal_feature.png");
+	public static final Image IMAGE_CONSTRAINT_DIALOG_INTELLICOMPLETION_OPERATOR = FMUIPlugin.getImage("proposal_operator.png");
+	public static final Image IMAGE_CONSTRAINT_DIALOG_INTELLICOMPLETION_SHORTCUT = FMUIPlugin.getImage("proposal_shortcut.png");
 
 }

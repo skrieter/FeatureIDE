@@ -41,13 +41,16 @@ import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FormAttachment;
@@ -84,6 +87,7 @@ import de.ovgu.featureide.fm.core.Operator;
 import de.ovgu.featureide.fm.ui.FMUIPlugin;
 import de.ovgu.featureide.fm.ui.editors.ConstraintTextValidator.ValidationMessage;
 import de.ovgu.featureide.fm.ui.editors.ConstraintTextValidator.ValidationResult;
+import de.ovgu.featureide.fm.ui.editors.IntelliCompletion.ICompletionOption;
 import de.ovgu.featureide.fm.ui.editors.featuremodel.GUIDefaults;
 import de.ovgu.featureide.fm.ui.editors.featuremodel.operations.ConstraintCreateOperation;
 import de.ovgu.featureide.fm.ui.editors.featuremodel.operations.ConstraintEditOperation;
@@ -288,7 +292,7 @@ public class ConstraintDialog implements GUIDefaults {
 			detailsLabel.setText("You can create or edit constraints with this dialog.");
 		}
 	}
-	
+
 	public void setInputText(String text) {
 		this.constraintText.setText(text);
 		this.constraintText.setSelection(text.length());
@@ -397,11 +401,19 @@ public class ConstraintDialog implements GUIDefaults {
 		shell.setLocation(x, y);
 		shell.addListener(SWT.Traverse, new Listener() {
 			public void handleEvent(Event event) {
-				if (event.detail == SWT.TRAVERSE_ESCAPE && !adapter.isProposalPopupOpen()) {
-
-					cancelButtonPressEvent();
-
+				if (event.detail == SWT.TRAVERSE_ESCAPE) {
+					if (!intelliCompletion.isShown()) {
+						cancelButtonPressEvent();
+					} else
+						intelliCompletion.hide();
 				}
+			}
+		});
+
+		shell.addListener(SWT.Close, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				intelliCompletion.hide();
 			}
 		});
 	}
@@ -479,6 +491,7 @@ public class ConstraintDialog implements GUIDefaults {
 	private void okButtonPressEvent() {
 		if (okButton.isEnabled()) {
 			VALIDATOR.cancelValidation();
+			intelliCompletion.hide();
 			closeShell();
 		}
 	}
@@ -489,6 +502,7 @@ public class ConstraintDialog implements GUIDefaults {
 	 */
 	private void cancelButtonPressEvent() {
 		VALIDATOR.cancelValidation();
+		intelliCompletion.hide();
 		shell.dispose();
 	}
 
@@ -502,7 +516,7 @@ public class ConstraintDialog implements GUIDefaults {
 	 * 
 	 * SAVE_CHANGES_DISABLED means the dialog can not be closed because there
 	 * are syntax errors for the constraint text or the validation process has
-	 * finshed with an error found.
+	 * finished with an error found.
 	 * 
 	 * SAVE_CHANGES_DONT_MIND mean the dialog can be closed which is not
 	 * recommended. However, some tests are running in this case.
@@ -525,6 +539,7 @@ public class ConstraintDialog implements GUIDefaults {
 	 * Content proposal pop up.
 	 */
 	ContentProposalAdapter adapter;
+	IntelliCompletion intelliCompletion;
 
 	/**
 	 * Updates the dialogs state, changing the default button and setting the
@@ -573,11 +588,16 @@ public class ConstraintDialog implements GUIDefaults {
 		constraintTextComposite.setLayoutData(gridData);
 		FormLayout constraintTextLayout = new FormLayout();
 		constraintTextComposite.setLayout(constraintTextLayout);
-		constraintText = new SimpleSyntaxHighlightEditor(constraintTextComposite, SWT.WRAP | SWT.BORDER | SWT.V_SCROLL, Operator.NAMES);
+		constraintText = new SimpleSyntaxHighlightEditor(constraintTextComposite, SWT.BORDER | SWT.H_SCROLL, Operator.NAMES);
+
+		intelliCompletion = new IntelliCompletion(shell, constraintText);
+		
+		registerFeatures();
+		registerOperators();
 
 		adapter = new ContentProposalAdapter(constraintText, new SimpleSyntaxHighlighterConstraintContentAdapter(), new ConstraintContentProposalProvider(featureModel.getFeatureNames()), null, null);
 
-		adapter.setAutoActivationDelay(500);
+		adapter.setAutoActivationDelay(500000);
 		adapter.setPopupSize(new Point(250, 85));
 
 		adapter.setLabelProvider(new ConstraintProposalLabelProvider());
@@ -594,6 +614,9 @@ public class ConstraintDialog implements GUIDefaults {
 
 			@Override
 			public void modifyText(ModifyEvent e) {
+				
+				openIntelliCompletionDialog();
+
 				if (constraintText.getText().trim().isEmpty()) {
 					headerPanel.setDetails("Please insert a constraint.");
 					headerPanel.setColor(HeaderPanel.BubbleColor.GRAY);
@@ -602,6 +625,144 @@ public class ConstraintDialog implements GUIDefaults {
 					validate();
 				}
 			}
+
+		});
+
+		final Boolean[] ctrlPressed = new Boolean[] { false };
+		final Boolean[] spacePressed = new Boolean[] { false };
+
+		constraintText.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				if (e.keyCode == SWT.CTRL)
+					ctrlPressed[0] = false;
+				if (e.keyCode == SWT.SPACE)
+					spacePressed[0] = false;
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.keyCode == SWT.CTRL)
+					ctrlPressed[0] = true;
+				if (e.keyCode == SWT.SPACE)
+					spacePressed[0] = true;
+				if (e.keyCode == SWT.ARROW_DOWN) {
+					intelliCompletion.setFocus();
+					intelliCompletion.selectNext();
+				}
+				if (e.keyCode == SWT.ARROW_UP) {
+					intelliCompletion.setFocus();
+					intelliCompletion.selectPrev();
+				}
+				if (ctrlPressed[0] && spacePressed[0])
+					openIntelliCompletionDialog();
+			}
+		});
+		
+		constraintText.addListener(SWT.Traverse, new Listener() {
+			public void handleEvent(Event event) {
+				if (event.detail == SWT.TRAVERSE_RETURN) {
+					String result = intelliCompletion.performSelectedAction(constraintText.getText(), constraintText.getCaretOffset());
+					if (result != null) {
+						int off = constraintText.getCaretOffset();						
+						constraintText.setText(result);
+						constraintText.setCaretOffset(off);
+					}
+					
+				}
+			}
+		});
+	}
+
+	private void openIntelliCompletionDialog() {
+		final Point displayPosition = constraintText.toDisplay(constraintText.getLocation());
+		final Point caretLocation = constraintText.getCaret().getLocation();
+		final Point popupPoint = new Point(displayPosition.x + caretLocation.x, displayPosition.y + caretLocation.y + 15);
+
+		intelliCompletion.show(popupPoint);
+		intelliCompletion.move(popupPoint);
+
+		intelliCompletion.textChanged(constraintText.getText(), constraintText.getCaretOffset());
+	}
+
+	private void registerOperators() {
+
+		for (final String op : new String[]{"and", "or", "iff", "implies", "not"}) {
+			registerAsIntelliCompletionOption(op, GUIDefaults.IMAGE_CONSTRAINT_DIALOG_INTELLICOMPLETION_OPERATOR, 1.0f);
+		}	
+		
+	}
+
+	private void registerFeatures() {
+
+		for (final String feature : featureModel.getFeatureNames()) {
+			registerAsIntelliCompletionOption(feature, GUIDefaults.IMAGE_CONSTRAINT_DIALOG_INTELLICOMPLETION_FEATURE, 0.0f);
+		}
+
+	}
+
+	private void registerAsIntelliCompletionOption(final String completionText, final Image image, final float aprioriPorb) {
+		intelliCompletion.registerOption(new ICompletionOption() {
+
+			float probability = 0.0f;
+
+			@Override
+			public boolean showForInput(String text, int caretPosition) {
+				if (text.length() > 0 && text.charAt(Math.max(0, caretPosition - 1)) == ' ') {
+					probability = aprioriPorb;
+					return true;
+				}
+				
+				String[] words = text.substring(0, caretPosition).split(" ");
+				String currentWordPrefix = words[words.length-1].toLowerCase();
+				boolean matches = completionText.toLowerCase().contains(currentWordPrefix.trim()) && completionText.compareToIgnoreCase(currentWordPrefix) != 0;
+				if (matches) {
+					probability = currentWordPrefix.length() / (float) completionText.length();
+				}
+
+				return matches;
+			}
+
+			@Override
+			public String getListText() {
+				return completionText;
+			}
+
+			@Override
+			public String applyCompletion(String text, int caretPosition) {					
+				int whitespacePos = 0;
+				for (int i = caretPosition - 1; i >= 0; i--) {
+					if (text.charAt(i) == ' ') {
+						whitespacePos = i + 1;
+						break;
+					}
+				}
+				StringBuilder sb = new StringBuilder(text);
+				sb.replace(whitespacePos, caretPosition, completionText);
+				return sb.toString();
+			}
+
+			@Override
+			public Image getImage() {
+				return image;
+			}
+
+			@Override
+			public Color getForeground() {
+				return null;
+			}
+
+			@Override
+			public Color getBackground() {
+				return null;
+			}
+
+			@Override
+			public float getProbability() {
+				return probability;
+			}
+
 		});
 	}
 
@@ -806,8 +967,7 @@ public class ConstraintDialog implements GUIDefaults {
 				constraintText.UnderlineEverything(result != ValidationResult.OK && constraintText.getUnknownWords().isEmpty());
 
 				if (result == ValidationResult.OK) {
-					VALIDATOR.validateAsync(constraint, VALIDATION_TIME_OUT, featureModel, constraintText.getText(), onCheckStarted, onVoidsModelCheckComplete, onFalseOptionalCheckComplete, onDeadFeatureCheckComplete,
-							onIsRedundantCheckComplete, onCheckEnded, onIsTautology, onIsNotSatisfiable);
+					VALIDATOR.validateAsync(constraint, VALIDATION_TIME_OUT, featureModel, constraintText.getText(), onCheckStarted, onVoidsModelCheckComplete, onFalseOptionalCheckComplete, onDeadFeatureCheckComplete, onIsRedundantCheckComplete, onCheckEnded, onIsTautology, onIsNotSatisfiable);
 					updateDialogState(DialogState.SAVE_CHANGES_ENABLED);
 				} else {
 					String details = new String();
@@ -915,8 +1075,7 @@ public class ConstraintDialog implements GUIDefaults {
 		@Override
 		public void invoke(ValidationMessage message) {
 			updateDialogState(DialogState.SAVE_CHANGES_DONT_MIND);
-			headerPanel.setDetails("Performing additional checks. This may take a while. Although it is not recommended, you can " + (mode == Mode.UPDATE ? "update" : "save") + " your constraint by clicking \"" + okButton.getText()
-					+ "\" before this process has ended.");
+			headerPanel.setDetails("Performing additional checks. This may take a while. Although it is not recommended, you can " + (mode == Mode.UPDATE ? "update" : "save") + " your constraint by clicking \"" + okButton.getText() + "\" before this process has ended.");
 			headerPanel.setColor(HeaderPanel.BubbleColor.YELLOW);
 		}
 	};

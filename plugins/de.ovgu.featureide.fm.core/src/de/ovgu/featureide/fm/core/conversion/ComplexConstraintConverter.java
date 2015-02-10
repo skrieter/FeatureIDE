@@ -100,7 +100,7 @@ public class ComplexConstraintConverter {
 	 * Generally reduces the number of feature configurations but adds more
 	 * constraints (roughly twice as many).
 	 * 
-	 * Default is true.
+	 * Default is false.
 	 */
 	public void setReduceConfigurations(boolean reduceConfigurations) {
 		this.reduceConfigurations = reduceConfigurations;
@@ -441,14 +441,14 @@ public class ComplexConstraintConverter {
 		// Q: Add constraints to the end of the constraint list to declutter and 
 		// preserve readability?
 		if (xorFeatures == null) {
-			xorFeatures = createAbstractFeature("Exclude-Constraints", true, true);
+			xorFeatures = createAbstractFeature("ExcludeConstraints", true, true);
 		}
 		
-		Feature xorFeature = createAbstractFeature(f.getName() + " XOR " + g.getName(), true, false);
+		Feature xorFeature = createAbstractFeature(f.getName() + "_XOR_" + g.getName(), true, false);
 		xorFeature.setAlternative();
 	
-		Feature xorF = createAbstractFeature(f.getName() + " [XOR]", true, false);
-		Feature xorG = createAbstractFeature(g.getName() + " [XOR]", true, false);
+		Feature xorF = createAbstractFeature(f.getName() + "_XOR", true, false);
+		Feature xorG = createAbstractFeature(g.getName() + "_XOR", true, false);
 		xorFeature.addChild(xorF);
 		xorFeature.addChild(xorG);
 		xorFeatures.addChild(xorFeature);

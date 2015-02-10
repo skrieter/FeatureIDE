@@ -15,7 +15,7 @@ public class ClearAllFeaturesAction implements IEditorActionDelegate, IViewActio
 	
 	public ITextEditor activeEditor = null;
 	ColorXmlManager colorXmlManager;
-	SelectFeatureDialog selectFeatureDialog = new SelectFeatureDialog();
+	MarkWithFeatureDialog markWithFeatureDialog = new MarkWithFeatureDialog();
 
 	public void run(IAction action) {
 

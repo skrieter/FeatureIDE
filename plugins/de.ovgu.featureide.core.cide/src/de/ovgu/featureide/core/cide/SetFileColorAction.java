@@ -3,6 +3,7 @@ package de.ovgu.featureide.core.cide;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -10,13 +11,10 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IEditorActionDelegate;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.ITextEditor;
 
 public class SetFileColorAction implements IViewActionDelegate {
 
@@ -33,8 +31,6 @@ public class SetFileColorAction implements IViewActionDelegate {
 		if (firstElement instanceof IAdaptable) {
 			this.file = (IFile) ((IAdaptable) firstElement).getAdapter(IFile.class);
 			this.path = file.getLocation().toFile().getAbsolutePath();
-			System.out.println(path);
-			System.out.println(getEndline(path));
 		}
 
 		IProject activeProject = file.getProject();
@@ -43,11 +39,12 @@ public class SetFileColorAction implements IViewActionDelegate {
 
 		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
 
-		String feature = setFileColorDialog.open(file);
-
-		if (feature != null) {
-			this.colorXmlManager.addAnnotation(activeProjectPathToFile, 1, getEndline(path), feature);
-			while (this.colorXmlManager.mergeLines(activeProjectPathToFile, feature));
+		ArrayList<String> features = setFileColorDialog.open(file);
+		for (String feature : features) {
+			if (feature != null) {
+				this.colorXmlManager.addAnnotation(activeProjectPathToFile, 1, getEndline(path), feature);
+				while (this.colorXmlManager.mergeLines(activeProjectPathToFile, feature));
+			}
 		}
 	}
 
@@ -56,8 +53,8 @@ public class SetFileColorAction implements IViewActionDelegate {
 
 	public void init(IViewPart view) {
 	}
-	
-	//count lines for a given file
+
+	// count lines for a given file
 	private int getEndline(String path) {
 		BufferedReader reader;
 		int lines = 0;

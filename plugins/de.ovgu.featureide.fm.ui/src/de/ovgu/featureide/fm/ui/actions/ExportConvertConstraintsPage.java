@@ -70,10 +70,8 @@ public class ExportConvertConstraintsPage extends WizardPage {
 	 */
 	@Override
 	public void createControl(Composite parent) {
-		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 		Composite composite = new Composite(parent, SWT.NULL);
-		GridLayout layout = new GridLayout();
-		layout.numColumns = 2;
+		GridLayout layout = new GridLayout(2, false);
 		layout.verticalSpacing = 9;
 		composite.setLayout(layout);
 
@@ -82,7 +80,7 @@ public class ExportConvertConstraintsPage extends WizardPage {
 		labelGenerate.setToolTipText(TOOLTIP_METHOD);
 		
 		comboMethod = new Combo(composite, SWT.BORDER | SWT.SINGLE | SWT.READ_ONLY);
-		comboMethod.setLayoutData(gd);
+		comboMethod.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		comboMethod.add(COMBO_LABEL_CNF);
 		comboMethod.add(COMBO_LABEL_CNF_NAIVE);
 		comboMethod.add(COMBO_LABEL_DNF);
@@ -94,11 +92,13 @@ public class ExportConvertConstraintsPage extends WizardPage {
 		fileNameLabel.setText("File name:");
 		
 		Composite fileComposite = new Composite(composite, SWT.NULL);
-		fileComposite.setLayout(layout);
+		fileComposite.setLayout(new GridLayout(2, false));
+		fileComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		fileName = new Text(fileComposite, SWT.BORDER | SWT.SINGLE);
 		String modelName = inputModelFile.getLocation().removeFileExtension().toOSString();
 		fileName.setText(modelName + "-simple-constraints.xml");	
+		fileName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 		
 		Button browseButton = new Button(fileComposite, SWT.NONE);
 		browseButton.setText("Browse...");

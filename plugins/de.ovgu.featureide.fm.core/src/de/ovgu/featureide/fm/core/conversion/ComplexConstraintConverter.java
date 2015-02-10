@@ -77,7 +77,7 @@ public class ComplexConstraintConverter {
 	 */
 	protected boolean skipIntermediateFeature = false;
 	/** For CNF and DNF */
-	protected boolean cleanInputModel = false;
+	protected boolean cleansInputModel = false;
 
 	public ComplexConstraintConverter() {
 	}
@@ -143,11 +143,11 @@ public class ComplexConstraintConverter {
 	 * Default is false.
 	 */
 	public void setCleansInputModel(boolean cleansInputModel) {
-		this.cleanInputModel = cleansInputModel;
+		this.cleansInputModel = cleansInputModel;
 	}
 	
 	public boolean getCleansInputModel() {
-		return cleanInputModel;
+		return cleansInputModel;
 	}
 	
 	public FeatureModel convert(FeatureModel model) {
@@ -162,7 +162,7 @@ public class ComplexConstraintConverter {
 		fm = clone ? model.deepClone() : model;
 		fm.getAnalyser().runCalculationAutomatically = false;
 		xorFeatures = null;
-		if (cleanInputModel) {
+		if (cleansInputModel) {
 			cleanModel();
 		}
 		
@@ -211,7 +211,7 @@ public class ComplexConstraintConverter {
 		fm = new FeatureModel();
 		fm.getAnalyser().runCalculationAutomatically = false;
 		xorFeatures = null;
-		if (cleanInputModel) {
+		if (cleansInputModel) {
 			cleanModel();
 		}
 		

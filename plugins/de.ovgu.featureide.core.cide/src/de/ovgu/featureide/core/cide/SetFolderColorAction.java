@@ -3,10 +3,10 @@ package de.ovgu.featureide.core.cide;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -21,13 +21,16 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import de.ovgu.featureide.core.IFeatureProject;
+
 public class SetFolderColorAction implements IEditorActionDelegate, IViewActionDelegate {
 
 	ColorXmlManager colorXmlManager;
 	SetFolderColorDialog setFolderColorDialog = new SetFolderColorDialog();
 	public ITextEditor activeEditor = null;
 	IFolder folder = null;
-	IResource[] resource = null;
+	IResource[] folderMembers = null;
+	IFeatureProject featureProject = null;
 
 	public void run(IAction action) {
 
@@ -37,7 +40,7 @@ public class SetFolderColorAction implements IEditorActionDelegate, IViewActionD
 		if (firstElement instanceof IAdaptable) {
 			this.folder = (IFolder) ((IAdaptable) firstElement).getAdapter(IFolder.class);
 			try {
-				this.resource = folder.members();
+				this.folderMembers = folder.members();
 			} catch (CoreException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -47,13 +50,20 @@ public class SetFolderColorAction implements IEditorActionDelegate, IViewActionD
 		String activeProjectPath = folder.getProject().getLocation().toFile().getAbsolutePath();
 		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
 
-		for (int i = 0; i < this.resource.length; i++) {
-			IFile file = (IFile) this.resource[i];
-			String filePath = this.resource[i].getLocation().toFile().getAbsolutePath();
-			String feature = setFolderColorDialog.open(file, file.getName());
-			if (feature != null) {
-				this.colorXmlManager.addAnnotation(filePath, 1, getEndline(filePath), feature);
-				while (this.colorXmlManager.mergeLines(filePath, feature));
+		if (this.folderMembers != null) {
+			IFile file = (IFile) this.folderMembers[0];
+			ArrayList<String> features = setFolderColorDialog.open(file);
+
+			for (int i = 0; i < this.folderMembers.length; i++) {
+				file = (IFile) this.folderMembers[i];
+				String filePath = this.folderMembers[i].getLocation().toFile().getAbsolutePath();
+				for (String feature : features) {
+					if (feature != null) {
+						this.colorXmlManager.addAnnotation(filePath, 1, getEndline(filePath), feature);
+						while (this.colorXmlManager.mergeLines(filePath, feature))
+							;
+					}
+				}
 			}
 		}
 	}

@@ -297,7 +297,7 @@ public class ComplexConstraintConverter {
 			}
 			
 			if (useCNF && literals.length > 1) {
-				Feature literalFeature = createAbstractFeature(originalFeature.getName() + " [" + name + "]", false, false);
+				Feature literalFeature = createAbstractFeature(originalFeature.getName() + "_" + name, false, false);
 				clauseFeature.addChild(literalFeature);
 				addSimpleConstraint(literalFeature, originalFeature, literal.positive);
 			}

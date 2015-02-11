@@ -20,10 +20,8 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -37,6 +35,7 @@ public class ColorXmlManager {
 	private DocumentBuilder m_docBuilder;
 	private Document m_doc = null;
 	private Element m_rootElement;
+	
 
 	public ColorXmlManager(String projectPath) {
 		/*
@@ -334,7 +333,7 @@ public class ColorXmlManager {
 		nodeToRemove.getParentNode().removeChild(nodeToRemove);
 	}
 
-	private boolean compareLineNodes(Node node1, Node node2) {
+	private boolean compareAndMergeNodes(Node node1, Node node2) {
 		// node1
 		int startline1 = Integer.parseInt(node1.getAttributes().item(1).getTextContent());
 		int endline1 = Integer.parseInt(node1.getAttributes().item(0).getTextContent());
@@ -342,30 +341,16 @@ public class ColorXmlManager {
 		int startline2 = Integer.parseInt(node2.getAttributes().item(1).getTextContent());
 		int endline2 = Integer.parseInt(node2.getAttributes().item(0).getTextContent());
 
-		System.out.println("******************");
-		System.out.println("Node 1");
-		System.out.println("------");
-		System.out.println("startline: " + startline1);
-		System.out.println("endline: " + endline1);
-		System.out.println();
-		System.out.println("Node 2");
-		System.out.println("------");
-		System.out.println("startline: " + startline2);
-		System.out.println("endline: " + endline2);
-		System.out.println("******************");
-
 		// New marked area above existing marked area (Node2 above Node1)
 		if ((startline1 - 1) == (endline2)) {
 			node1.getAttributes().item(1).setTextContent(String.valueOf(startline2));
 			removeNode(node2);
-			System.out.println("merged");
 			return true;
 		}
 		if (startline2 >= startline1 && endline2 <= endline1) {
 			removeNode(node2);
 			return true;
 		}
-		System.out.println("not merged");
 		return false;
 	}
 
@@ -373,7 +358,6 @@ public class ColorXmlManager {
 		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
 		XPath xpath = factory.newXPath();
 		try {
-
 			String lineXPath = "root/files/file[@path='" + activeProjectPath + "']/feature[@id='" + feature + "']/line";
 			XPathExpression expression = xpath.compile(lineXPath);
 			NodeList lineNodes = (NodeList) expression.evaluate(m_doc, XPathConstants.NODESET);
@@ -382,8 +366,7 @@ public class ColorXmlManager {
 				for (int j = 0; j < lineNodes.getLength(); j++) {
 					Node node2 = lineNodes.item(j);
 					if (!node1.equals(node2)) {
-						if (compareLineNodes(node1, node2)) {
-							System.out.println("merging!");
+						if (compareAndMergeNodes(node1, node2)) {
 							writeXml();
 							return true;
 						}

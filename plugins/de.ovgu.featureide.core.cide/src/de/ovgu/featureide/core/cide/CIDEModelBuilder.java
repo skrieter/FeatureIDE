@@ -23,7 +23,6 @@ public class CIDEModelBuilder extends PPModelBuilder {
 	ITextEditor activeEditor = null;
 	ColorXmlManager colorXmlManager;
 	
-	
 	//Constructor
 	public CIDEModelBuilder(IFeatureProject featureProject) {
 		
@@ -43,9 +42,6 @@ public class CIDEModelBuilder extends PPModelBuilder {
 	 * @throws CoreException
 	 */
 	protected void buildModel(IFolder folder, String packageName) throws CoreException {
-		
-		/* ColorAnnotationVerarbeitung */
-		// Anlegen TODO: wird jedes Mal ne angelegt, wenn das Model gebuildet wird, überdenken
 		
 		if (this.colorXmlManager.getParsedDocument()==null){
 			this.colorXmlManager.createXml();
@@ -73,6 +69,7 @@ public class CIDEModelBuilder extends PPModelBuilder {
 				if (classAdded) {
 					LinkedList<FSTDirective> directives = buildModelDirectivesForFile(lines,res);
 					addDirectivesToModel(directives, (IFile) res, className);
+					
 				} else {
 					// add class without annotations
 					model.addClass(new FSTClass(className));
@@ -80,7 +77,6 @@ public class CIDEModelBuilder extends PPModelBuilder {
 			}
 		}
 	}
-	
 	
 	
 	public LinkedList<FSTDirective> buildModelDirectivesForFile(Vector<String> lines,IResource res) {

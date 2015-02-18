@@ -1,4 +1,4 @@
-package de.ovgu.featureide.core.cide;
+package de.ovgu.featureide.cide.actions;
 
 import java.util.ArrayList;
 
@@ -14,6 +14,10 @@ import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
+
+import de.ovgu.featureide.cide.dialogs.MarkWithFeatureDialog;
+import de.ovgu.featureide.core.CorePlugin;
+import de.ovgu.featureide.core.cide.ColorXmlManager;
 
 public class MarkWithFeatureAction implements IEditorActionDelegate, IViewActionDelegate {
 
@@ -40,9 +44,8 @@ public class MarkWithFeatureAction implements IEditorActionDelegate, IViewAction
 		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
 
 		ArrayList<String> features = markWithFeatureDialog.open(activeEditor);
-
-		for (String feature : features) {
-			if (feature != null) {
+		if (features != null) {
+			for (String feature : features) {
 				this.colorXmlManager.addAnnotation(activeProjectPathToFile, startLine, endLine, feature);
 				while (this.colorXmlManager.mergeLines(activeProjectPathToFile, feature));
 			}

@@ -1,4 +1,4 @@
-package de.ovgu.featureide.core.cide;
+package de.ovgu.featureide.cide.actions;
 
 import java.util.ArrayList;
 
@@ -14,6 +14,9 @@ import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
+
+import de.ovgu.featureide.cide.dialogs.ClearFeatureDialog;
+import de.ovgu.featureide.core.cide.ColorXmlManager;
 
 public class ClearFeatureAction implements IEditorActionDelegate, IViewActionDelegate {
 
@@ -39,9 +42,8 @@ public class ClearFeatureAction implements IEditorActionDelegate, IViewActionDel
 		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
 
 		ArrayList<String> features = clearFeatureDialog.open(activeEditor, activeProjectPathToFile, this.colorXmlManager.getParsedDocument());
-
-		for (String feature : features) {
-			if (feature != null) {
+		if (features != null) {
+			for (String feature : features) {
 				this.colorXmlManager.deleteFeatureAnnotation(activeProjectPathToFile, startLine, endLine, feature);
 			}
 		}

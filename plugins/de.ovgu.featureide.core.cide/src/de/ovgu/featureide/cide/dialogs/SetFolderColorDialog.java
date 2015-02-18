@@ -1,4 +1,4 @@
-package de.ovgu.featureide.core.cide;
+package de.ovgu.featureide.cide.dialogs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,12 +23,14 @@ public class SetFolderColorDialog {
 		IFeatureProject featureProject = null;
 		ArrayList<String> returnFeatures = new ArrayList<String>();
 		featureProject = CorePlugin.getFeatureProject(file);
+		CorePlugin.getDefault().fireBuildUpdated(featureProject);
 
 		if (featureProject != null) {
 			for (String feature : featureProject.getFeatureModel().getConcreteFeatureNames()) {
 				featureList.add(feature);
 			}
 		}
+		CorePlugin.getDefault().fireBuildUpdated(featureProject);
 		ListSelectionDialog dialog = new ListSelectionDialog(shell, featureList, ArrayContentProvider.getInstance(), new LabelProvider(), "Choose feature(s)");
 		dialog.setTitle("FeatureDialog");
 		if (dialog.open() == Window.OK) {
@@ -42,6 +44,7 @@ public class SetFolderColorDialog {
 				return returnFeatures;
 			}
 		}
+		
 		return null;
 		/*
 		 * Shell parentShel = null; ListDialog listDialog = new ListDialog(parentShel); listDialog.setTitle("FeatureDialog"); listDialog.setMessage("Choose feature for " +

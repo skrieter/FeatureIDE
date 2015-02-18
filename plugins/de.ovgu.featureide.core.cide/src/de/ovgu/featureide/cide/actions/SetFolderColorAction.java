@@ -1,4 +1,4 @@
-package de.ovgu.featureide.core.cide;
+package de.ovgu.featureide.cide.actions;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -21,7 +21,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import de.ovgu.featureide.cide.dialogs.SetFolderColorDialog;
 import de.ovgu.featureide.core.IFeatureProject;
+import de.ovgu.featureide.core.cide.ColorXmlManager;
 
 public class SetFolderColorAction implements IEditorActionDelegate, IViewActionDelegate {
 
@@ -57,11 +59,10 @@ public class SetFolderColorAction implements IEditorActionDelegate, IViewActionD
 			for (int i = 0; i < this.folderMembers.length; i++) {
 				file = (IFile) this.folderMembers[i];
 				String filePath = this.folderMembers[i].getLocation().toFile().getAbsolutePath();
-				for (String feature : features) {
-					if (feature != null) {
+				if (features != null) {
+					for (String feature : features) {
 						this.colorXmlManager.addAnnotation(filePath, 1, getEndline(filePath), feature);
-						while (this.colorXmlManager.mergeLines(filePath, feature))
-							;
+						while (this.colorXmlManager.mergeLines(filePath, feature));
 					}
 				}
 			}

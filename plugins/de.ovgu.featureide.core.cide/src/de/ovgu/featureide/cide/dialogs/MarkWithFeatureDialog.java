@@ -1,4 +1,4 @@
-package de.ovgu.featureide.core.cide;
+package de.ovgu.featureide.cide.dialogs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +45,6 @@ public class MarkWithFeatureDialog {
 				return returnFeatures;
 			}
 		}
-		// Object[] result = dialog.getResult();
 		return null;
 
 		/*

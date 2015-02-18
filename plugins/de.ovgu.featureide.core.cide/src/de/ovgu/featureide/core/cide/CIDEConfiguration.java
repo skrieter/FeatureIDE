@@ -29,22 +29,14 @@ import de.ovgu.featureide.core.IFeatureProject;
 
 public class CIDEConfiguration {
 
-	static Hashtable<String, Object> symbols = new Hashtable<String, Object>(2);
 	int errors = 0;
-	int line = 1;
 	String inName;
 	BufferedReader in;
 	PrintWriter out;
-	boolean printing = true;
 	String source = null;
-	String block = null;
-
-	final int EOF = 0;
-	final int COMMENT = 1; // text surrounded by /* */ delimiters
-	final int CODE = 2; // can just be whitespace
-
 	private IFeatureProject featureProject;
 
+	
 	public CIDEConfiguration() {
 
 	}
@@ -104,72 +96,19 @@ public class CIDEConfiguration {
 	}
 
 	public void process(ArrayList<String> activeFeatures) throws IOException {
-		// Read all of file into a single stream for easier scanning.
-		ColorXmlManager colorXmlManager = new ColorXmlManager(featureProject.getProject().getLocation().toFile().getAbsolutePath());
+		// Read all of file into a single stream
 		StringWriter sw = new StringWriter();
 		String lineContent;
 		int lineNumber = 1;
-		colorXmlManager.readXml();
 		while ((lineContent = in.readLine()) != null) {
-			XPathFactory xPathfactory = XPathFactory.newInstance();
-			XPath xpath = xPathfactory.newXPath();
-			boolean marked = false;
-			//boolean written_out = false;
 			try {
-				//for (int i = 0; i < activeFeatures.size(); i++) {
-					String linesAllXPath = "root/files/file[@path='" + inName + "']/feature/line";
-					XPathExpression exprall = xpath.compile(linesAllXPath);
-					NodeList linesall = (NodeList) exprall.evaluate(colorXmlManager.getParsedDocument(), XPathConstants.NODESET);
-					//written_out = false;
-					for (int j = 0; j < linesall.getLength(); j++) {
-						Node lineNodeAll = linesall.item(j);
-						Integer startLine = Integer.parseInt(lineNodeAll.getAttributes().item(1).getTextContent());
-						Integer endLine = Integer.parseInt(lineNodeAll.getAttributes().item(0).getTextContent());
-						if (lineNumber >= startLine && lineNumber <= endLine) {
-							//sw.write(lineContent);
-							//out.println(lineContent);
-							// markiert
-							marked = true;
-							break;
-						}
-						else
-						{
-							marked = false;
-						}
-					}
+				if (isLineMarked(lineNumber)) {
+					writeCheckedFeature(lineNumber, activeFeatures, lineContent, sw);
+				} else {
+					sw.write(lineContent);
+					out.println(lineContent);
+				}
 
-					if(marked)
-					{
-						boolean written;
-						for (int i = 0; i < activeFeatures.size(); i++) {
-							written = false;
-							String linesForFeatureXPath = "root/files/file[@path='" + inName + "']/feature[@id='"+activeFeatures.get(i)+"']/line";
-							XPathExpression expr = xpath.compile(linesForFeatureXPath);
-							NodeList lines = (NodeList) expr.evaluate(colorXmlManager.getParsedDocument(), XPathConstants.NODESET);
-							for (int k = 0; k < lines.getLength(); k++) {
-								Node lineNode = lines.item(k);
-								Integer startLineinner = Integer.parseInt(lineNode.getAttributes().item(1).getTextContent());
-								Integer endLineinner = Integer.parseInt(lineNode.getAttributes().item(0).getTextContent());
-								if (lineNumber >= startLineinner && lineNumber <= endLineinner) {
-									sw.write(lineContent);
-									out.println(lineContent);
-									written = true;
-									//written_out = true;
-									break;
-								}
-							}
-							if(written) break;
-						}
-						//if(written_out) break;
-					}
-					else
-					{
-						sw.write(lineContent);
-						out.println(lineContent);
-						//break;
-					}
-					
-				
 			} catch (XPathExpressionException e) {
 				e.printStackTrace();
 			}
@@ -178,6 +117,74 @@ public class CIDEConfiguration {
 		source = sw.toString();
 	}
 
+	private boolean isLineMarked(int lineNumber) throws XPathExpressionException {
+		boolean marked = false;
+		ColorXmlManager colorXmlManager = new ColorXmlManager(featureProject.getProject().getLocation().toFile().getAbsolutePath());
+		XPathFactory xPathfactory = XPathFactory.newInstance();
+		XPath xpath = xPathfactory.newXPath();
+		String linesAllXPath = "root/files/file[@path='" + inName + "']/feature/line";
+		XPathExpression exprall = xpath.compile(linesAllXPath);
+		NodeList linesall = (NodeList) exprall.evaluate(colorXmlManager.getParsedDocument(), XPathConstants.NODESET);
+		for (int j = 0; j < linesall.getLength(); j++) {
+			Node lineNodeAll = linesall.item(j);
+			Integer startLine = Integer.parseInt(lineNodeAll.getAttributes().item(1).getTextContent());
+			Integer endLine = Integer.parseInt(lineNodeAll.getAttributes().item(0).getTextContent());
+			if (lineNumber >= startLine && lineNumber <= endLine) {
+				return true;
+			} else {
+				marked = false;
+			}
+		}
+		return marked;
+	}
+	
+	private void writeCheckedFeature(int lineNumber, ArrayList<String> activeFeatures, String lineContent, StringWriter sw) throws XPathExpressionException{
+		boolean written;
+		ColorXmlManager colorXmlManager = new ColorXmlManager(featureProject.getProject().getLocation().toFile().getAbsolutePath());
+		for (int i = 0; i < activeFeatures.size(); i++) {
+			XPathFactory xPathfactory = XPathFactory.newInstance();
+			XPath xpath = xPathfactory.newXPath();
+			written = false;
+			String linesForFeatureXPath = "root/files/file[@path='" + inName + "']/feature[@id='" + activeFeatures.get(i) + "']/line";
+			XPathExpression expr = xpath.compile(linesForFeatureXPath);
+			NodeList lines = (NodeList) expr.evaluate(colorXmlManager.getParsedDocument(), XPathConstants.NODESET);
+			for (int k = 0; k < lines.getLength(); k++) {
+				Node lineNode = lines.item(k);
+				Integer startLineinner = Integer.parseInt(lineNode.getAttributes().item(1).getTextContent());
+				Integer endLineinner = Integer.parseInt(lineNode.getAttributes().item(0).getTextContent());
+				if (lineNumber >= startLineinner && lineNumber <= endLineinner) {
+					sw.write(lineContent);
+					out.println(lineContent);
+					written = true;
+					break;
+				}
+			}
+			if (written)
+				break;
+		}
+	}
+
+	/*
+	 * public void process(ArrayList<String> activeFeatures) throws IOException { // Read all of file into a single stream for easier scanning. ColorXmlManager colorXmlManager =
+	 * new ColorXmlManager(featureProject.getProject().getLocation().toFile().getAbsolutePath()); StringWriter sw = new StringWriter(); String lineContent; int lineNumber = 1;
+	 * colorXmlManager.readXml(); while ((lineContent = in.readLine()) != null) { XPathFactory xPathfactory = XPathFactory.newInstance(); XPath xpath = xPathfactory.newXPath();
+	 * boolean marked = false; //boolean written_out = false; try { //for (int i = 0; i < activeFeatures.size(); i++) { String linesAllXPath = "root/files/file[@path='" + inName +
+	 * "']/feature/line"; XPathExpression exprall = xpath.compile(linesAllXPath); NodeList linesall = (NodeList) exprall.evaluate(colorXmlManager.getParsedDocument(),
+	 * XPathConstants.NODESET); //written_out = false; for (int j = 0; j < linesall.getLength(); j++) { Node lineNodeAll = linesall.item(j); Integer startLine =
+	 * Integer.parseInt(lineNodeAll.getAttributes().item(1).getTextContent()); Integer endLine = Integer.parseInt(lineNodeAll.getAttributes().item(0).getTextContent()); if
+	 * (lineNumber >= startLine && lineNumber <= endLine) { //sw.write(lineContent); //out.println(lineContent); // markiert marked = true; break; } else { marked = false; } }
+	 * 
+	 * if(marked) { boolean written; for (int i = 0; i < activeFeatures.size(); i++) { written = false; String linesForFeatureXPath = "root/files/file[@path='" + inName +
+	 * "']/feature[@id='"+activeFeatures.get(i)+"']/line"; XPathExpression expr = xpath.compile(linesForFeatureXPath); NodeList lines = (NodeList)
+	 * expr.evaluate(colorXmlManager.getParsedDocument(), XPathConstants.NODESET); for (int k = 0; k < lines.getLength(); k++) { Node lineNode = lines.item(k); Integer
+	 * startLineinner = Integer.parseInt(lineNode.getAttributes().item(1).getTextContent()); Integer endLineinner =
+	 * Integer.parseInt(lineNode.getAttributes().item(0).getTextContent()); if (lineNumber >= startLineinner && lineNumber <= endLineinner) { sw.write(lineContent);
+	 * out.println(lineContent); written = true; //written_out = true; break; } } if(written) break; } //if(written_out) break; } else { sw.write(lineContent);
+	 * out.println(lineContent); //break; }
+	 * 
+	 * 
+	 * } catch (XPathExpressionException e) { e.printStackTrace(); } lineNumber++; } source = sw.toString(); }
+	 */
 	public static void usage(String msg) {
 		CIDECorePlugin.getDefault().logWarning(msg);
 	}
@@ -191,18 +198,14 @@ public class CIDEConfiguration {
 
 	public void main(String[] args, IFeatureProject featureProject) {
 		this.featureProject = featureProject;
-		// Use a dummy object as the hash entry value.
-	//	Object obj = new Object();
 
 		// Load symbol definitions
 		int iArg = 0;
-		//symbols.clear();
 		ArrayList<String> activeFeatures = new ArrayList<String>();
 		activeFeatures.clear();
 		while (iArg < args.length && args[iArg].startsWith("-")) {
 			if (args[iArg].startsWith("-")) {
 				String symbol = args[iArg].substring(1);
-			//	symbols.put(symbol, obj);
 				activeFeatures.add(symbol);
 			}
 

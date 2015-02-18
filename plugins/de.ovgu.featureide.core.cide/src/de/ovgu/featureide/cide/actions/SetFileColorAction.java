@@ -1,4 +1,4 @@
-package de.ovgu.featureide.core.cide;
+package de.ovgu.featureide.cide.actions;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -9,12 +9,16 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+
+import de.ovgu.featureide.cide.dialogs.SetFileColorDialog;
+import de.ovgu.featureide.core.cide.ColorXmlManager;
 
 public class SetFileColorAction implements IViewActionDelegate {
 
@@ -26,24 +30,27 @@ public class SetFileColorAction implements IViewActionDelegate {
 	public void run(IAction action) {
 
 		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		IStructuredSelection selection = (IStructuredSelection) window.getSelectionService().getSelection();
-		Object firstElement = selection.getFirstElement();
-		if (firstElement instanceof IAdaptable) {
-			this.file = (IFile) ((IAdaptable) firstElement).getAdapter(IFile.class);
-			this.path = file.getLocation().toFile().getAbsolutePath();
-		}
+		if (!(window.getSelectionService().getSelection() instanceof TextSelection)) {
+			IStructuredSelection selection = (IStructuredSelection) window.getSelectionService().getSelection();
+			Object firstElement = selection.getFirstElement();
+			if (firstElement instanceof IAdaptable) {
+				this.file = (IFile) ((IAdaptable) firstElement).getAdapter(IFile.class);
+				this.path = file.getLocation().toFile().getAbsolutePath();
+			}
 
-		IProject activeProject = file.getProject();
-		String activeProjectPath = activeProject.getLocation().toFile().getAbsolutePath();
-		String activeProjectPathToFile = file.getLocation().toFile().getAbsolutePath();
+			IProject activeProject = file.getProject();
+			String activeProjectPath = activeProject.getLocation().toFile().getAbsolutePath();
+			String activeProjectPathToFile = file.getLocation().toFile().getAbsolutePath();
 
-		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
+			this.colorXmlManager = new ColorXmlManager(activeProjectPath);
 
-		ArrayList<String> features = setFileColorDialog.open(file);
-		for (String feature : features) {
-			if (feature != null) {
-				this.colorXmlManager.addAnnotation(activeProjectPathToFile, 1, getEndline(path), feature);
-				while (this.colorXmlManager.mergeLines(activeProjectPathToFile, feature));
+			ArrayList<String> features = setFileColorDialog.open(file);
+
+			if (features != null) {
+				for (String feature : features) {
+					this.colorXmlManager.addAnnotation(activeProjectPathToFile, 1, getEndline(path), feature);
+					while (this.colorXmlManager.mergeLines(activeProjectPathToFile, feature));
+				}
 			}
 		}
 	}

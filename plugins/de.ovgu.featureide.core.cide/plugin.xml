@@ -27,14 +27,14 @@
             id="de.ovgu.featureide.core.cide.viewerContribution"
             targetID="#CompilationUnitEditorContext">
          <action
-               class="de.ovgu.featureide.core.cide.MarkWithFeatureAction"
+               class="de.ovgu.featureide.cide.actions.MarkWithFeatureAction"
                id="de.ovgu.featureide.core.cide.markwithfeatureaction"
                label="Mark with feature ..."
                menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
                style="push">
          </action>
          <action
-               class="de.ovgu.featureide.core.cide.UnmarkFeatureAction"
+               class="de.ovgu.featureide.cide.actions.UnmarkFeatureAction"
                id="de.ovgu.featureide.core.cide.unmarkfeatureaction"
                label="Unmark feature ..."
                menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
@@ -46,20 +46,61 @@
                path="additions">
          </menu>
          <action
-               class="de.ovgu.featureide.core.cide.ClearFeatureAction"
+               class="de.ovgu.featureide.cide.actions.ClearFeatureAction"
                id="de.ovgu.featureide.core.cide.clearfeature"
                label="Clear feature ..."
                menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
                style="push">
          </action>
          <action
-               class="de.ovgu.featureide.core.cide.ClearAllFeaturesAction"
+               class="de.ovgu.featureide.cide.actions.ClearAllFeaturesAction"
                id="de.ovgu.featureide.core.cide.clearallfeatures"
                label="Clear all features"
                menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
                style="push">
          </action>
+         <action
+               class="de.ovgu.featureide.cide.actions.ShowASTAction"
+               id="de.ovgu.featureide.core.cide.schowast"
+               label="Show AST"
+               menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
+               style="push">
+         </action>
+         <action
+               class="de.ovgu.featureide.cide.actions.HideUnmarkedCode"
+               id="de.ovgu.featureide.core.cide.hideunmarkedcode"
+               label="Hide unmarked code"
+               menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
+               style="push">
+         </action>
       </viewerContribution>
+      <objectContribution
+            adaptable="true"
+            id="de.ovgu.featureide.core.cide.IFileContribution"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="de.ovgu.featureide.cide.actions.SetFileColorAction"
+               id="de.ovgu.featureide.core.cide.setResourceColor"
+               label="Set File Color"
+               menubarPath="de.ovgu.featureide.core.cide.featureide">
+         </action>
+         <menu
+               id="de.ovgu.featureide.core.cide.featureide"
+               label="Feature IDE"
+               path="group.open">
+         </menu>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="de.ovgu.featureide.core.cide.IFolderContribution"
+            objectClass="org.eclipse.core.resources.IFolder">
+         <action
+               class="de.ovgu.featureide.cide.actions.SetFolderColorAction"
+               id="de.ovgu.featureide.core.cide.setFolderColor"
+               label="Set Folder Color"
+               menubarPath="group.open">
+         </action>
+      </objectContribution>
    </extension>
 
 </plugin>

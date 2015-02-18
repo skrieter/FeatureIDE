@@ -1,6 +1,13 @@
-package de.ovgu.featureide.core.cide;
+package de.ovgu.featureide.cide.actions;
 
 import java.util.ArrayList;
+import java.util.Vector;
+
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -14,6 +21,11 @@ import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import de.ovgu.featureide.cide.dialogs.UnmarkFeatureDialog;
+import de.ovgu.featureide.core.cide.ColorXmlManager;
 
 public class UnmarkFeatureAction implements IEditorActionDelegate, IViewActionDelegate {
 
@@ -39,11 +51,38 @@ public class UnmarkFeatureAction implements IEditorActionDelegate, IViewActionDe
 
 		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
 
-		ArrayList<String> features = selectMarkedFeatureDialog.open(activeEditor, activeProjectPathToFile, this.colorXmlManager.getParsedDocument());
+		Vector<String> featureList = new Vector<String>();
+		XPathFactory xPathfactory = XPathFactory.newInstance();
+		XPath xpath = xPathfactory.newXPath();
+		
+		try {
+			String linePathXPath = "root/files/file[@path='" + activeProjectPathToFile + "']/feature/line";
+			XPathExpression expression = xpath.compile(linePathXPath);
+			NodeList lineNodes = (NodeList) expression.evaluate(colorXmlManager.getParsedDocument(), XPathConstants.NODESET);
 
-		for (String feature : features) {
-			if (feature != null) {
-				this.colorXmlManager.deleteAnnotaion(activeProjectPathToFile, startLine, endLine, feature);
+			for (int i = 0; i < lineNodes.getLength(); i++) {
+				Node lineNode = lineNodes.item(i);
+				Integer endlineAttribute = Integer.parseInt(lineNode.getAttributes().getNamedItem("endline").getNodeValue());
+				Integer startlineAttribute = Integer.parseInt(lineNode.getAttributes().getNamedItem("startline").getNodeValue());
+
+				if (endlineAttribute >= endLine && startlineAttribute <= startLine) {
+					// get feature id and add to featurelist
+					String feature = lineNode.getParentNode().getAttributes().getNamedItem("id").getTextContent();
+					featureList.add(feature);
+				}
+			}
+		} catch (XPathExpressionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (featureList.size() == 1) {
+			this.colorXmlManager.deleteAnnotaion(activeProjectPathToFile, startLine, endLine, featureList.elementAt(0));
+		} else {
+			ArrayList<String> features = selectMarkedFeatureDialog.open(activeEditor, activeProjectPathToFile, this.colorXmlManager.getParsedDocument());
+			if (features != null) {
+				for (String feature : features) {
+					this.colorXmlManager.deleteAnnotaion(activeProjectPathToFile, startLine, endLine, feature);
+				}
 			}
 		}
 	}

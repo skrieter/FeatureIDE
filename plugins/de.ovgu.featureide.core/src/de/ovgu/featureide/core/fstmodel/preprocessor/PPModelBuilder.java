@@ -49,10 +49,10 @@ import de.ovgu.featureide.fm.core.Feature;
 public class PPModelBuilder {
 
 	protected FSTModel model;
-	private IFeatureProject featureProject;
-	private List<String> featureNames = new LinkedList<String>();
+	protected IFeatureProject featureProject;
+	protected List<String> featureNames = new LinkedList<String>();
 	
-	public PPModelBuilder(IFeatureProject featureProject) {
+	public PPModelBuilder(IFeatureProject featureProject){
 		model = new FSTModel(featureProject);
 		featureProject.setFSTModel(model);
 		this.featureProject = featureProject;
@@ -81,7 +81,7 @@ public class PPModelBuilder {
 	 * @param packageName 
 	 * @throws CoreException 
 	 */
-	private void buildModel(IFolder folder, String packageName) throws CoreException {
+	protected void buildModel(IFolder folder, String packageName) throws CoreException {
 		for (IResource res : folder.members()) {
 			if (res instanceof IFolder) {
 				buildModel((IFolder)res, packageName.isEmpty() ? res.getName() : packageName + "/" + res.getName());
@@ -109,7 +109,7 @@ public class PPModelBuilder {
 		}
 	}
 
-	private void addDirectivesToModel(LinkedList<FSTDirective> list, IFile res, String className) {
+	protected void addDirectivesToModel(LinkedList<FSTDirective> list, IFile res, String className) {
 		for (FSTDirective d : list) {
 			for (String featureName : d.getFeatureNames()) {
 				FSTRole role = model.addRole(featureName, className, res);//addRole(getFeatureName(d.getExpression()), res.getName(), res);
@@ -173,6 +173,8 @@ public class PPModelBuilder {
 				scanner.close();
 		}
 		return "";
+		
 	}
+	
 
 }

@@ -5,7 +5,14 @@ Bundle-SymbolicName: de.ovgu.featureide.core.cide;singleton:=true
 Bundle-Version: 2.7.2.qualifier
 Bundle-Activator: de.ovgu.featureide.core.cide.CIDECorePlugin
 Import-Package: de.ovgu.featureide.fm.core,
+ org.eclipse.jdt.core,
+ org.eclipse.jdt.core.dom,
+ org.eclipse.jdt.internal.ui.javaeditor,
+ org.eclipse.jdt.ui,
  org.eclipse.jface.text,
+ org.eclipse.jface.text.projection,
+ org.eclipse.jface.text.rules,
+ org.eclipse.jface.text.source.projection,
  org.eclipse.ui.part,
  org.eclipse.ui.texteditor
 Require-Bundle: de.ovgu.featureide.core;bundle-version="2.7.2",

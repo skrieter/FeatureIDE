@@ -6,18 +6,18 @@ import java.util.List;
 public class FeatureElement {
 	
 	private String id;
-	private List<LineElement> lines;
+	private List<SelectionElement> selections;
 	
 	public FeatureElement(){
-		lines = new ArrayList<LineElement>();
+		selections = new ArrayList<SelectionElement>();
 	}
 	
-	public void addLineElement(LineElement le){
-		lines.add(le);
+	public void addSelectionElement(SelectionElement le){
+		selections.add(le);
 	}
 	
-	public void addAllLines(List<LineElement> les){
-		lines.addAll(les);
+	public void addAllSelections(List<SelectionElement> les){
+		selections.addAll(les);
 	}
 	
 	public String getId() {
@@ -28,8 +28,8 @@ public class FeatureElement {
 		this.id = id;
 	}
 
-	public List<LineElement> getLines() {
-		return lines;
+	public List<SelectionElement> getSelections() {
+		return selections;
 	}
 
 }

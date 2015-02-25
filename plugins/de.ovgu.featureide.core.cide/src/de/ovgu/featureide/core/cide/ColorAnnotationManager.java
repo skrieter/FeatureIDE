@@ -4,7 +4,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
+import org.eclipse.core.internal.resources.File;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.core.fstmodel.preprocessor.FSTDirective;
@@ -15,7 +22,7 @@ public class ColorAnnotationManager {
 	private ColorXmlManager m_colorxmlManager;
 
 	FeatureElement featureElement = new FeatureElement();
-	LineElement lineElement = new LineElement();
+	SelectionElement lineElement = new SelectionElement();
 
 	// Constructor
 	public ColorAnnotationManager(ColorXmlManager colorXmlManager) {
@@ -31,20 +38,55 @@ public class ColorAnnotationManager {
 		
 		for (FeatureElement feature : featureList) {
 	
-			for (LineElement line : feature.getLines()) {
+			for (SelectionElement selection : feature.getSelections()) {
 				
 				FSTDirective d = new FSTDirective();
 				d.setFeatureName(feature.getId());
-				d.setLine(Integer.parseInt(line.getStartLine()));
-				d.setStartLine(Integer.parseInt(line.getStartLine())-1, 0);
-				d.setEndLine(Integer.parseInt(line.getEndLine()), 0);
-				d.setExpression("At line:  " + Integer.parseInt(line.getStartLine()) + " - " + Integer.parseInt(line.getEndLine()));
+			//	d.setLine(Integer.parseInt(line.getStartLine()));
+				IDocumentProvider provider = new TextFileDocumentProvider();
+				try {
+					provider.connect(res);
+				} catch (CoreException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				IDocument document = provider.getDocument(res);
+					
+				try {
+					int startLine = document.getLineOfOffset(Integer.parseInt(selection.getOffset()));
+					int endLine = document.getLineOfOffset(Integer.parseInt(selection.getOffsetEnd()));
+				
+					int startLineOffset = getPrefixLength(Integer.parseInt(selection.getOffset()), document, startLine);
+					int endLineOffset = getPrefixLength(Integer.parseInt(selection.getOffsetEnd()), document, endLine);
+					
+					d.setStartLine(startLine, startLineOffset);
+					d.setEndLine(endLine, endLineOffset);
+					d.setExpression("StartLine: " + (startLine+1) + "  Offset " + startLineOffset + 
+							"\n Endline:  " + (endLine+1) + " OffsetEnd: " + endLineOffset);
+
+				} catch (NumberFormatException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (BadLocationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				d.setCommand(FSTDirectiveCommand.COLOR);
 				d.setId(id++);
 				directives.add(d);	
+				provider.disconnect(res);
 			}
 		}
 		return directives;	
 		
+	}
+
+	private int getPrefixLength(int offset, IDocument document, int startLine) throws BadLocationException {
+		int preLength = 0;
+		for(int i = 0; i< startLine; i++){
+			preLength+= document.getLineLength(i);
+		}
+		int startLineOffset = offset - preLength;
+		return startLineOffset;
 	}
 }

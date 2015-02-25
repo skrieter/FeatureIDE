@@ -24,16 +24,19 @@ public class MarkWithFeatureAction implements IEditorActionDelegate, IViewAction
 	ColorXmlManager colorXmlManager;
 	MarkWithFeatureDialog markWithFeatureDialog = new MarkWithFeatureDialog();
 	public ITextEditor activeEditor = null;
-
+	
 	public void run(IAction action) {
 
 		ISelectionProvider selectionProvider = activeEditor.getSelectionProvider();
 		ISelection selection = selectionProvider.getSelection();
 		ITextSelection textSelection = (ITextSelection) selection;
 
-		Integer startLine = Integer.valueOf(textSelection.getStartLine() + 1);
-		Integer endLine = Integer.valueOf(textSelection.getEndLine() + 1);
-
+		Integer offset = Integer.valueOf(textSelection.getOffset());
+		Integer offsetEnd = Integer.valueOf(textSelection.getLength())+Integer.valueOf(textSelection.getOffset());
+		
+		int startLine = textSelection.getStartLine();
+		int endLine =  textSelection.getEndLine();
+		
 		FileEditorInput input = (FileEditorInput) activeEditor.getEditorInput();
 		IFile file = input.getFile();
 		IProject activeProject = file.getProject();
@@ -46,8 +49,8 @@ public class MarkWithFeatureAction implements IEditorActionDelegate, IViewAction
 		ArrayList<String> features = markWithFeatureDialog.open(activeEditor);
 		if (features != null) {
 			for (String feature : features) {
-				this.colorXmlManager.addAnnotation(activeProjectPathToFile, startLine, endLine, feature);
-				while (this.colorXmlManager.mergeLines(activeProjectPathToFile, feature));
+				this.colorXmlManager.addAnnotation(activeProjectPathToFile, offset, offsetEnd, feature);
+			//	while (this.colorXmlManager.mergeLines(activeProjectPathToFile, feature));
 			}
 
 		}

@@ -16,7 +16,6 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import de.ovgu.featureide.cide.dialogs.MarkWithFeatureDialog;
-import de.ovgu.featureide.core.CorePlugin;
 import de.ovgu.featureide.core.cide.ColorXmlManager;
 
 public class MarkWithFeatureAction implements IEditorActionDelegate, IViewActionDelegate {
@@ -34,9 +33,6 @@ public class MarkWithFeatureAction implements IEditorActionDelegate, IViewAction
 		Integer offset = Integer.valueOf(textSelection.getOffset());
 		Integer offsetEnd = Integer.valueOf(textSelection.getLength())+Integer.valueOf(textSelection.getOffset());
 		
-		int startLine = textSelection.getStartLine();
-		int endLine =  textSelection.getEndLine();
-		
 		FileEditorInput input = (FileEditorInput) activeEditor.getEditorInput();
 		IFile file = input.getFile();
 		IProject activeProject = file.getProject();
@@ -45,14 +41,14 @@ public class MarkWithFeatureAction implements IEditorActionDelegate, IViewAction
 		String activeProjectPathToFile = file.getLocation().toFile().getAbsolutePath();
 
 		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
-
+		
+		// get selected features from dialog
 		ArrayList<String> features = markWithFeatureDialog.open(activeEditor);
 		if (features != null) {
 			for (String feature : features) {
 				this.colorXmlManager.addAnnotation(activeProjectPathToFile, offset, offsetEnd, feature);
-			//	while (this.colorXmlManager.mergeLines(activeProjectPathToFile, feature));
+				while (this.colorXmlManager.mergeLines(activeProjectPathToFile, feature));
 			}
-
 		}
 	}
 

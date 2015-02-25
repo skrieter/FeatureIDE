@@ -1,8 +1,5 @@
 package de.ovgu.featureide.cide.actions;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
@@ -11,6 +8,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorActionDelegate;
@@ -19,6 +17,8 @@ import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import de.ovgu.featureide.cide.dialogs.SetFolderColorDialog;
@@ -33,6 +33,7 @@ public class SetFolderColorAction implements IEditorActionDelegate, IViewActionD
 	IFolder folder = null;
 	IResource[] folderMembers = null;
 	IFeatureProject featureProject = null;
+	IDocument doc = null;
 
 	public void run(IAction action) {
 
@@ -41,6 +42,7 @@ public class SetFolderColorAction implements IEditorActionDelegate, IViewActionD
 		Object firstElement = selection.getFirstElement();
 		if (firstElement instanceof IAdaptable) {
 			this.folder = (IFolder) ((IAdaptable) firstElement).getAdapter(IFolder.class);
+			
 			try {
 				this.folderMembers = folder.members();
 			} catch (CoreException e) {
@@ -58,10 +60,18 @@ public class SetFolderColorAction implements IEditorActionDelegate, IViewActionD
 
 			for (int i = 0; i < this.folderMembers.length; i++) {
 				file = (IFile) this.folderMembers[i];
+				IDocumentProvider provider = new TextFileDocumentProvider();
+				try {
+					provider.connect(file);
+				} catch (CoreException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				this.doc = provider.getDocument(file);
 				String filePath = this.folderMembers[i].getLocation().toFile().getAbsolutePath();
 				if (features != null) {
 					for (String feature : features) {
-						this.colorXmlManager.addAnnotation(filePath, 1, getEndline(filePath), feature);
+						this.colorXmlManager.addAnnotation(filePath, 0, doc.getLength(), feature);
 						while (this.colorXmlManager.mergeLines(filePath, feature));
 					}
 				}
@@ -79,22 +89,5 @@ public class SetFolderColorAction implements IEditorActionDelegate, IViewActionD
 		if (targetEditor instanceof ITextEditor) {
 			activeEditor = (ITextEditor) targetEditor;
 		}
-	}
-
-	// count lines for a given file
-	private int getEndline(String path) {
-		BufferedReader reader;
-		int lines = 0;
-		try {
-			reader = new BufferedReader(new FileReader(path));
-
-			while (reader.readLine() != null)
-				lines++;
-			reader.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return lines;
 	}
 }

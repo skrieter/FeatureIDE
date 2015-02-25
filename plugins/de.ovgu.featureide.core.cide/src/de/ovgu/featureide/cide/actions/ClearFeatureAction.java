@@ -29,8 +29,8 @@ public class ClearFeatureAction implements IEditorActionDelegate, IViewActionDel
 		ISelection selection = selectionProvider.getSelection();
 		ITextSelection textSelection = (ITextSelection) selection;
 
-		Integer startLine = Integer.valueOf(textSelection.getStartLine() + 1);
-		Integer endLine = Integer.valueOf(textSelection.getEndLine() + 1);
+		Integer offset = Integer.valueOf(textSelection.getOffset());
+		Integer offsetEnd = Integer.valueOf(textSelection.getLength())+Integer.valueOf(textSelection.getOffset());
 
 		FileEditorInput input = (FileEditorInput) activeEditor.getEditorInput();
 		IFile file = input.getFile();
@@ -44,7 +44,7 @@ public class ClearFeatureAction implements IEditorActionDelegate, IViewActionDel
 		ArrayList<String> features = clearFeatureDialog.open(activeEditor, activeProjectPathToFile, this.colorXmlManager.getParsedDocument());
 		if (features != null) {
 			for (String feature : features) {
-				this.colorXmlManager.deleteFeatureAnnotation(activeProjectPathToFile, startLine, endLine, feature);
+				this.colorXmlManager.deleteFeatureAnnotation(activeProjectPathToFile, offset, offsetEnd, feature);
 			}
 		}
 	}

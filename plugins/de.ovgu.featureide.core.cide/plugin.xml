@@ -67,7 +67,7 @@
                style="push">
          </action>
          <action
-               class="de.ovgu.featureide.cide.actions.HideUnmarkedCode"
+               class="de.ovgu.featureide.cide.actions.HideUnmarkedCodeAction"
                id="de.ovgu.featureide.core.cide.hideunmarkedcode"
                label="Hide unmarked code"
                menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"

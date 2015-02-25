@@ -47,7 +47,7 @@ public class MarkWithFeatureAction implements IEditorActionDelegate, IViewAction
 		if (features != null) {
 			for (String feature : features) {
 				this.colorXmlManager.addAnnotation(activeProjectPathToFile, offset, offsetEnd, feature);
-				while (this.colorXmlManager.mergeLines(activeProjectPathToFile, feature));
+				while (this.colorXmlManager.mergeSelections(activeProjectPathToFile, feature));
 			}
 		}
 	}

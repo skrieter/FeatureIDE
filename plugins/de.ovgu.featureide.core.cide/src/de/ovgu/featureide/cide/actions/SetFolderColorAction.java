@@ -72,7 +72,7 @@ public class SetFolderColorAction implements IEditorActionDelegate, IViewActionD
 				if (features != null) {
 					for (String feature : features) {
 						this.colorXmlManager.addAnnotation(filePath, 0, doc.getLength(), feature);
-						while (this.colorXmlManager.mergeLines(filePath, feature));
+						while (this.colorXmlManager.mergeSelections(filePath, feature));
 					}
 				}
 			}

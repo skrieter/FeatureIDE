@@ -58,7 +58,7 @@ public class SetFileColorAction implements IViewActionDelegate {
 			if (features != null) {
 				for (String feature : features) {
 					this.colorXmlManager.addAnnotation(activeProjectPathToFile, 0, doc.getLength(), feature);
-					while (this.colorXmlManager.mergeLines(activeProjectPathToFile, feature));
+					while (this.colorXmlManager.mergeSelections(activeProjectPathToFile, feature));
 				}
 			}
 		}

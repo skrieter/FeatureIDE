@@ -361,12 +361,12 @@ public class ColorXmlManager {
 		return false;
 	}
 
-	public boolean mergeLines(String activeProjectPath, String feature) {
+	public boolean mergeSelections(String activeProjectPath, String feature) {
 		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
 		XPath xpath = factory.newXPath();
 		try {
-			String lineXPath = "root/files/file[@path='" + activeProjectPath + "']/feature[@id='" + feature + "']/selection";
-			XPathExpression expression = xpath.compile(lineXPath);
+			String selectionXPath = "root/files/file[@path='" + activeProjectPath + "']/feature[@id='" + feature + "']/selection";
+			XPathExpression expression = xpath.compile(selectionXPath);
 			NodeList selections = (NodeList) expression.evaluate(m_doc, XPathConstants.NODESET);
 			for (int i = 0; i < selections.getLength(); i++) {
 				Node node1 = selections.item(i);

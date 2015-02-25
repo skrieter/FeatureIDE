@@ -39,9 +39,9 @@ public class UnmarkFeatureAction implements IEditorActionDelegate, IViewActionDe
 		ISelection selection = selectionProvider.getSelection();
 		ITextSelection textSelection = (ITextSelection) selection;
 
-		Integer startLine = Integer.valueOf(textSelection.getStartLine() + 1);
-		Integer endLine = Integer.valueOf(textSelection.getEndLine() + 1);
-
+		Integer selectedOffset = Integer.valueOf(textSelection.getOffset());
+		Integer selectedOffsetEnd = Integer.valueOf(textSelection.getLength())+Integer.valueOf(textSelection.getOffset());
+		
 		FileEditorInput input = (FileEditorInput) activeEditor.getEditorInput();
 		IFile file = input.getFile();
 		IProject activeProject = file.getProject();
@@ -56,18 +56,18 @@ public class UnmarkFeatureAction implements IEditorActionDelegate, IViewActionDe
 		XPath xpath = xPathfactory.newXPath();
 		
 		try {
-			String linePathXPath = "root/files/file[@path='" + activeProjectPathToFile + "']/feature/line";
+			String linePathXPath = "root/files/file[@path='" + activeProjectPathToFile + "']/feature/selection";
 			XPathExpression expression = xpath.compile(linePathXPath);
-			NodeList lineNodes = (NodeList) expression.evaluate(colorXmlManager.getParsedDocument(), XPathConstants.NODESET);
+			NodeList selectionNodes = (NodeList) expression.evaluate(colorXmlManager.getParsedDocument(), XPathConstants.NODESET);
 
-			for (int i = 0; i < lineNodes.getLength(); i++) {
-				Node lineNode = lineNodes.item(i);
-				Integer endlineAttribute = Integer.parseInt(lineNode.getAttributes().getNamedItem("endline").getNodeValue());
-				Integer startlineAttribute = Integer.parseInt(lineNode.getAttributes().getNamedItem("startline").getNodeValue());
+			for (int i = 0; i < selectionNodes.getLength(); i++) {
+				Node selectionNode = selectionNodes.item(i);
+				Integer offsetEnd = Integer.parseInt(selectionNode.getAttributes().getNamedItem("offsetEnd").getNodeValue());
+				Integer offset = Integer.parseInt(selectionNode.getAttributes().getNamedItem("offset").getNodeValue());
 
-				if (endlineAttribute >= endLine && startlineAttribute <= startLine) {
+				if (offsetEnd >= selectedOffsetEnd && offset <= selectedOffset) {
 					// get feature id and add to featurelist
-					String feature = lineNode.getParentNode().getAttributes().getNamedItem("id").getTextContent();
+					String feature = selectionNode.getParentNode().getAttributes().getNamedItem("id").getTextContent();
 					featureList.add(feature);
 				}
 			}
@@ -76,12 +76,12 @@ public class UnmarkFeatureAction implements IEditorActionDelegate, IViewActionDe
 			e.printStackTrace();
 		}
 		if (featureList.size() == 1) {
-			this.colorXmlManager.deleteAnnotaion(activeProjectPathToFile, startLine, endLine, featureList.elementAt(0));
+			this.colorXmlManager.deleteAnnotaion(activeProjectPathToFile, selectedOffset, selectedOffsetEnd, featureList.elementAt(0));
 		} else {
 			ArrayList<String> features = selectMarkedFeatureDialog.open(activeEditor, activeProjectPathToFile, this.colorXmlManager.getParsedDocument());
 			if (features != null) {
 				for (String feature : features) {
-					this.colorXmlManager.deleteAnnotaion(activeProjectPathToFile, startLine, endLine, feature);
+					this.colorXmlManager.deleteAnnotaion(activeProjectPathToFile, selectedOffset, selectedOffsetEnd, feature);
 				}
 			}
 		}

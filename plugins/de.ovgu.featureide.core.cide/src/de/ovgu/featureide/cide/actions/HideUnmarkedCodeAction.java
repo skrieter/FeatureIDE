@@ -1,12 +1,15 @@
 package de.ovgu.featureide.cide.actions;
 
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.ITypeRoot;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
@@ -18,32 +21,59 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import de.ovgu.featureide.core.cide.ColorXmlManager;
 
 public class HideUnmarkedCodeAction implements IEditorActionDelegate, IViewActionDelegate {
 
 	public ITextEditor activeEditor = null;
+	ColorXmlManager colorXmlManager;
 
 	public void run(IAction action) {
 		
 		IDocument doc = getCurrentEditorContent();
+		
+		FileEditorInput input = (FileEditorInput) activeEditor.getEditorInput();
+		IFile file = input.getFile();
+		IProject activeProject = file.getProject();
 
-		ITextSelection sel = (ITextSelection) activeEditor.getSelectionProvider().getSelection();
-		ITypeRoot typeRoot = JavaUI.getEditorInputTypeRoot(activeEditor.getEditorInput());
-		ICompilationUnit icu = (ICompilationUnit) typeRoot.getAdapter(ICompilationUnit.class);
+		String activeProjectPath = activeProject.getLocation().toFile().getAbsolutePath();
+		String activeProjectPathToFile = file.getLocation().toFile().getAbsolutePath();
 		
 		JavaEditor javaEditor = (JavaEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		ProjectionViewer projectionViewer = (ProjectionViewer) javaEditor.getViewer();
-		ProjectionAnnotation projectionAnnotation = new ProjectionAnnotation();
-
-		projectionAnnotation.setRangeIndication(true);
+		
 		ProjectionAnnotationModel projectionAnnotationModel = projectionViewer.getProjectionAnnotationModel();
 		projectionAnnotationModel.connect(doc);
-		Position position = new Position(sel.getOffset(), sel.getLength());
-		projectionAnnotationModel.addAnnotation(projectionAnnotation, position);
-		System.out.println(projectionAnnotationModel.getPosition(projectionAnnotation));
+		
+		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
+		XPath xpath = factory.newXPath();
+		try {
+			this.colorXmlManager = new ColorXmlManager(activeProjectPath);
+			String selectionXPath = "root/files/file[@path='" + activeProjectPathToFile + "']/feature/selection";
+			XPathExpression expression = xpath.compile(selectionXPath);
+			NodeList selections = (NodeList) expression.evaluate(colorXmlManager.getParsedDocument(), XPathConstants.NODESET);
+			for (int i = 0; i < selections.getLength(); i++) {
+					Node selection = selections.item(i);
+					int offset = Integer.parseInt(selection.getAttributes().getNamedItem("offset").getTextContent());
+					int offsetEnd = Integer.parseInt(selection.getAttributes().getNamedItem("offsetEnd").getTextContent());
+					
+					ProjectionAnnotation projectionAnnotation = new ProjectionAnnotation();
+					projectionAnnotation.setRangeIndication(true);
+					Position position = new Position(offset , (offsetEnd - offset));
+					projectionAnnotationModel.addAnnotation(projectionAnnotation, position);
+				}
+			
+
+		} catch (XPathExpressionException e) {
+			e.printStackTrace();
+		}
 		
 	}
 

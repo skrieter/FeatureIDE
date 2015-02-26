@@ -131,7 +131,7 @@ public class ColorXmlManager {
 
 			expression = xpath.compile(selectionsXPath);
 			Element selectionElement = (Element) expression.evaluate(featureElementNode, XPathConstants.NODE);
-			appendLineElement(featureElementNode, selectionElement, offset.toString(), offsetEnd.toString());
+			appendSelectionElement(featureElementNode, selectionElement, offset.toString(), offsetEnd.toString());
 
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
@@ -148,7 +148,7 @@ public class ColorXmlManager {
 		return (Element) parent.appendChild(child);
 	}
 
-	private Node appendLineElement(Node featureElementParent, Node selectionElement, String startLine, String endLine) {
+	private Node appendSelectionElement(Node featureElementParent, Node selectionElement, String startLine, String endLine) {
 		if (selectionElement == null) {
 			selectionElement = appendElement(featureElementParent, selectionElement, "selection");
 			setAttributeContent((Element) selectionElement, "offset", startLine);
@@ -156,7 +156,6 @@ public class ColorXmlManager {
 		}
 
 		return selectionElement;
-
 	}
 
 	private Node appendFeatureElement(Node fileElementParent, Node featureElement, String featureName) {
@@ -213,7 +212,7 @@ public class ColorXmlManager {
 
 	}
 
-	// get a list of LineElement's for feature which contains startline and endline
+	// get a list of SelectionElement's for feature which contains offset and offsetEnd
 	public List<SelectionElement> getLinesForFeature(String featureName, String path) {
 		List<SelectionElement> leList = new ArrayList<SelectionElement>();
 
@@ -222,14 +221,14 @@ public class ColorXmlManager {
 		try {
 			String linesForFeatureXPath = "root/files/file[@path='" + path + "']/feature[@id='" + featureName + "']/selection";
 			XPathExpression expr = xpath.compile(linesForFeatureXPath);
-			NodeList lines = (NodeList) expr.evaluate(m_doc, XPathConstants.NODESET);
+			NodeList selections = (NodeList) expr.evaluate(m_doc, XPathConstants.NODESET);
 
-			for (int i = 0; i < lines.getLength(); i++) {
+			for (int i = 0; i < selections.getLength(); i++) {
 				SelectionElement le = new SelectionElement();
-				Node lineNode = lines.item(i);
-				Element lineElement = (Element) lineNode;
-				le.setOffset(lineElement.getAttribute("offset"));
-				le.setOffsetEnd(lineElement.getAttribute("offsetEnd"));
+				Node selectionNode = selections.item(i);
+				Element selectionElement = (Element) selectionNode;
+				le.setOffset(selectionElement.getAttribute("offset"));
+				le.setOffsetEnd(selectionElement.getAttribute("offsetEnd"));
 				leList.add(le);
 			}
 		} catch (XPathExpressionException e) {
@@ -239,7 +238,7 @@ public class ColorXmlManager {
 		return leList;
 	}
 
-	public void deleteAnnotaion(String activeProjectPath, Integer markedOffset, Integer markedLength, String feature) {
+	public void deleteAnnotaion(String activeProjectPath, Integer markedOffset, Integer markedOffsetEnd, String feature) {
 		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
 		XPath xpath = factory.newXPath();
 		try {
@@ -253,38 +252,36 @@ public class ColorXmlManager {
 
 			for (int i = 0; i < selectionNodes.getLength(); i++) {
 				Node selectionElement = selectionNodes.item(i);
-				int endLineAttribute = Integer.parseInt(selectionElement.getAttributes().getNamedItem("offsetEnd").getNodeValue());
-				int startLineAttribute = Integer.parseInt(selectionElement.getAttributes().getNamedItem("offset").getNodeValue());
+				int offsetEndAttribute = Integer.parseInt(selectionElement.getAttributes().getNamedItem("offsetEnd").getNodeValue());
+				int offsetAttribute = Integer.parseInt(selectionElement.getAttributes().getNamedItem("offset").getNodeValue());
 
-				// remove area from startLine to endLine
-				if (startLineAttribute == markedOffset && endLineAttribute == markedLength) {
+				// remove area from offset to offsetEnd
+				if (offsetAttribute == markedOffset && offsetEndAttribute == markedOffsetEnd) {
 					removeNode(selectionElement);
 				}
 
-				// remove start line(s)
-				if (startLineAttribute == markedOffset && endLineAttribute > markedLength) {
-					markedLength++;
-					selectionElement.getAttributes().getNamedItem("offset").setTextContent(markedLength.toString());
+				// remove offset(s)
+				if (offsetAttribute == markedOffset && offsetEndAttribute > markedOffsetEnd) {
+					markedOffsetEnd++;
+					selectionElement.getAttributes().getNamedItem("offset").setTextContent(markedOffsetEnd.toString());
 				}
 
-				// remove end line(s)
-				if (startLineAttribute < markedOffset && endLineAttribute == markedLength) {
+				// remove offsetEnd(s)
+				if (offsetAttribute < markedOffset && offsetEndAttribute == markedOffsetEnd) {
 					markedOffset--;
 					selectionElement.getAttributes().getNamedItem("offsetEnd").setTextContent(markedOffset.toString());
 				}
-				// remove area between start- and end line
-				if (startLineAttribute < markedOffset && endLineAttribute > markedLength) {
-					markedOffset--;
-					markedLength++;
-					selectionElement.getAttributes().getNamedItem("length").setTextContent(markedOffset.toString());
+				// remove area between offset and offsetEnd
+				if (offsetAttribute < markedOffset && offsetEndAttribute > markedOffsetEnd) {
+					selectionElement.getAttributes().getNamedItem("offsetEnd").setTextContent(markedOffset.toString());
 
 					Element element = m_doc.createElement("selection");
-					element.setAttribute("offset", markedLength.toString());
-					element.setAttribute("offsetEnd", String.valueOf(endLineAttribute));
+					element.setAttribute("offset", markedOffsetEnd.toString());
+					element.setAttribute("offsetEnd", String.valueOf(offsetEndAttribute));
 					featureNode.appendChild(element);
 				}
 			}
-			// update lineNodes
+			// update selectionNodes
 			selectionNodes = (NodeList) expression.evaluate(m_doc, XPathConstants.NODESET);
 
 			if (selectionNodes.getLength() == 0) {
@@ -297,8 +294,8 @@ public class ColorXmlManager {
 		writeXml();
 	}
 
-	// remove all annotaions from the selected feature
-	public void deleteFeatureAnnotation(String activeProjectPath, Integer markedStartLine, Integer markedEndLine, String feature) {
+	// remove all annotations from the selected feature
+	public void deleteFeatureAnnotation(String activeProjectPath, String feature) {
 		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
 		XPath xpath = factory.newXPath();
 		try {

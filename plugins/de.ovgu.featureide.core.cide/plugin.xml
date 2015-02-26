@@ -23,9 +23,11 @@
    </extension>
    <extension
          point="org.eclipse.ui.popupMenus">
-      <viewerContribution
-            id="de.ovgu.featureide.core.cide.viewerContribution"
-            targetID="#CompilationUnitEditorContext">
+   <objectContribution
+            objectClass="org.eclipse.ui.IEditorInput"
+            nameFilter="*.*"
+            id="SimplePopupMenu.contribution1">
+
          <action
                class="de.ovgu.featureide.cide.actions.MarkWithFeatureAction"
                id="de.ovgu.featureide.core.cide.markwithfeatureaction"
@@ -73,9 +75,9 @@
                menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
                style="push">
          </action>
-      </viewerContribution>
+      </objectContribution>
       <objectContribution
-            adaptable="true"
+            adaptable="false"
             id="de.ovgu.featureide.core.cide.IFileContribution"
             objectClass="org.eclipse.core.resources.IFile">
          <action
@@ -89,7 +91,14 @@
                label="Feature IDE"
                path="group.open">
          </menu>
+         <action
+               class="de.ovgu.featureide.cide.actions.RemoveFileColorAction"
+               id="de.ovgu.featureide.core.cide.removeResourceColor"
+               label="Remove File Color"
+               menubarPath="de.ovgu.featureide.core.cide.featureide">
+         </action>
       </objectContribution>
+      
       <objectContribution
             adaptable="true"
             id="de.ovgu.featureide.core.cide.IFolderContribution"
@@ -98,6 +107,18 @@
                class="de.ovgu.featureide.cide.actions.SetFolderColorAction"
                id="de.ovgu.featureide.core.cide.setFolderColor"
                label="Set Folder Color"
+               menubarPath="group.open">
+         </action>
+         <action
+               class="de.ovgu.featureide.cide.actions.RemoveFolderColorAction"
+               id="de.ovgu.featureide.core.cide.removeFolderColor"
+               label="Remove Folder Color"
+               menubarPath="group.open">
+         </action>
+         <action
+               class="de.ovgu.featureide.cide.actions.RemoveFeatureColorFromFolderAction"
+               id="de.ovgu.featureide.core.cide.RemoveFeatureColor"
+               label="Remove Feature Color"
                menubarPath="group.open">
          </action>
       </objectContribution>

@@ -6,15 +6,17 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import de.ovgu.featureide.cide.dialogs.MarkWithFeatureDialog;
 import de.ovgu.featureide.core.cide.ColorXmlManager;
 
-public class ClearAllFeaturesAction implements IEditorActionDelegate, IViewActionDelegate {
+public class ClearAllFeaturesAction implements IObjectActionDelegate {
 	
 	public ITextEditor activeEditor = null;
 	ColorXmlManager colorXmlManager;
@@ -39,13 +41,10 @@ public class ClearAllFeaturesAction implements IEditorActionDelegate, IViewActio
 	public void selectionChanged(IAction action, ISelection selection) {
 	}
 
-	public void init(IViewPart view) {
-	}
 
-	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-		if (targetEditor instanceof ITextEditor) {
-			activeEditor = (ITextEditor) targetEditor;
+	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+		if (targetPart instanceof ITextEditor) {
+			activeEditor = (ITextEditor) targetPart;
 		}
-
 	}
 }

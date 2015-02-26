@@ -10,15 +10,17 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import de.ovgu.featureide.cide.dialogs.ClearFeatureDialog;
 import de.ovgu.featureide.core.cide.ColorXmlManager;
 
-public class ClearFeatureAction implements IEditorActionDelegate, IViewActionDelegate {
+public class ClearFeatureAction implements IObjectActionDelegate {
 
 	public ITextEditor activeEditor = null;
 	ColorXmlManager colorXmlManager;
@@ -27,10 +29,7 @@ public class ClearFeatureAction implements IEditorActionDelegate, IViewActionDel
 	public void run(IAction action) {
 		ISelectionProvider selectionProvider = activeEditor.getSelectionProvider();
 		ISelection selection = selectionProvider.getSelection();
-		ITextSelection textSelection = (ITextSelection) selection;
-
-		Integer offset = Integer.valueOf(textSelection.getOffset());
-		Integer offsetEnd = Integer.valueOf(textSelection.getLength())+Integer.valueOf(textSelection.getOffset());
+		
 
 		FileEditorInput input = (FileEditorInput) activeEditor.getEditorInput();
 		IFile file = input.getFile();
@@ -44,7 +43,7 @@ public class ClearFeatureAction implements IEditorActionDelegate, IViewActionDel
 		ArrayList<String> features = clearFeatureDialog.open(activeEditor, activeProjectPathToFile, this.colorXmlManager.getParsedDocument());
 		if (features != null) {
 			for (String feature : features) {
-				this.colorXmlManager.deleteFeatureAnnotation(activeProjectPathToFile, offset, offsetEnd, feature);
+				this.colorXmlManager.deleteFeatureAnnotation(activeProjectPathToFile, feature);
 			}
 		}
 	}
@@ -52,13 +51,9 @@ public class ClearFeatureAction implements IEditorActionDelegate, IViewActionDel
 	public void selectionChanged(IAction action, ISelection selection) {
 	}
 
-	public void init(IViewPart view) {
-	}
-
-	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-		if (targetEditor instanceof ITextEditor) {
-			activeEditor = (ITextEditor) targetEditor;
+	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+		if (targetPart instanceof ITextEditor) {
+			activeEditor = (ITextEditor) targetPart;
 		}
-
 	}
 }

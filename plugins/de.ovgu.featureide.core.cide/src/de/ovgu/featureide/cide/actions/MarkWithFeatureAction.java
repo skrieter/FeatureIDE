@@ -10,20 +10,22 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import de.ovgu.featureide.cide.dialogs.MarkWithFeatureDialog;
 import de.ovgu.featureide.core.cide.ColorXmlManager;
 
-public class MarkWithFeatureAction implements IEditorActionDelegate, IViewActionDelegate {
+public class MarkWithFeatureAction implements IObjectActionDelegate {
 
 	ColorXmlManager colorXmlManager;
 	MarkWithFeatureDialog markWithFeatureDialog = new MarkWithFeatureDialog();
 	public ITextEditor activeEditor = null;
-	
+
 	public void run(IAction action) {
 
 		ISelectionProvider selectionProvider = activeEditor.getSelectionProvider();
@@ -31,8 +33,8 @@ public class MarkWithFeatureAction implements IEditorActionDelegate, IViewAction
 		ITextSelection textSelection = (ITextSelection) selection;
 
 		Integer offset = Integer.valueOf(textSelection.getOffset());
-		Integer offsetEnd = Integer.valueOf(textSelection.getLength())+Integer.valueOf(textSelection.getOffset());
-		
+		Integer offsetEnd = Integer.valueOf(textSelection.getLength()) + Integer.valueOf(textSelection.getOffset());
+
 		FileEditorInput input = (FileEditorInput) activeEditor.getEditorInput();
 		IFile file = input.getFile();
 		IProject activeProject = file.getProject();
@@ -41,27 +43,28 @@ public class MarkWithFeatureAction implements IEditorActionDelegate, IViewAction
 		String activeProjectPathToFile = file.getLocation().toFile().getAbsolutePath();
 
 		this.colorXmlManager = new ColorXmlManager(activeProjectPath);
-		
+
 		// get selected features from dialog
 		ArrayList<String> features = markWithFeatureDialog.open(activeEditor);
 		if (features != null) {
 			for (String feature : features) {
 				this.colorXmlManager.addAnnotation(activeProjectPathToFile, offset, offsetEnd, feature);
-				while (this.colorXmlManager.mergeSelections(activeProjectPathToFile, feature));
+				while (this.colorXmlManager.mergeSelections(activeProjectPathToFile, feature))
+					;
 			}
 		}
 	}
 
-	public void selectionChanged(IAction action, ISelection selection) {
-	}
 
-	public void init(IViewPart view) {
-	}
-
-	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-		if (targetEditor instanceof ITextEditor) {
-			activeEditor = (ITextEditor) targetEditor;
+	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+		if (targetPart instanceof ITextEditor) {
+			activeEditor = (ITextEditor) targetPart;
 		}
 	}
 
+
+	public void selectionChanged(IAction action, ISelection selection) {
+		// TODO Auto-generated method stub
+		
+	}
 }

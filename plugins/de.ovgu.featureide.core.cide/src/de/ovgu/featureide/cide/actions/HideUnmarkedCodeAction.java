@@ -18,8 +18,10 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
@@ -30,7 +32,7 @@ import org.w3c.dom.NodeList;
 
 import de.ovgu.featureide.core.cide.ColorXmlManager;
 
-public class HideUnmarkedCodeAction implements IEditorActionDelegate, IViewActionDelegate {
+public class HideUnmarkedCodeAction implements IObjectActionDelegate {
 
 	public ITextEditor activeEditor = null;
 	ColorXmlManager colorXmlManager;
@@ -68,6 +70,7 @@ public class HideUnmarkedCodeAction implements IEditorActionDelegate, IViewActio
 					projectionAnnotation.setRangeIndication(true);
 					Position position = new Position(offset , (offsetEnd - offset));
 					projectionAnnotationModel.addAnnotation(projectionAnnotation, position);
+					
 				}
 			
 
@@ -88,12 +91,9 @@ public class HideUnmarkedCodeAction implements IEditorActionDelegate, IViewActio
 	public void selectionChanged(IAction action, ISelection selection) {
 	}
 
-	public void init(IViewPart view) {
-	}
-
-	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-		if (targetEditor instanceof ITextEditor) {
-			activeEditor = (ITextEditor) targetEditor;
+	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+		if (targetPart instanceof ITextEditor) {
+			activeEditor = (ITextEditor) targetPart;
 		}
 	}
 }

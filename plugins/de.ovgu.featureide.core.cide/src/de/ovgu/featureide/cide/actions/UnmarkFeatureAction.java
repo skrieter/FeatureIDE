@@ -15,10 +15,8 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.ui.IEditorActionDelegate;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IViewActionDelegate;
-import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IObjectActionDelegate;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.w3c.dom.Node;
@@ -27,7 +25,7 @@ import org.w3c.dom.NodeList;
 import de.ovgu.featureide.cide.dialogs.UnmarkFeatureDialog;
 import de.ovgu.featureide.core.cide.ColorXmlManager;
 
-public class UnmarkFeatureAction implements IEditorActionDelegate, IViewActionDelegate {
+public class UnmarkFeatureAction implements IObjectActionDelegate {
 
 	public ITextEditor activeEditor = null;
 	ColorXmlManager colorXmlManager;
@@ -90,13 +88,9 @@ public class UnmarkFeatureAction implements IEditorActionDelegate, IViewActionDe
 	public void selectionChanged(IAction action, ISelection selection) {
 	}
 
-	public void init(IViewPart view) {
-	}
-
-	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-		if (targetEditor instanceof ITextEditor) {
-			activeEditor = (ITextEditor) targetEditor;
+	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+		if (targetPart instanceof ITextEditor) {
+			activeEditor = (ITextEditor) targetPart;
 		}
-
 	}
 }

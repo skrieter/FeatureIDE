@@ -4,11 +4,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IEditorActionDelegate;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IObjectActionDelegate;
-import org.eclipse.ui.IViewActionDelegate;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -16,13 +12,16 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import de.ovgu.featureide.cide.dialogs.MarkWithFeatureDialog;
 import de.ovgu.featureide.core.cide.ColorXmlManager;
 
+/*
+ * Clear all annotations from the active file
+ */
+
 public class ClearAllFeaturesAction implements IObjectActionDelegate {
 	
 	public ITextEditor activeEditor = null;
 	ColorXmlManager colorXmlManager;
 	MarkWithFeatureDialog markWithFeatureDialog = new MarkWithFeatureDialog();
 
-	/*Clear all annotations from the active file*/
 	public void run(IAction action) {
 
 		FileEditorInput input = (FileEditorInput) activeEditor.getEditorInput();

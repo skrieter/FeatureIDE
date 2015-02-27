@@ -4,8 +4,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
-import org.eclipse.core.internal.resources.File;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
@@ -16,6 +14,10 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.core.fstmodel.preprocessor.FSTDirective;
 import de.ovgu.featureide.core.fstmodel.preprocessor.FSTDirectiveCommand;
+
+/*
+ * Add color informations from ColorAnnotations.xml to feature model 
+ */
 
 public class ColorAnnotationManager {
 
@@ -41,8 +43,7 @@ public class ColorAnnotationManager {
 			for (SelectionElement selection : feature.getSelections()) {
 				
 				FSTDirective d = new FSTDirective();
-				d.setFeatureName(feature.getId());
-			//	d.setLine(Integer.parseInt(line.getStartLine()));
+				
 				IDocumentProvider provider = new TextFileDocumentProvider();
 				try {
 					provider.connect(res);
@@ -59,10 +60,12 @@ public class ColorAnnotationManager {
 					int startLineOffset = getPrefixLength(Integer.parseInt(selection.getOffset()), document, startLine);
 					int endLineOffset = getPrefixLength(Integer.parseInt(selection.getOffsetEnd()), document, endLine);
 					
+					d.setFeatureName(feature.getId());
+					d.setLine(startLine);
 					d.setStartLine(startLine, startLineOffset);
 					d.setEndLine(endLine, endLineOffset);
-					d.setExpression("StartLine: " + (startLine+1) + "  Offset " + startLineOffset + 
-							"\n Endline:  " + (endLine+1) + " OffsetEnd: " + endLineOffset);
+					d.setExpression("StartLine: " + (startLine+1) + "  LineOffset " + startLineOffset + 
+									"\n Endline:  " + (endLine+1) + " LineOffset: " + endLineOffset);
 
 				} catch (NumberFormatException e) {
 					// TODO Auto-generated catch block
@@ -78,7 +81,6 @@ public class ColorAnnotationManager {
 			}
 		}
 		return directives;	
-		
 	}
 
 	private int getPrefixLength(int offset, IDocument document, int startLine) throws BadLocationException {

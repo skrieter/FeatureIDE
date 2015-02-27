@@ -5,20 +5,15 @@ import java.util.ArrayList;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.ui.IEditorActionDelegate;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IObjectActionDelegate;
-import org.eclipse.ui.IViewActionDelegate;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import de.ovgu.featureide.cide.dialogs.ClearFeatureDialog;
 import de.ovgu.featureide.core.cide.ColorXmlManager;
+
 
 public class ClearFeatureAction implements IObjectActionDelegate {
 
@@ -27,10 +22,7 @@ public class ClearFeatureAction implements IObjectActionDelegate {
 	ClearFeatureDialog clearFeatureDialog = new ClearFeatureDialog();
 
 	public void run(IAction action) {
-		ISelectionProvider selectionProvider = activeEditor.getSelectionProvider();
-		ISelection selection = selectionProvider.getSelection();
-		
-
+	
 		FileEditorInput input = (FileEditorInput) activeEditor.getEditorInput();
 		IFile file = input.getFile();
 		IProject activeProject = file.getProject();

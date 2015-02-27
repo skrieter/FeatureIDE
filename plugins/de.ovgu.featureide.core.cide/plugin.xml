@@ -62,16 +62,16 @@
                style="push">
          </action>
          <action
-               class="de.ovgu.featureide.cide.actions.ShowASTAction"
-               id="de.ovgu.featureide.core.cide.schowast"
-               label="Show AST"
+               class="de.ovgu.featureide.cide.actions.ASTAction"
+               id="de.ovgu.featureide.core.cide.ast"
+               label="AST"
                menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
                style="push">
          </action>
          <action
-               class="de.ovgu.featureide.cide.actions.HideUnmarkedCodeAction"
-               id="de.ovgu.featureide.core.cide.hideunmarkedcode"
-               label="Hide unmarked code"
+               class="de.ovgu.featureide.cide.actions.HideMarkedCodeAction"
+               id="de.ovgu.featureide.core.cide.hidemarkedcode"
+               label="Hide marked code"
                menubarPath="de.ovgu.featureide.ui.MarkWithFeatureMenu/ui"
                style="push">
          </action>

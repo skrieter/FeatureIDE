@@ -32,9 +32,12 @@ import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.BadPositionCategoryException;
+import org.eclipse.jface.text.DefaultPositionUpdater;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.text.IPositionUpdater;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationModelEvent;
@@ -108,7 +111,24 @@ public final class ColorAnnotationModel implements IAnnotationModel {
 	};
 	
 	private ColorAnnotationModel(IDocument document, IFile file, IFeatureProject project, ITextEditor editor) {
-		this.document = document;
+	
+		this.document = document;	
+		document.addPositionCategory("ABC");
+		document.addPositionUpdater(new DefaultPositionUpdater("ABC") {
+			
+			@Override
+			public void update(DocumentEvent event) {
+			
+					
+			super.update(event);
+	
+			System.out.println(this.fOriginalPosition);
+			System.out.println(this.fPosition);
+				
+				
+			}
+		});
+	
 		this.project = project;
 		this.file = file;
 		composer = project.getComposer();
@@ -380,6 +400,7 @@ public final class ColorAnnotationModel implements IAnnotationModel {
 							lineLength -= dir.getStartOffset();
 						}
 						
+						
 						Position newPos = new Position(lineOffset, lineLength);
 						
 						if (!annotatedPositions.containsKey(i)) {
@@ -472,7 +493,14 @@ public final class ColorAnnotationModel implements IAnnotationModel {
 			throw new RuntimeException("Can't connect to different document.");
 		for (final ColorAnnotation ca : annotations) {
 			try {
-				document.addPosition(ca.getPosition());
+			//	document.addPosition(ca.getPosition());
+				
+				try {
+					document.addPosition("ABC", ca.getPosition());
+				} catch (BadPositionCategoryException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			} catch (BadLocationException ex) {
 			}
 		}
@@ -522,4 +550,6 @@ public final class ColorAnnotationModel implements IAnnotationModel {
 			return null;
 		}
 	}
+
+
 }

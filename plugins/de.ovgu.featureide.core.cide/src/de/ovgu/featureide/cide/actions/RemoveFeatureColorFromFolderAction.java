@@ -71,8 +71,7 @@ public class RemoveFeatureColorFromFolderAction implements IEditorActionDelegate
 				String filePath = this.folderMembers[i].getLocation().toFile().getAbsolutePath();
 				if (features != null) {
 					for (String feature : features) {
-						this.colorXmlManager.addAnnotation(filePath, 0, doc.getLength(), feature);
-						while (this.colorXmlManager.mergeSelections(filePath, feature));
+						this.colorXmlManager.deleteFeatureAnnotation(filePath, feature);
 					}
 				}
 			}

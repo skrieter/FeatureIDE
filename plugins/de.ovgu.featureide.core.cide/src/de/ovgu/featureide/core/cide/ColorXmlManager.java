@@ -260,17 +260,18 @@ public class ColorXmlManager {
 					removeNode(selectionElement);
 				}
 
-				// remove offset(s)
+				// change offset(s)
 				if (offsetAttribute == markedOffset && offsetEndAttribute > markedOffsetEnd) {
 					markedOffsetEnd++;
 					selectionElement.getAttributes().getNamedItem("offset").setTextContent(markedOffsetEnd.toString());
 				}
 
-				// remove offsetEnd(s)
+				// change offsetEnd(s)
 				if (offsetAttribute < markedOffset && offsetEndAttribute == markedOffsetEnd) {
 					markedOffset--;
 					selectionElement.getAttributes().getNamedItem("offsetEnd").setTextContent(markedOffset.toString());
 				}
+				
 				// remove area between offset and offsetEnd
 				if (offsetAttribute < markedOffset && offsetEndAttribute > markedOffsetEnd) {
 					selectionElement.getAttributes().getNamedItem("offsetEnd").setTextContent(markedOffset.toString());
@@ -294,7 +295,7 @@ public class ColorXmlManager {
 		writeXml();
 	}
 
-	// remove all annotations from the selected feature
+	// remove selected feature annotation
 	public void deleteFeatureAnnotation(String activeProjectPath, String feature) {
 		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
 		XPath xpath = factory.newXPath();
@@ -309,7 +310,7 @@ public class ColorXmlManager {
 		writeXml();
 	}
 
-	// remove annotations of all features
+	// remove all feature annotations
 	public void removeAllAnnotations(String activeProjectPath) {
 		javax.xml.xpath.XPathFactory factory = javax.xml.xpath.XPathFactory.newInstance();
 		XPath xpath = factory.newXPath();
@@ -374,11 +375,9 @@ public class ColorXmlManager {
 							writeXml();
 							return true;
 						}
-
 					}
 				}
 			}
-
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
 		}
@@ -386,9 +385,6 @@ public class ColorXmlManager {
 	}
 
 	public Document getParsedDocument() {
-		// TODO: test ob das Document wirklich geparsed wurde
-		// wenn nicht, this.readXml
-		// if(m_doc != null)
 		return m_doc;
 
 	}

@@ -33,8 +33,6 @@ public class CIDEComposer extends PPComposerExtensionClass {
 		buildFSTModel();
 
 		prepareFullBuild(null);
-		// annotationChecking();
-
 		return supSuccess && cideModelBuilder != null;
 	}
 
@@ -44,7 +42,6 @@ public class CIDEComposer extends PPComposerExtensionClass {
 			return;
 		try {
 			preprocessSourceFiles(featureProject.getBuildFolder());
-			// annotationChecking();
 		} catch (CoreException e) {
 			CIDECorePlugin.getDefault().logError(e);
 		}
@@ -84,7 +81,7 @@ public class CIDEComposer extends PPComposerExtensionClass {
 		packageArgs.add(buildFolder.getRawLocation().toOSString());
 
 		// CommandLine syntax:
-		// FEATURE1 FEATURE2 ... File1 File2 ... outputDirectory
+		// -FEATURE1 -FEATURE2 ... File1 File2 ... outputDirectory
 		runCIDE(packageArgs);
 	}
 
@@ -142,7 +139,6 @@ public class CIDEComposer extends PPComposerExtensionClass {
 	@Override
 	public void buildFSTModel() {
 		cideModelBuilder.buildModel();
-
 	}
 
 	@Override

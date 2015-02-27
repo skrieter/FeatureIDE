@@ -30,7 +30,7 @@ public class CIDEModelBuilder extends PPModelBuilder {
 		this.colorXmlManager = new ColorXmlManager(featureProject.getProject().getLocation().toFile().getAbsolutePath());		
 		this.colorAnnotationManager = new ColorAnnotationManager(this.colorXmlManager);
 		 
-		// if ColorAnnotations.xml doesnt exist -> create
+		// if ColorAnnotations.xml doesn't exist -> create
 		if (this.colorXmlManager.getParsedDocument()==null){
 			this.colorXmlManager.createXml();
 		}
@@ -52,7 +52,6 @@ public class CIDEModelBuilder extends PPModelBuilder {
 			if (res instanceof IFolder) {
 				buildModel((IFolder) res, packageName.isEmpty() ? res.getName() : packageName + "/" + res.getName());
 			} else if (res instanceof IFile) {
-				// String text = getText((IFile)res);
 				String className = packageName.isEmpty() ? res.getName() : packageName + "/" + res.getName();
 
 				Vector<String> lines = PPComposerExtensionClass.loadStringsFromFile((IFile) res);

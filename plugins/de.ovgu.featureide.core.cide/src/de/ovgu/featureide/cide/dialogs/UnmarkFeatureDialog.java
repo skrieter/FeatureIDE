@@ -48,7 +48,8 @@ public class UnmarkFeatureDialog {
 			featureProject = CorePlugin.getFeatureProject(inputFile);
 		}
 		if (featureProject != null) {
-
+			
+			// get all feature id's from given path
 			XPathFactory xPathfactory = XPathFactory.newInstance();
 			XPath xpath = xPathfactory.newXPath();
 			try {
@@ -60,10 +61,8 @@ public class UnmarkFeatureDialog {
 					Node selectionNode = selectionNodes.item(i);
 					Integer offsetEndAttribute = Integer.parseInt(selectionNode.getAttributes().getNamedItem("offsetEnd").getNodeValue());
 					Integer offsetAttribute = Integer.parseInt(selectionNode.getAttributes().getNamedItem("offset").getNodeValue());
-
+					// get only feature id's from selected range and add them to featureList
 					if (offsetEndAttribute >= selectedOffsetEnd && offsetAttribute <= selectedOffset) {
-
-						// get feature id and add to featurelist
 						String feature = selectionNode.getParentNode().getAttributes().getNamedItem("id").getTextContent();
 						featureList.add(feature);
 					}
@@ -85,7 +84,6 @@ public class UnmarkFeatureDialog {
 				for (int i = 0; i < array.length; i++) {
 					returnFeatures.add((String) array[i]);
 				}
-			
 				return returnFeatures;
 			}
 		}

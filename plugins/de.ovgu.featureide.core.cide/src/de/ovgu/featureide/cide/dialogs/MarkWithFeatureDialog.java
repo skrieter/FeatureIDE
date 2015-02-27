@@ -16,6 +16,10 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import de.ovgu.featureide.core.CorePlugin;
 import de.ovgu.featureide.core.IFeatureProject;
 
+/*
+ * show all features of the feature model at the dialog
+ */
+
 public class MarkWithFeatureDialog {
 
 	public ArrayList<String> open(ITextEditor activeEditor) {
@@ -46,21 +50,6 @@ public class MarkWithFeatureDialog {
 			}
 		}
 		return null;
-
-		/*
-		 * Shell parentShel = null; ListDialog listDialog = new ListDialog(parentShel); listDialog.setTitle("FeatureDialog"); listDialog.setMessage("Choose feature");
-		 * listDialog.setContentProvider(ArrayContentProvider.getInstance()); listDialog.setLabelProvider(new LabelProvider());
-		 * 
-		 * Vector<String> featureList = new Vector<String>(); IFeatureProject featureProject = null;
-		 * 
-		 * if (activeEditor != null) { IFile inputFile = ((FileEditorInput) activeEditor.getEditorInput()).getFile(); featureProject = CorePlugin.getFeatureProject(inputFile); } if
-		 * (featureProject != null) { for (String feature : featureProject.getFeatureModel().getConcreteFeatureNames()) { featureList.add(feature); } }
-		 * 
-		 * listDialog.setInput(featureList); if (listDialog.open() == Dialog.OK) { System.out.println("Selected feature: " + Arrays.toString(listDialog.getResult())); if
-		 * (listDialog.getResult().length > 0) { Object array[] = listDialog.getResult(); return (String) array[0]; } }
-		 * 
-		 * return null;
-		 */
 	}
 
 }

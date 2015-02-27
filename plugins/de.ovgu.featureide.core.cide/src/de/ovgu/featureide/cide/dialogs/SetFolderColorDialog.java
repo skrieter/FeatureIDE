@@ -46,21 +46,6 @@ public class SetFolderColorDialog {
 		}
 		
 		return null;
-		/*
-		 * Shell parentShel = null; ListDialog listDialog = new ListDialog(parentShel); listDialog.setTitle("FeatureDialog"); listDialog.setMessage("Choose feature for " +
-		 * fileName); listDialog.setContentProvider(ArrayContentProvider.getInstance()); listDialog.setLabelProvider(new LabelProvider());
-		 * 
-		 * Vector<String> featureList = new Vector<String>(); IFeatureProject featureProject = null;
-		 * 
-		 * featureProject = CorePlugin.getFeatureProject(file);
-		 * 
-		 * if (featureProject != null) { for (String feature : featureProject.getFeatureModel().getConcreteFeatureNames()) { featureList.add(feature); } }
-		 * 
-		 * listDialog.setInput(featureList); if (listDialog.open() == Dialog.OK) { System.out.println("Selected feature: " + Arrays.toString(listDialog.getResult())); if
-		 * (listDialog.getResult().length > 0) { Object array[] = listDialog.getResult(); return (String) array[0]; } }
-		 * 
-		 * return null;
-		 */
 	}
 
 }

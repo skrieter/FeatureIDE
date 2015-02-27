@@ -15,12 +15,9 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IObjectActionDelegate;
-import org.eclipse.ui.IViewActionDelegate;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
@@ -32,7 +29,12 @@ import org.w3c.dom.NodeList;
 
 import de.ovgu.featureide.core.cide.ColorXmlManager;
 
-public class HideUnmarkedCodeAction implements IObjectActionDelegate {
+/*
+ * Add projection annotations for marked features to make them collapsible 
+ * (work only with the JavaEditor)
+ */
+
+public class HideMarkedCodeAction implements IObjectActionDelegate {
 
 	public ITextEditor activeEditor = null;
 	ColorXmlManager colorXmlManager;
@@ -47,8 +49,8 @@ public class HideUnmarkedCodeAction implements IObjectActionDelegate {
 
 		String activeProjectPath = activeProject.getLocation().toFile().getAbsolutePath();
 		String activeProjectPathToFile = file.getLocation().toFile().getAbsolutePath();
-		
 		JavaEditor javaEditor = (JavaEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		
 		ProjectionViewer projectionViewer = (ProjectionViewer) javaEditor.getViewer();
 		
 		ProjectionAnnotationModel projectionAnnotationModel = projectionViewer.getProjectionAnnotationModel();
@@ -72,12 +74,9 @@ public class HideUnmarkedCodeAction implements IObjectActionDelegate {
 					projectionAnnotationModel.addAnnotation(projectionAnnotation, position);
 					
 				}
-			
-
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
 		}
-		
 	}
 
 	public IDocument getCurrentEditorContent() {

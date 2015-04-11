@@ -41,7 +41,7 @@ import de.ovgu.featureide.fm.core.FeatureModel;
 public class FmTreeContentProvider implements ITreeContentProvider {
 
 	private FeatureModel fModel;
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -110,8 +110,7 @@ public class FmTreeContentProvider implements ITreeContentProvider {
 		// we store the group stage into an extra object in order to be able to
 		// show an own element for GroupStages
 		if (parentElement instanceof FmOutlineGroupStateStorage) {
-			return featureListToArray(((FmOutlineGroupStateStorage) parentElement)
-					.getFeature().getChildren());
+			return featureListToArray(((FmOutlineGroupStateStorage) parentElement).getFeature().getChildren());
 		}
 
 		if (!(parentElement instanceof Feature))
@@ -120,11 +119,9 @@ public class FmTreeContentProvider implements ITreeContentProvider {
 			return null;
 
 		if (((Feature) parentElement).isOr())
-			return new Object[] { new FmOutlineGroupStateStorage(
-					(Feature) parentElement, true) };
+			return new Object[] { new FmOutlineGroupStateStorage((Feature) parentElement, true) };
 		if (((Feature) parentElement).isAlternative())
-			return new Object[] { new FmOutlineGroupStateStorage(
-					(Feature) parentElement, false) };
+			return new Object[] { new FmOutlineGroupStateStorage((Feature) parentElement, false) };
 
 		return featureListToArray(((Feature) parentElement).getChildren());
 	}

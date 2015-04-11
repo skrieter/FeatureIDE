@@ -62,7 +62,7 @@ public class NewFeatureModelWizard extends Wizard implements INewWizard {
 	public boolean performFinish() {
 		FeatureModel featureModel = new FeatureModel();
 		featureModel.createDefaultValues("");
-		
+
 		Path fullFilePath = new Path(page.fileName.getText());
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		IPath rootPath = root.getLocation();
@@ -93,24 +93,20 @@ public class NewFeatureModelWizard extends Wizard implements INewWizard {
 	}
 
 	private void open(IFile file) {
-		IWorkbenchWindow dw = FMUIPlugin.getDefault().getWorkbench()
-				.getActiveWorkbenchWindow();
+		IWorkbenchWindow dw = FMUIPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow();
 		IWorkbenchPage page = dw.getActivePage();
 		if (page != null) {
 			IContentType contentType = null;
 			try {
-				IContentDescription description = file
-						.getContentDescription();
+				IContentDescription description = file.getContentDescription();
 				if (description != null) {
 					contentType = description.getContentType();
 				}
 				IEditorDescriptor desc = null;
 				if (contentType != null) {
-					desc = PlatformUI.getWorkbench().getEditorRegistry()
-							.getDefaultEditor(file.getName(), contentType);
+					desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName(), contentType);
 				} else {
-					desc = PlatformUI.getWorkbench().getEditorRegistry()
-							.getDefaultEditor(file.getName());
+					desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
 				}
 
 				if (desc != null) {
@@ -134,7 +130,7 @@ public class NewFeatureModelWizard extends Wizard implements INewWizard {
 		if (obj instanceof IResource) {
 			page = new NewFeatureModelWizardPage("", ((IResource) obj).getProject());
 		} else if (obj instanceof JavaElement) {
-			JavaElement javaElement = (JavaElement)obj;
+			JavaElement javaElement = (JavaElement) obj;
 			page = new NewFeatureModelWizardPage("", javaElement.getResource().getProject());
 		} else {
 			page = new NewFeatureModelWizardPage("", null);

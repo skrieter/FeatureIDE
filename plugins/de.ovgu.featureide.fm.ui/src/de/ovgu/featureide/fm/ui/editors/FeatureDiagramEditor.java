@@ -504,7 +504,8 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 			return;
 		}
 		waiting = true;
-		final boolean runAnalysis = featureModelEditor.getFeatureModel().getAnalyser().runCalculationAutomatically && featureModelEditor.getFeatureModel().getAnalyser().calculateFeatures;
+		final boolean runAnalysis = featureModelEditor.getFeatureModel().getAnalyser().runCalculationAutomatically
+				&& featureModelEditor.getFeatureModel().getAnalyser().calculateFeatures;
 		/**
 		 * This extra job is necessary, else the UI will stop.
 		 */
@@ -560,7 +561,7 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 						final HashMap<Object, Object> changedAttributes = analyzer.analyzeFeatureModel(new NullProgressMonitor());
 
 						refreshGraphics(changedAttributes);
-						
+
 						return true;
 					}
 				};
@@ -712,20 +713,20 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 	public void doSave(IProgressMonitor monitor) {
 
 	}
-	
+
 	@Override
 	public boolean allowPageChange(int newPage) {
 		return true;
 	}
-	
+
 	@Override
 	public void pageChangeFrom(int newPage) {
-		
+
 	}
 
 	@Override
 	public void pageChangeTo(int oldPage) {
-		
+
 	}
 
 	@Override

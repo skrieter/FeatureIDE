@@ -102,25 +102,25 @@ public class FeatureModelEditor extends MultiPageEditorPart implements IResource
 	public FeatureDiagramEditor diagramEditor;
 	public FeatureOrderEditor featureOrderEditor;
 	public FeatureModelTextEditorPage textEditor;
-	
+
 	public LinkedList<IFeatureModelEditorPage> extensionPages = new LinkedList<IFeatureModelEditorPage>();
 	public FeatureModel featureModel;
 
 	FeatureModelFile fmFile;
 	boolean isPageModified = false;
 	AbstractFeatureModelWriter featureModelWriter;
-	
+
 	private AbstractFeatureModelReader featureModelReader;
 	private IFile file;
-	
+
 	private boolean closeEditor;
-	
+
 	private int currentPageIndex;
 	private int ioType;
 	private int operationCounter;
-	
+
 	private FmOutlinePage outlinePage;
-	
+
 	private FMPrintAction printAction;
 	private SelectAllAction selectAllAction;
 	private UndoActionHandler undoAction;
@@ -693,8 +693,7 @@ public class FeatureModelEditor extends MultiPageEditorPart implements IResource
 	}
 
 	/**
-	 * Sets the actual FeatureModel at the corresponding
-	 * {@link ConfigurationEditor}s.
+	 * Sets the actual FeatureModel at the corresponding {@link ConfigurationEditor}s.
 	 * 
 	 * @see ConfigurationEditor#propertyChange(PropertyChangeEvent)
 	 */

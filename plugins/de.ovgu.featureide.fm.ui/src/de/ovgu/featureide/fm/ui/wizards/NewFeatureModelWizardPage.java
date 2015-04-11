@@ -44,7 +44,7 @@ import org.eclipse.swt.widgets.Text;
  * @author Jens Meinicke
  */
 public class NewFeatureModelWizardPage extends WizardPage {
-	
+
 	@CheckForNull
 	private IProject project;
 
@@ -88,13 +88,13 @@ public class NewFeatureModelWizardPage extends WizardPage {
 				}
 			}
 		});
-	
+
 		fileName.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				checkFileName();
 			}
 		});
-		
+
 		setPageComplete(false);
 		setControl(composite);
 	}
@@ -121,7 +121,7 @@ public class NewFeatureModelWizardPage extends WizardPage {
 		}
 		updateStatus(null);
 	}
-	
+
 	private void updateStatus(String message) {
 		setErrorMessage(message);
 		setPageComplete(message == null);
@@ -131,10 +131,10 @@ public class NewFeatureModelWizardPage extends WizardPage {
 		FileDialog dialog = new FileDialog(getShell(), SWT.MULTI);
 		dialog.setText("New Feature Model");
 		dialog.setFileName("model.xml");
-		dialog.setFilterExtensions(new String [] {"*.xml"});
-		dialog.setFilterNames(new String[]{ "XML *.xml"});
+		dialog.setFilterExtensions(new String[] { "*.xml" });
+		dialog.setFilterNames(new String[] { "XML *.xml" });
 		dialog.setFilterPath(fileName.getText());
-		
+
 		return dialog.open();
 	}
 }

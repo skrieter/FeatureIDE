@@ -72,7 +72,7 @@ public class ModelLayoutEditPolicy extends LayoutEditPolicy {
 			}
 			return new FeatureMoveEditPolicy((FeatureEditPart) child, this);
 		} else if (child instanceof LegendEditPart) {
-			return new LegendMoveEditPolicy(); 
+			return new LegendMoveEditPolicy();
 		} else {
 			return null;
 		}

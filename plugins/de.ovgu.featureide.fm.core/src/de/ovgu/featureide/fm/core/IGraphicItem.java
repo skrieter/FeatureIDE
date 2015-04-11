@@ -18,35 +18,16 @@
  *
  * See http://featureide.cs.ovgu.de/ for further information.
  */
-package de.ovgu.featureide.fm.ui.editors.featuremodel.editparts;
-
-import org.eclipse.gef.EditPart;
-import org.eclipse.gef.EditPartFactory;
-
-import de.ovgu.featureide.fm.core.IGraphicItem;
+package de.ovgu.featureide.fm.core;
 
 /**
- * Creates edit parts for given models.
  * 
- * @author Thomas Thuem
+ * @author Sebastian Krieter
  */
-public class GraphicalEditPartFactory implements EditPartFactory {
-
-	public EditPart createEditPart(EditPart context, Object model) {
-		switch(((IGraphicItem) model).getItemType()) {
-		case Connection:
-			return new ConnectionEditPart(model);
-		case Constraint:
-			return new ConstraintEditPart(model);
-		case Feature:
-			return new FeatureEditPart(model);
-		case Legend:
-			return new LegendEditPart(model);
-		case Model:
-			return new ModelEditPart(model);
-		default:
-			return null;
-		}
+public interface IGraphicItem {
+	public static enum GraphicItem {
+		Feature, Connection, Constraint, Legend, Model
 	}
-
+	
+	GraphicItem getItemType();
 }

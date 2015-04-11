@@ -35,9 +35,9 @@ import de.ovgu.featureide.fm.ui.editors.featuremodel.figures.LegendFigure;
  */
 public class LegendEditPart extends AbstractGraphicalEditPart {
 
-	public LegendEditPart(Legend legend) {
+	public LegendEditPart(Object model) {
 		super();
-		setModel(legend);
+		setModel(model);
 	}
 
 	/*

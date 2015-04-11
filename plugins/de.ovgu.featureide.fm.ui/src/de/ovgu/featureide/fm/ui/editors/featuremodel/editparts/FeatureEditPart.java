@@ -60,10 +60,10 @@ import de.ovgu.featureide.fm.ui.editors.featuremodel.policies.FeatureDirectEditP
  */
 public class FeatureEditPart extends AbstractGraphicalEditPart implements NodeEditPart, PropertyConstants, PropertyChangeListener {
 
-	public FeatureEditPart(Feature feature) {
+	public FeatureEditPart(Object model) {
 		super();
 
-		setModel(feature);
+		setModel(model);
 	}
 
 	public Feature getFeature() {

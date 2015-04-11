@@ -65,9 +65,9 @@ public class ConnectionEditPart extends AbstractConnectionEditPart implements GU
 
 	private Figure toolTipContent = new Figure();
 
-	public ConnectionEditPart(FeatureConnection connection) {
+	public ConnectionEditPart(Object model) {
 		super();
-		setModel(connection);
+		setModel(model);
 	}
 
 	public FeatureConnection getConnectionModel() {

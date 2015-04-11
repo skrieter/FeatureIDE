@@ -45,9 +45,9 @@ import de.ovgu.featureide.fm.ui.editors.featuremodel.figures.ConstraintFigure;
  */
 public class ConstraintEditPart extends AbstractGraphicalEditPart implements PropertyConstants, PropertyChangeListener {
 
-	public ConstraintEditPart(Constraint constraint) {
+	public ConstraintEditPart(Object model) {
 		super();
-		setModel(constraint);
+		setModel(model);
 	}
 
 	public Constraint getConstraintModel() {

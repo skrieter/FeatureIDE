@@ -48,9 +48,9 @@ import de.ovgu.featureide.fm.ui.properties.FMPropertyManager;
  */
 public class ModelEditPart extends AbstractGraphicalEditPart {
 
-	public ModelEditPart(FeatureModel featureModel) {
+	public ModelEditPart(Object model) {
 		super();
-		setModel(featureModel);
+		setModel(model);
 	}
 
 	public FeatureModel getFeatureModel() {

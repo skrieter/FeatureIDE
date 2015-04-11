@@ -39,7 +39,7 @@ import org.prop4j.SatSolver;
  * @author Florian Proksch
  * @author Stefan Krueger
  */
-public class Constraint implements PropertyConstants {
+public class Constraint implements PropertyConstants, IGraphicItem {
 
 	private FeatureModel featureModel;
 	private Node propNode;
@@ -258,6 +258,11 @@ public class Constraint implements PropertyConstants {
 	 */
 	public Collection<Feature> getDeadFeatures() {
 		return deadFeatures;
+	}
+	
+	@Override
+	public GraphicItem getItemType() {
+		return GraphicItem.Constraint;
 	}
 
 }

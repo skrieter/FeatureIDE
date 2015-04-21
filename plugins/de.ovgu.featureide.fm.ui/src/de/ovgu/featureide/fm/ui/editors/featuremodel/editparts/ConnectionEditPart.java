@@ -62,12 +62,23 @@ import de.ovgu.featureide.fm.ui.properties.FMPropertyManager;
  * @author Thomas Thuem
  */
 public class ConnectionEditPart extends AbstractConnectionEditPart implements GUIDefaults, PropertyConstants, PropertyChangeListener {
+	
+	private static final DirectEditPolicy ROLE_DIRECT_EDIT_POLICY = new DirectEditPolicy() {
+		@Override
+		protected void showCurrentEditValue(DirectEditRequest request) {
+		}
 
+		@Override
+		protected Command getDirectEditCommand(DirectEditRequest request) {
+			return null;
+		}
+	};
+	
 	private Figure toolTipContent = new Figure();
 
-	public ConnectionEditPart(Object model) {
+	ConnectionEditPart(Object connection) {
 		super();
-		setModel(model);
+		setModel(connection);
 	}
 
 	public FeatureConnection getConnectionModel() {
@@ -94,18 +105,7 @@ public class ConnectionEditPart extends AbstractConnectionEditPart implements GU
 			return;
 		}
 
-		installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new RoleDirectEditPolicy());
-	}
-
-	private static final class RoleDirectEditPolicy extends DirectEditPolicy {
-		@Override
-		protected void showCurrentEditValue(DirectEditRequest request) {
-		}
-
-		@Override
-		protected Command getDirectEditCommand(DirectEditRequest request) {
-			return null;
-		}
+		installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, ROLE_DIRECT_EDIT_POLICY);
 	}
 
 	@Override
@@ -144,13 +144,9 @@ public class ConnectionEditPart extends AbstractConnectionEditPart implements GU
 
 		featureModel.handleModelDataChanged();
 	}
-
-	/**
-	 * @return
-	 */
+	
 	private FeatureModel getFeatureModel() {
-		Feature feature = getConnectionModel().getTarget();
-		return feature.getFeatureModel();
+		return getConnectionModel().getTarget().getFeatureModel();
 	}
 
 	@Override
@@ -224,24 +220,18 @@ public class ConnectionEditPart extends AbstractConnectionEditPart implements GU
 
 	@Override
 	public void activate() {
-		getConnectionModel().addListener(this);
-		getConnectionModel().getSource().addListener(this);
+				getConnectionModel().addListener(this);
+				getConnectionModel().getSource().addListener(this);
 		super.activate();
 	}
 
 	@Override
 	public void deactivate() {
 		super.deactivate();
-		getConnectionModel().removeListener(this);
-		getConnectionModel().getSource().removeListener(this);
+				getConnectionModel().removeListener(this);
+				getConnectionModel().getSource().removeListener(this);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @seejava.beans.PropertyChangeListener#propertyChange(java.beans.
-	 * PropertyChangeEvent)
-	 */
 	public void propertyChange(PropertyChangeEvent event) {
 		String prop = event.getPropertyName();
 		if (PARENT_CHANGED.equals(prop)) {

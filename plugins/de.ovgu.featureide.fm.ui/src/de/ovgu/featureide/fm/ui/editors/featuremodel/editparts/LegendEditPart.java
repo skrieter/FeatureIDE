@@ -35,30 +35,19 @@ import de.ovgu.featureide.fm.ui.editors.featuremodel.figures.LegendFigure;
  */
 public class LegendEditPart extends AbstractGraphicalEditPart {
 
-	public LegendEditPart(Object model) {
+	LegendEditPart(Object legend) {
 		super();
-		setModel(model);
+		setModel(legend);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#createFigure()
-	 */
 	@Override
 	protected IFigure createFigure() {
 		return new LegendFigure(((Legend) this.getModel()).getModel(), ((Legend) getModel()).getPos());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.eclipse.gef.editparts.AbstractEditPart#createEditPolicies()
-	 */
 	@Override
 	protected void createEditPolicies() {
 		installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new NonResizableEditPolicy());
-
 	}
 
 }

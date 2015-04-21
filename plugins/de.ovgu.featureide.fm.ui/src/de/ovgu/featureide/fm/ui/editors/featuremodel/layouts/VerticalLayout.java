@@ -38,13 +38,13 @@ import de.ovgu.featureide.fm.ui.properties.FMPropertyManager;
  * @author Sebastian Krieter
  */
 public class VerticalLayout extends FeatureDiagramLayoutManager {
-	
+
 	private int height = 0;
-	private int yOffset = 0;
+	private boolean visitedLeaf = false;
 
 	public void layoutFeatureModel(FeatureModel featureModel) {
 		centerOther(featureModel.getRoot(), 0);
-		layout(yOffset, featureModel.getConstraints());
+		layout(height, featureModel.getConstraints());
 	}
 
 	/**
@@ -53,9 +53,10 @@ public class VerticalLayout extends FeatureDiagramLayoutManager {
 	 */
 	private int centerOther(Feature parent, int level) {
 		final LinkedList<Feature> children = parent.getChildren();
-		if (children.isEmpty()) {			
-			height += FMPropertyManager.getFeatureSpaceY();
+		if (children.isEmpty()) {
+			height += FMPropertyManager.getFeatureSpaceY() - 20;
 			FeatureUIHelper.setLocation(parent, new Point((level * 200) + 20, height));
+			visitedLeaf = true;
 			return height;
 		} else {
 			Iterator<Feature> it = children.iterator();
@@ -64,7 +65,11 @@ public class VerticalLayout extends FeatureDiagramLayoutManager {
 			while (it.hasNext()) {
 				max = centerOther(it.next(), level + 1);
 			}
-			height += 10;
+			if (visitedLeaf && children.size() > 1) {
+				height += 10;
+			}
+			visitedLeaf = false;
+
 			final int yPos = (min + max) >> 1;
 			FeatureUIHelper.setLocation(parent, new Point((level * 200) + 20, yPos));
 			return yPos;

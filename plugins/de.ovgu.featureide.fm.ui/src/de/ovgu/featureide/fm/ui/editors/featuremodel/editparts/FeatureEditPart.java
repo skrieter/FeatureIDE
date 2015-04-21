@@ -60,10 +60,12 @@ import de.ovgu.featureide.fm.ui.editors.featuremodel.policies.FeatureDirectEditP
  */
 public class FeatureEditPart extends AbstractGraphicalEditPart implements NodeEditPart, PropertyConstants, PropertyChangeListener {
 
-	public FeatureEditPart(Object model) {
+	private ConnectionAnchor sourceAnchor = null;
+	private ConnectionAnchor targetAnchor = null;
+	
+	FeatureEditPart(Object feature) {
 		super();
-
-		setModel(model);
+		setModel(feature);
 	}
 
 	public Feature getFeature() {
@@ -76,22 +78,25 @@ public class FeatureEditPart extends AbstractGraphicalEditPart implements NodeEd
 
 	@Override
 	protected IFigure createFigure() {
-		return new FeatureFigure(getFeature(), ((ModelEditPart) getParent()).getFeatureModel());
+		final Feature f = getFeature();
+		final FeatureFigure featureFigure = new FeatureFigure(f, f.getFeatureModel());
+		sourceAnchor = featureFigure.getSourceAnchor();
+		targetAnchor = featureFigure.getTargetAnchor();
+		return featureFigure;
 	}
 
 	@Override
 	protected void createEditPolicies() {
-		FeatureModel featureModel = ((ModelEditPart) getParent()).getFeatureModel();
-		installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new FeatureDirectEditPolicy(featureModel, getFeature()));
+		final Feature f = getFeature();
+		installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new FeatureDirectEditPolicy(f.getFeatureModel(), f));
 	}
 
 	private DirectEditManager manager;
 
 	public void showRenameManager() {
 		if (manager == null) {
-			ModelEditPart parent = (ModelEditPart) getParent();
-			FeatureModel featureModel = parent.getFeatureModel();
-			manager = new FeatureLabelEditManager(this, TextCellEditor.class, new FeatureCellEditorLocator(getFeatureFigure()), featureModel);
+			final Feature f = getFeature();
+			manager = new FeatureLabelEditManager(this, TextCellEditor.class, new FeatureCellEditorLocator(getFeatureFigure()), f.getFeatureModel());
 		}
 		manager.show();
 	}
@@ -140,20 +145,22 @@ public class FeatureEditPart extends AbstractGraphicalEditPart implements NodeEd
 		return ((Feature) getModel()).getTargetConnections();
 	}
 
-	public ConnectionAnchor getSourceConnectionAnchor(org.eclipse.gef.ConnectionEditPart connection) {
-		return ((FeatureFigure) figure).getSourceAnchor();
+	public ConnectionAnchor getSourceConnectionAnchor(
+			org.eclipse.gef.ConnectionEditPart connection) {
+		return sourceAnchor;
 	}
 
 	public ConnectionAnchor getSourceConnectionAnchor(Request request) {
-		return ((FeatureFigure) figure).getSourceAnchor();
+		return sourceAnchor;
 	}
 
-	public ConnectionAnchor getTargetConnectionAnchor(org.eclipse.gef.ConnectionEditPart connection) {
-		return ((FeatureFigure) figure).getTargetAnchor();
+	public ConnectionAnchor getTargetConnectionAnchor(
+			org.eclipse.gef.ConnectionEditPart connection) {
+		return targetAnchor;
 	}
 
 	public ConnectionAnchor getTargetConnectionAnchor(Request request) {
-		return ((FeatureFigure) figure).getTargetAnchor();
+		return targetAnchor;
 	}
 
 	@Override
@@ -167,13 +174,7 @@ public class FeatureEditPart extends AbstractGraphicalEditPart implements NodeEd
 		super.deactivate();
 		getFeature().removeListener(this);
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.
-	 * PropertyChangeEvent)
-	 */
+	
 	public void propertyChange(PropertyChangeEvent event) {
 		String prop = event.getPropertyName();
 		if (LOCATION_CHANGED.equals(prop)) {

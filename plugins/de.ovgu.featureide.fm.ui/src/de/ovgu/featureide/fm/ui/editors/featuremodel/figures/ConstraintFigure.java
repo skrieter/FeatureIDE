@@ -30,14 +30,12 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.swt.graphics.Color;
 import org.prop4j.NodeWriter;
 
 import de.ovgu.featureide.fm.core.Constraint;
 import de.ovgu.featureide.fm.core.ConstraintAttribute;
 import de.ovgu.featureide.fm.core.Feature;
 import de.ovgu.featureide.fm.ui.editors.FeatureUIHelper;
-import de.ovgu.featureide.fm.ui.editors.featuremodel.GUIBasics;
 import de.ovgu.featureide.fm.ui.editors.featuremodel.GUIDefaults;
 import de.ovgu.featureide.fm.ui.properties.FMPropertyManager;
 
@@ -47,9 +45,6 @@ import de.ovgu.featureide.fm.ui.properties.FMPropertyManager;
  * @author Thomas Thuem
  */
 public class ConstraintFigure extends Figure implements GUIDefaults {
-
-	private static String[] symbols = null;
-
 	private final Label label = new Label();
 
 	private Constraint constraint;
@@ -74,35 +69,31 @@ public class ConstraintFigure extends Figure implements GUIDefaults {
 
 		label.setForegroundColor(CONSTRAINT_FOREGROUND);
 		label.setFont(DEFAULT_FONT);
-
 		label.setLocation(new Point(CONSTRAINT_INSETS.left, CONSTRAINT_INSETS.top));
 
 		setText(getConstraintText(constraint));
 
 		FeatureUIHelper.setSize(constraint, getSize());
-
+		
 		add(label);
 		setOpaque(true);
 
 		if (FeatureUIHelper.getLocation(constraint) != null)
 			setLocation(FeatureUIHelper.getLocation(constraint));
 
-		setConstraintProperties(true);
+		init();
+	}
+	
+	private void init() {
+		setBorder(FMPropertyManager.getConstraintBorder(constraint.isFeatureSelected()));
+		setBackgroundColor(FMPropertyManager.getConstraintBackgroundColor());
 	}
 
 	/**
-	 * Sets the properties <i>color, border and tooltips</i> of the {@link ConstraintFigure}
-	 * 
-	 * @param init <code>true</code> if this method is called by the constructor else the
-	 *            calculated properties will be set.
+	 * Sets the properties <i>color, border and tooltips</i> of the {@link ConstraintFigure}.
 	 */
-	public void setConstraintProperties(boolean init) {
-		setBorder(FMPropertyManager.getConstraintBorder(constraint.isFeatureSelected()));
-		setBackgroundColor(FMPropertyManager.getConstraintBackgroundColor());
-
-		if (init) {
-			return;
-		}
+	public void setConstraintProperties() {
+		init();
 
 		ConstraintAttribute constraintAttribute = constraint.getConstraintAttribute();
 		if (constraintAttribute == ConstraintAttribute.NORMAL) {
@@ -170,24 +161,18 @@ public class ConstraintFigure extends Figure implements GUIDefaults {
 			setToolTip(new Label(REDUNDANCE));
 			return;
 		}
-
-	}
-
-	@Override
-	public void setBackgroundColor(Color bg) {
-		super.setBackgroundColor(bg);
 	}
 
 	private String getConstraintText(Constraint constraint) {
-		if (symbols == null) {
-			symbols = NodeWriter.logicalSymbols;
-			StringBuilder s = new StringBuilder();
-			for (int i = 0; i < symbols.length; i++)
-				s.append(symbols[i]);
-			if (!GUIBasics.unicodeStringTest(label.getFont(), s.toString()))
-				symbols = NodeWriter.shortSymbols;
-		}
-		return constraint.getNode().toString(symbols);
+//		if (symbols == null) {
+//			symbols = NodeWriter.logicalSymbols;
+//			StringBuilder s = new StringBuilder();
+//			for (int i = 0; i < symbols.length; i++)
+//				s.append(symbols[i]);
+//			if (!GUIBasics.unicodeStringTest(label.getFont(), s.toString()))
+//				symbols = NodeWriter.shortSymbols;
+//		}
+		return constraint.getNode().toString(NodeWriter.shortSymbols);
 	}
 
 	private void setText(String newText) {

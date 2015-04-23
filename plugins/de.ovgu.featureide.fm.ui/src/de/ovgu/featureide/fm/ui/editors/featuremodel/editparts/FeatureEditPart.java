@@ -62,7 +62,7 @@ public class FeatureEditPart extends AbstractGraphicalEditPart implements NodeEd
 
 	private ConnectionAnchor sourceAnchor = null;
 	private ConnectionAnchor targetAnchor = null;
-	
+
 	FeatureEditPart(Object feature) {
 		super();
 		setModel(feature);
@@ -145,8 +145,7 @@ public class FeatureEditPart extends AbstractGraphicalEditPart implements NodeEd
 		return ((Feature) getModel()).getTargetConnections();
 	}
 
-	public ConnectionAnchor getSourceConnectionAnchor(
-			org.eclipse.gef.ConnectionEditPart connection) {
+	public ConnectionAnchor getSourceConnectionAnchor(org.eclipse.gef.ConnectionEditPart connection) {
 		return sourceAnchor;
 	}
 
@@ -154,8 +153,7 @@ public class FeatureEditPart extends AbstractGraphicalEditPart implements NodeEd
 		return sourceAnchor;
 	}
 
-	public ConnectionAnchor getTargetConnectionAnchor(
-			org.eclipse.gef.ConnectionEditPart connection) {
+	public ConnectionAnchor getTargetConnectionAnchor(org.eclipse.gef.ConnectionEditPart connection) {
 		return targetAnchor;
 	}
 
@@ -174,7 +172,7 @@ public class FeatureEditPart extends AbstractGraphicalEditPart implements NodeEd
 		super.deactivate();
 		getFeature().removeListener(this);
 	}
-	
+
 	public void propertyChange(PropertyChangeEvent event) {
 		String prop = event.getPropertyName();
 		if (LOCATION_CHANGED.equals(prop)) {
@@ -200,7 +198,7 @@ public class FeatureEditPart extends AbstractGraphicalEditPart implements NodeEd
 				}
 			}
 		} else if (NAME_CHANGED.equals(prop)) {
-			getFeatureFigure().setName(getFeature().getName());
+			getFeatureFigure().setName(getFeature().getDisplayName());
 			FeatureUIHelper.setSize(getFeature(), getFeatureFigure().getSize());
 		} else if (ATTRIBUTE_CHANGED.equals(prop)) {
 			getFeatureFigure().setProperties();

@@ -197,7 +197,7 @@ public class ConstraintContentProposalProvider implements IContentProposalProvid
 		//		Show feature for "A implies |"
 		//		Hide features for "A |"
 		for (String s : featureList)
-			proposals.add(new ContentProposal(s + (operatorNamesInFeatures.contains(s.trim().toLowerCase()) ? " " + Features.FEATURE_SUFFIX : "")));
+			proposals.add(new ContentProposal(s  + (operatorNamesInFeatures.contains(s.trim()) ? " " + Features.FEATURE_SUFFIX : "")));
 
 		return proposals;
 	}

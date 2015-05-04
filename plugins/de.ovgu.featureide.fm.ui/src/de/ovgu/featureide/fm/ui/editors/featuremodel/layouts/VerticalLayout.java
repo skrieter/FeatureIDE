@@ -20,8 +20,10 @@
  */
 package de.ovgu.featureide.fm.ui.editors.featuremodel.layouts;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.ListIterator;
 
 import org.eclipse.draw2d.geometry.Point;
 
@@ -39,10 +41,16 @@ import de.ovgu.featureide.fm.ui.properties.FMPropertyManager;
  */
 public class VerticalLayout extends FeatureDiagramLayoutManager {
 
-	private int height = 0;
-	private boolean visitedLeaf = false;
+	private final ArrayList<Integer> levelWidth = new ArrayList<>();
+
+	private int heightStep;
+	private int height;
 
 	public void layoutFeatureModel(FeatureModel featureModel) {
+		heightStep = FeatureUIHelper.getSize(featureModel.getRoot()).height + 2;
+		height = FMPropertyManager.getLayoutMarginX() - heightStep;
+
+		calculateLevelWidth(featureModel.getRoot());
 		centerOther(featureModel.getRoot(), 0);
 		layout(height, featureModel.getConstraints());
 	}
@@ -54,25 +62,44 @@ public class VerticalLayout extends FeatureDiagramLayoutManager {
 	private int centerOther(Feature parent, int level) {
 		final LinkedList<Feature> children = parent.getChildren();
 		if (children.isEmpty()) {
-			height += FMPropertyManager.getFeatureSpaceY() - 20;
-			FeatureUIHelper.setLocation(parent, new Point((level * 200) + 20, height));
-			visitedLeaf = true;
+			height += heightStep;
+			FeatureUIHelper.setLocation(parent, new Point(levelWidth.get(level), height));
 			return height;
 		} else {
-			Iterator<Feature> it = children.iterator();
+			final Iterator<Feature> it = children.iterator();
 			final int min = centerOther(it.next(), level + 1);
 			int max = min;
 			while (it.hasNext()) {
 				max = centerOther(it.next(), level + 1);
 			}
-			if (visitedLeaf && children.size() > 1) {
-				height += 10;
-			}
-			visitedLeaf = false;
 
 			final int yPos = (min + max) >> 1;
-			FeatureUIHelper.setLocation(parent, new Point((level * 200) + 20, yPos));
+			FeatureUIHelper.setLocation(parent, new Point(levelWidth.get(level), yPos));
 			return yPos;
+		}
+	}
+
+	private void calculateLevelWidth(Feature root) {
+		calculateLevelWidth(root, 0);
+		final ListIterator<Integer> it = levelWidth.listIterator();
+		int maxWidth = FMPropertyManager.getLayoutMarginX();
+		do {
+			final int curWidth = it.next();
+			it.set(maxWidth);
+			maxWidth += curWidth + FMPropertyManager.getLayoutMarginX();
+		} while (it.hasNext());
+	}
+
+	private void calculateLevelWidth(Feature parent, int level) {
+		final int parentWidth = FeatureUIHelper.getSize(parent).width;
+		if (level >= levelWidth.size()) {
+			levelWidth.add(parentWidth);
+		} else if (levelWidth.get(level) < parentWidth) {
+			levelWidth.set(level, parentWidth);
+		}
+
+		for (Feature feature : parent.getChildren()) {
+			calculateLevelWidth(feature, level + 1);
 		}
 	}
 

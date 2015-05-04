@@ -108,13 +108,10 @@ abstract public class FeatureDiagramLayoutManager {
 
 	void layout(int yoffset, List<Constraint> constraints) {
 		int y = yoffset + FMPropertyManager.getConstraintSpace();
-		for (int i = 0; i < constraints.size(); i++) {
-			Constraint constraint = constraints.get(i);
+		boolean depthFirst = this instanceof DepthFirstLayout;
+		for (Constraint constraint : constraints) {
 			Dimension size = FeatureUIHelper.getSize(constraint);
-			int x = (controlWidth - size.width) / 2;
-			if (this instanceof DepthFirstLayout) {
-				x = 2 * FMPropertyManager.getFeatureSpaceX();
-			}
+			int x = depthFirst ? 2 * FMPropertyManager.getFeatureSpaceX() : (controlWidth - size.width) >> 1;
 			FeatureUIHelper.setLocation(constraint, new Point(x, y));
 			y += size.height;
 		}

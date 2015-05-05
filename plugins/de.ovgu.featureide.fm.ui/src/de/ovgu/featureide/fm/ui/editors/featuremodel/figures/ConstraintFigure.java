@@ -21,6 +21,7 @@
 package de.ovgu.featureide.fm.ui.editors.featuremodel.figures;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.eclipse.draw2d.Figure;
@@ -36,6 +37,7 @@ import de.ovgu.featureide.fm.core.Constraint;
 import de.ovgu.featureide.fm.core.ConstraintAttribute;
 import de.ovgu.featureide.fm.core.Feature;
 import de.ovgu.featureide.fm.ui.editors.FeatureUIHelper;
+import de.ovgu.featureide.fm.ui.editors.featuremodel.GUIBasics;
 import de.ovgu.featureide.fm.ui.editors.featuremodel.GUIDefaults;
 import de.ovgu.featureide.fm.ui.properties.FMPropertyManager;
 
@@ -45,10 +47,7 @@ import de.ovgu.featureide.fm.ui.properties.FMPropertyManager;
  * @author Thomas Thuem
  */
 public class ConstraintFigure extends Figure implements GUIDefaults {
-	private final Label label = new Label();
-
-	private Constraint constraint;
-
+	
 	public final static String VOID_MODEL = " Constraint makes the feature model void. ";
 	public final static String UNSATISFIABLE = " Constraint is unsatisfiable and makes the feature model void. ";
 	public final static String TAUTOLOGY = " Constraint is a tautology and should be removed. ";
@@ -57,10 +56,22 @@ public class ConstraintFigure extends Figure implements GUIDefaults {
 	public final static String REDUNDANCE = " Constraint is redundant and could be removed. ";
 
 	private static final IFigure VOID_LABEL = new Label(VOID_MODEL);
-
 	private static final IFigure UNSATISFIABLE_LABEL = new Label(UNSATISFIABLE);
-
 	private static final IFigure TAUTOLOGY_LABEL = new Label(TAUTOLOGY);
+	
+	private static final String[] symbols;
+	static {
+		if (GUIBasics.unicodeStringTest(DEFAULT_FONT, Arrays.toString(NodeWriter.logicalSymbols))) {
+			symbols = NodeWriter.logicalSymbols;
+		} else {
+			symbols = NodeWriter.shortSymbols;
+		}
+	}
+	
+	private final Label label = new Label();
+	
+	private Constraint constraint;
+	
 
 	public ConstraintFigure(Constraint constraint) {
 		super();
@@ -164,15 +175,7 @@ public class ConstraintFigure extends Figure implements GUIDefaults {
 	}
 
 	private String getConstraintText(Constraint constraint) {
-//		if (symbols == null) {
-//			symbols = NodeWriter.logicalSymbols;
-//			StringBuilder s = new StringBuilder();
-//			for (int i = 0; i < symbols.length; i++)
-//				s.append(symbols[i]);
-//			if (!GUIBasics.unicodeStringTest(label.getFont(), s.toString()))
-//				symbols = NodeWriter.shortSymbols;
-//		}
-		return constraint.getNode().toString(NodeWriter.shortSymbols);
+		return constraint.getNode().toString(symbols);
 	}
 
 	private void setText(String newText) {

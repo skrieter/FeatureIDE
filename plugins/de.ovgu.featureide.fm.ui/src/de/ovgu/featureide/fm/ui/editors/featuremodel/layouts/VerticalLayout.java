@@ -41,13 +41,16 @@ import de.ovgu.featureide.fm.ui.properties.FMPropertyManager;
  */
 public class VerticalLayout extends FeatureDiagramLayoutManager {
 
+	private static final int featureSpaceX = 32;
+	private static final int featureSpaceY = 8;
+
 	private final ArrayList<Integer> levelWidth = new ArrayList<>();
 
 	private int heightStep;
 	private int height;
 
 	public void layoutFeatureModel(FeatureModel featureModel) {
-		heightStep = FeatureUIHelper.getSize(featureModel.getRoot()).height + 2;
+		heightStep = FeatureUIHelper.getSize(featureModel.getRoot()).height + featureSpaceY;
 		height = FMPropertyManager.getLayoutMarginX() - heightStep;
 
 		calculateLevelWidth(featureModel.getRoot());
@@ -86,7 +89,7 @@ public class VerticalLayout extends FeatureDiagramLayoutManager {
 		do {
 			final int curWidth = it.next();
 			it.set(maxWidth);
-			maxWidth += curWidth + FMPropertyManager.getLayoutMarginX();
+			maxWidth += curWidth + featureSpaceX;
 		} while (it.hasNext());
 	}
 

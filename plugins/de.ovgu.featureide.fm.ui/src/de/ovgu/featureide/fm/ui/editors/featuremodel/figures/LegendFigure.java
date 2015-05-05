@@ -154,8 +154,8 @@ public class LegendFigure extends Figure implements GUIDefaults {
 
 		unsatisfiableConst = analyser.calculateConstraints && featureModel.hasUnsatisfiableConst();
 		tautologyConst = analyser.calculateTautologyConstraints && featureModel.hasTautologyConst();
-		voidModelConst =  analyser.calculateConstraints && featureModel.hasVoidModelConst();
-		redundantConst =  analyser.calculateRedundantConstraints && featureModel.hasRedundantConst();
+		voidModelConst = analyser.calculateConstraints && featureModel.hasVoidModelConst();
+		redundantConst = analyser.calculateRedundantConstraints && featureModel.hasRedundantConst();
 
 		if (featureModel instanceof ExtendedFeatureModel) {
 			ExtendedFeatureModel extendedFeatureModel = (ExtendedFeatureModel) featureModel;

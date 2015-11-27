@@ -49,6 +49,7 @@ import org.sat4j.tools.ModelIterator;
 import org.sat4j.tools.SolutionCounter;
 
 import de.ovgu.featureide.fm.core.FMCorePlugin;
+import de.ovgu.featureide.fm.core.job.WorkMonitor;
 
 /**
  * A solver that computes if a given propositional node is satisfiable and
@@ -214,7 +215,7 @@ public class SatSolver {
 					}
 				}
 			}
-			
+
 			for (int i = 0; i < tempNodes.length; i++) {
 				backbone.delete(i);
 			}
@@ -275,7 +276,7 @@ public class SatSolver {
 		}
 		return Collections.emptyList();
 	}
-	
+
 	public List<List<Literal>> atomicSuperSets() {
 		if (test()) {
 			final int[] globalModel = solver.model();
@@ -286,14 +287,14 @@ public class SatSolver {
 		}
 		return Collections.emptyList();
 	}
-	
+
 	public List<List<Literal>> atomicSuperSets(Collection<String> featureSet) {
 		if (test()) {
 			final int[] globalModel = solver.model();
 			final byte[] done = new byte[globalModel.length];
 			max = 0;
-			
-			Arrays.fill(done, (byte)2);
+
+			Arrays.fill(done, (byte) 2);
 			for (String b : featureSet) {
 				Integer x = varToInt.get(b);
 				if (x != null) {
@@ -308,16 +309,16 @@ public class SatSolver {
 		}
 		return Collections.emptyList();
 	}
-	
+
 	private int max = 0;
 
 	private List<List<Literal>> atomicSuperSets(final int[] globalModel, final byte[] done) {
 		final List<List<Literal>> result = new ArrayList<>();
 		final ArrayList<Literal> coreList = new ArrayList<>();
 		result.add(coreList);
-		
+
 		final IVecInt backbone = new VecInt();
-		
+
 		int c = 0;
 		for (int i = 0; i < globalModel.length; i++) {
 			final int x = globalModel[i];
@@ -331,25 +332,25 @@ public class SatSolver {
 				} else {
 					final ArrayList<Literal> setList = new ArrayList<>();
 					setList.add(new Literal(intToVar.get(Math.abs(x)), x > 0));
-					
+
 					final int[] model = solver.model();
 					backbone.push(-x);
-					
+
 					for (int j = i + 1; j < model.length; j++) {
 						if (done[j] == 0) {
 							final int y = model[j];
-							
+
 							if (!sat(backbone, -y)) {
 								done[j] = 1;
 							}
 						}
 					}
-				
+
 					backbone.pop().push(x);
 					for (int j = i + 1; j < model.length; j++) {
 						if (done[j] == 1) {
 							final int y = model[j];
-							
+
 							if (!sat(backbone, y)) {
 								done[j] = 2;
 								setList.add(new Literal(intToVar.get(Math.abs(y)), y > 0));
@@ -682,7 +683,45 @@ public class SatSolver {
 	}
 
 	public void reset() {
-		solver.reset();		
+		solver.reset();
+	}
+
+	/**
+	 * Creates one solutions to cover the given features.
+	 * 
+	 * @param features The features that should be covered.
+	 * @param selection true is the features should be selected, false otherwise.
+	 */
+	public List<String> coverFeatures(Collection<String> features, boolean selection, WorkMonitor monitor) throws TimeoutException {
+		final VecInt vector = new VecInt();
+		List<String> coveredFeatures = new LinkedList<>();
+		for (final String feature : features) {
+			Integer integer = (selection ? 1 : -1) * varToInt.get(feature);
+			vector.push(integer);
+			if (solver.isSatisfiable(vector)) {
+				monitor.worked();
+				coveredFeatures.add(feature);
+			} else {
+				vector.pop().push(-integer);
+			}
+		}
+		features.removeAll(coveredFeatures);
+		if (coveredFeatures.isEmpty()) {
+			throw new RuntimeException("Something went wrong! No features are covered.");
+		}
+		if (!solver.isSatisfiable(vector)) {
+			throw new RuntimeException("Unexpected solver exception");
+		}
+
+		int[] model = solver.model();
+		List<String> featureList = new ArrayList<String>(model.length);
+		for (int var : model) {
+			if (var > 0) {
+				featureList.add(intToVar.get(var).toString().intern());
+			}
+		}
+
+		return featureList;
 	}
 
 }

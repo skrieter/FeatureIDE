@@ -21,6 +21,7 @@
 package de.ovgu.featureide.fm.core.configuration;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -85,7 +86,7 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 				return null;
 			}
 			final FeatureModel featureModel = configuration.getFeatureModel();
-			
+
 			final AdvancedNodeCreator nodeCreator1;
 			final AdvancedNodeCreator nodeCreator2;
 			if (configuration.ignoreAbstractFeatures) {
@@ -134,6 +135,12 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 		}
 	}
 
+	/**
+	 * Checks that all manual and automatic selections are valid.<br>
+	 * Abstract features will <b>not</b> be ignored.
+	 * 
+	 * @return {@code true} if the current selection is a valid configuration
+	 */
 	public class IsValidMethod implements LongRunningMethod<Boolean> {
 		@Override
 		public Boolean execute(WorkMonitor monitor) {
@@ -155,6 +162,10 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 		}
 	}
 
+	/**
+	 * Ignores hidden features.
+	 * Use this, when propgate is disabled (hidden features are not updated).
+	 */
 	public class IsValidNoHiddenMethod implements LongRunningMethod<Boolean> {
 		@Override
 		public Boolean execute(WorkMonitor monitor) {
@@ -420,6 +431,12 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 
 	}
 
+	/**
+	 * Counts the number of possible solutions.
+	 * 
+	 * @return a positive value equal to the number of solutions (if the method terminated in time)</br>
+	 *         or a negative value (if a timeout occurred) that indicates that there are more solutions than the absolute value
+	 */
 	public class CountSolutionsMethod implements LongRunningMethod<Long> {
 		private final long timeout;
 
@@ -465,6 +482,49 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 		}
 
 		return children;
+	}
+
+	/**
+	 * Creates solutions to cover the given features.
+	 * 
+	 * @param features The features that should be covered.
+	 * @param selection true is the features should be selected, false otherwise.
+	 */
+	public class CoverMethod implements LongRunningMethod<List<List<String>>> {
+		private final Collection<String> features;
+		private final boolean selection;
+
+		public CoverMethod(Collection<String> features, boolean selection) {
+			this.features = features;
+			this.selection = selection;
+		}
+
+		@Override
+		public List<List<String>> execute(WorkMonitor monitor) throws TimeoutException {
+			if (rootNode == null) {
+				return null;
+			}
+			final List<Node> children = new ArrayList<Node>(configuration.features.size());
+			for (SelectableFeature feature : configuration.features) {
+				if (feature.getSelection() != Selection.UNDEFINED && (configuration.ignoreAbstractFeatures || feature.getFeature().isConcrete())) {
+					children.add(new Literal(feature.getFeature().getName(), feature.getSelection() == Selection.SELECTED));
+				}
+			}
+			final Node[] allFeatures = new Node[children.size() + 1];
+			children.toArray(allFeatures);
+			allFeatures[children.size()] = rootNode.clone();
+
+			SatSolver satSolver = new SatSolver(new And(allFeatures), TIMEOUT);
+			final List<List<String>> solutions = new LinkedList<>();
+			while (!features.isEmpty()) {
+				solutions.add(satSolver.coverFeatures(features, selection, monitor));
+				if (monitor.checkCancel()) {
+					break;
+				}
+				monitor.createSubTask(features.size() + " features to cover.");
+			}
+			return solutions;
+		}
 	}
 
 	public class UpdateMethod implements LongRunningMethod<List<String>> {
@@ -645,6 +705,10 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 	@Override
 	public LoadMethod load() {
 		return new LoadMethod();
+	}
+
+	public CoverMethod coverFeatures(final Collection<String> features, final boolean selection, WorkMonitor monitor) throws TimeoutException {
+		return new CoverMethod(features, selection);
 	}
 
 }

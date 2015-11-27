@@ -23,6 +23,7 @@ package de.ovgu.featureide.ui.interfacegen;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -130,7 +131,7 @@ public class AtomicSetAnaylsisTester {
 		List<String> nodeString = null;
 		if (subNodePath.toFile().exists()) {
 			try {
-				nodeString = Files.readAllLines(subNodePath);
+				nodeString = Files.readAllLines(subNodePath, Charset.availableCharsets().get("UTF-8"));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -26,7 +26,13 @@ package de.ovgu.featureide.fm.core.job;
  * 
  * @author Sebastian Krieter
  */
+
 public final class WorkMonitor extends AWorkMonitor {
+
+	public WorkMonitor() {
+		setIntermediateFunction(null);
+		setMonitor(null);
+	}
 
 	public void worked() {
 		internalWorked();
@@ -37,7 +43,6 @@ public final class WorkMonitor extends AWorkMonitor {
 		return internalCheckCancel();
 	}
 
-	@Override
 	public void invoke(Object t) {
 		internalInvoke(t);
 	}
